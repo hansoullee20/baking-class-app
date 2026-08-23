@@ -1,64 +1,44 @@
 <!doctype html>
 <html lang="ko">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#382920">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#382920">
 <title>베이킹 운영 관리</title>
 <style>
-:root{--bg:#f6f3ee;--paper:#fff;--ink:#2b241f;--muted:#7b7169;--line:#e7ded6;--brand:#382920;--brand2:#76513a;--ok:#2f7356;--warn:#9a681f;--bad:#a44b42;--shadow:0 8px 26px rgba(53,38,29,.08)}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,Pretendard,"Noto Sans KR",system-ui,-apple-system,sans-serif}.wrap{max-width:520px;margin:0 auto;padding:24px 16px}.hero{background:linear-gradient(135deg,var(--brand),var(--brand2));color:#fff;border-radius:22px;padding:22px;box-shadow:var(--shadow)}.hero small{font-size:10px;letter-spacing:.12em;opacity:.72;font-weight:800}.hero h1{margin:6px 0 5px;font-size:25px}.hero p{font-size:12px;opacity:.82;line-height:1.55;margin:0}.card{margin-top:12px;background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:14px;box-shadow:var(--shadow)}label{display:block;font-size:11px;color:var(--muted);font-weight:700;margin-bottom:6px}input{width:100%;border:1px solid var(--line);border-radius:11px;padding:12px;font-size:14px}button{width:100%;margin-top:9px;border:0;border-radius:11px;padding:12px;background:var(--brand);color:#fff;font-weight:800;font-size:14px}button.secondary{background:#fff;color:var(--ink);border:1px solid var(--line)}button:disabled{opacity:.4}.note{font-size:11px;color:var(--muted);line-height:1.6;margin-top:10px}.steps{margin-top:12px;display:grid;gap:7px}.step{border:1px solid var(--line);border-radius:10px;padding:9px 10px;font-size:12px}.step.ok{border-color:#b9d9c8;background:#eef8f2;color:var(--ok)}.step.bad{border-color:#e4b8b3;background:#fff0ef;color:var(--bad)}.step.wait{color:var(--muted)}.detail{font-size:10px;line-height:1.45;margin-top:4px;word-break:break-word}
+:root{--bg:#f6f3ee;--paper:#fff;--ink:#2b241f;--muted:#776d66;--line:#e5dbd2;--brand:#382920;--ok:#2f7356;--bad:#a44b42;--warn:#9a681f;--soft:#f2ebe4}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Noto Sans KR",sans-serif}.app{max-width:1050px;margin:auto;padding:12px 12px 80px}.hero{padding:18px;border-radius:18px;background:var(--brand);color:#fff}.hero h1{margin:2px 0;font-size:24px}.hero p{margin:4px 0 0;font-size:12px;opacity:.8}.connect{display:grid;grid-template-columns:1fr auto;gap:8px;margin:10px 0}.card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:11px}input,select,textarea,button{font:inherit}input,select,textarea{width:100%;border:1px solid var(--line);border-radius:9px;padding:9px;background:#fff}button{border:0;border-radius:10px;padding:10px 13px;background:var(--brand);color:#fff;font-weight:800;cursor:pointer}button.secondary{background:#fff;color:var(--ink);border:1px solid var(--line)}button:disabled{opacity:.45}.status{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}.pill{font-size:10px;font-weight:800;padding:5px 8px;border-radius:999px;background:#ece8e3}.pill.ok{background:#e5f2eb;color:var(--ok)}.pill.bad{background:#f8e1df;color:var(--bad)}.pill.warn{background:#fff0d6;color:var(--warn)}.tabs{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;position:sticky;top:0;background:var(--bg);padding:6px 0;z-index:10}.tab{background:#fff;color:var(--muted);border:1px solid var(--line);font-size:11px;padding:9px 3px}.tab.active{background:var(--brand);color:#fff}.page{display:none}.page.active{display:block}.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin:10px 0}.kpi{background:#fff;border:1px solid var(--line);border-radius:12px;padding:11px}.kpi b{font-size:20px;display:block}.kpi span{font-size:10px;color:var(--muted)}h2{font-size:18px;margin:14px 0 8px}.list{display:grid;gap:6px}.row{background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px}.rowgrid{display:grid;grid-template-columns:100px 80px 1fr 70px 90px;gap:7px;align-items:center}.name{font-weight:850}.sub{font-size:10px;color:var(--muted);margin-top:3px}.recipe{background:#fff;border:1px solid var(--line);border-radius:12px;margin-bottom:6px}.recipe summary{padding:11px;cursor:pointer;font-weight:850}.recipe .body{border-top:1px solid var(--line);padding:10px}.chips{display:flex;gap:5px;flex-wrap:wrap}.chip{font-size:9px;background:var(--soft);padding:4px 7px;border-radius:99px}.tablewrap{overflow:auto;background:#fff;border:1px solid var(--line);border-radius:12px}table{border-collapse:collapse;width:100%;min-width:650px;font-size:10px}th,td{padding:8px;border-bottom:1px solid var(--line);text-align:left}th{color:var(--muted)}.empty{padding:24px;text-align:center;color:var(--muted)}.savebar{display:flex;gap:7px;justify-content:flex-end;margin:8px 0}.diag{font-size:11px;line-height:1.6;color:var(--muted)}@media(max-width:700px){.kpis{grid-template-columns:1fr 1fr}.rowgrid{grid-template-columns:1fr 1fr}.rowgrid .wide{grid-column:1/-1}.connect{grid-template-columns:1fr}.tabs{grid-template-columns:repeat(5,1fr)}.tab{font-size:9px}.kpi b{font-size:17px}}
 </style>
 </head>
-<body>
-<div class="wrap">
-  <div class="hero"><small>BRANCH · BAKING CLASS OPERATIONS</small><h1>베이킹 운영 관리</h1><p>공개 화면에서 연결 상태를 확인한 뒤 비공개 운영 데이터를 불러옵니다.</p></div>
-  <div class="card">
-    <label for="token">GitHub 연결 키</label>
-    <input id="token" type="password" placeholder="본인 토큰을 입력하세요" autocomplete="off">
-    <button id="checkBtn">연결 진단</button>
-    <button id="openBtn" class="secondary" disabled>운영 화면 열기</button>
-    <button id="clearBtn" class="secondary">저장된 키 지우기</button>
-    <div class="steps">
-      <div id="s1" class="step wait">1. 토큰 인증 대기</div>
-      <div id="s2" class="step wait">2. baking-class-ops 접근 대기</div>
-      <div id="s3" class="step wait">3. 운영 HTML 읽기 대기</div>
-    </div>
-    <div class="note">토큰 값 자체는 화면에 표시하지 않습니다. 연결에 성공한 키만 이 브라우저의 로컬 저장소에 보관합니다.</div>
-  </div>
+<body><div class="app">
+<header class="hero"><h1>베이킹 운영 관리</h1><p>GitHub 비공개 운영 데이터를 직접 불러오는 단일 화면</p></header>
+<div class="connect"><div class="card"><input id="token" type="password" placeholder="GitHub 연결 키" autocomplete="off"><div class="diag" id="diag">연결 전</div></div><div><button id="connectBtn">데이터 연결</button><button id="clearBtn" class="secondary" style="margin-left:5px">키 지우기</button></div></div>
+<div class="status"><span id="auth" class="pill">인증 대기</span><span id="repo" class="pill">저장소 대기</span><span id="data" class="pill">데이터 대기</span><span id="saveState" class="pill">변경 없음</span></div>
+<nav class="tabs"><button class="tab active" data-page="dashboard">대시보드</button><button class="tab" data-page="schedule">일정</button><button class="tab" data-page="recipes">레시피</button><button class="tab" data-page="history">완료기록</button><button class="tab" data-page="costs">재료단가</button></nav>
+<section id="dashboard" class="page active"><h2>운영 현황</h2><div id="kpis" class="kpis"></div><div class="card"><b>다가오는 수업</b><div id="upcoming" class="list" style="margin-top:8px"></div></div></section>
+<section id="schedule" class="page"><h2>일정 관리</h2><div class="savebar"><button id="saveSchedule" disabled>일정 저장</button></div><div id="scheduleList" class="list"></div></section>
+<section id="recipes" class="page"><h2>레시피</h2><div id="recipeList"></div></section>
+<section id="history" class="page"><h2>완료 수업 기록</h2><div class="tablewrap"><table><thead><tr><th>날짜</th><th>시간</th><th>메뉴</th><th>수강생</th><th>수입</th></tr></thead><tbody id="historyBody"></tbody></table></div></section>
+<section id="costs" class="page"><h2>재료 단가</h2><div class="tablewrap"><table><thead><tr><th>재료</th><th>단위</th><th>단가</th><th>상태</th><th>근거</th></tr></thead><tbody id="costBody"></tbody></table></div></section>
 </div>
 <script>
-const TOKEN_KEY='baking-ops-github-token';
-const OWNER='hansoullee20', REPO='baking-class-ops', BRANCH='main';
-const tokenInput=document.getElementById('token'),checkBtn=document.getElementById('checkBtn'),openBtn=document.getElementById('openBtn');
-let cachedHtml='';
-const remembered=localStorage.getItem(TOKEN_KEY)||''; if(remembered) tokenInput.value=remembered;
-function step(id,text,type='wait',detail=''){const e=document.getElementById(id);e.className='step '+type;e.innerHTML=text+(detail?`<div class="detail">${detail}</div>`:'')}
-function headers(token){return {'Accept':'application/vnd.github+json','Authorization':`Bearer ${token}`,'X-GitHub-Api-Version':'2022-11-28'}}
-function decode64(s){const bytes=Uint8Array.from(atob(String(s).replace(/\n/g,'')),c=>c.charCodeAt(0));return new TextDecoder().decode(bytes)}
-async function jsonFetch(url,token){const r=await fetch(url,{headers:headers(token),cache:'no-store'});let data=null;try{data=await r.json()}catch{}return {r,data}}
-async function diagnose(){
- const token=tokenInput.value.trim(); cachedHtml=''; openBtn.disabled=true;
- step('s1','1. 토큰 확인 중…');step('s2','2. 저장소 접근 대기');step('s3','3. 운영 HTML 읽기 대기');
- if(!token){step('s1','1. 토큰이 입력되지 않음','bad');return}
- checkBtn.disabled=true;
- try{
-   const u=await jsonFetch('https://api.github.com/user',token);
-   if(!u.r.ok){const msg=u.data?.message||`HTTP ${u.r.status}`;step('s1',`1. 토큰 인증 실패 (${u.r.status})`,'bad',msg);return}
-   step('s1',`1. 토큰 인증 성공 · ${u.data?.login||'계정 확인됨'}`,'ok');
-   const repo=await jsonFetch(`https://api.github.com/repos/${OWNER}/${REPO}`,token);
-   if(!repo.r.ok){let hint=repo.data?.message||`HTTP ${repo.r.status}`;if(repo.r.status===404)hint+=' · Fine-grained token에서 Resource owner가 hansoullee20인지, Repository access에 baking-class-ops가 선택됐는지 확인하세요.';step('s2',`2. private 저장소 접근 실패 (${repo.r.status})`,'bad',hint);return}
-   step('s2',`2. baking-class-ops 접근 성공`,'ok',`저장소: ${repo.data?.full_name||OWNER+'/'+REPO} · private=${repo.data?.private}`);
-   const file=await jsonFetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/index.html?ref=${encodeURIComponent(BRANCH)}`,token);
-   if(!file.r.ok){step('s3',`3. 운영 HTML 읽기 실패 (${file.r.status})`,'bad',file.data?.message||'Contents 권한을 확인하세요.');return}
-   cachedHtml=decode64(file.data.content||'');
-   if(!cachedHtml.includes('<html')){step('s3','3. 운영 HTML 형식 확인 실패','bad');cachedHtml='';return}
-   localStorage.setItem(TOKEN_KEY,token);step('s3','3. 운영 HTML 읽기 성공','ok','연결 진단 완료. 아래 “운영 화면 열기”를 누르세요.');openBtn.disabled=false;
- }catch(e){step('s3','연결 중 브라우저 오류','bad',e.message||String(e))}finally{checkBtn.disabled=false}
-}
-async function openApp(){if(!cachedHtml){await diagnose();if(!cachedHtml)return}document.open();document.write(cachedHtml);document.close()}
-checkBtn.addEventListener('click',diagnose);openBtn.addEventListener('click',openApp);tokenInput.addEventListener('keydown',e=>{if(e.key==='Enter')diagnose()});tokenInput.addEventListener('input',()=>{cachedHtml='';openBtn.disabled=true});
-document.getElementById('clearBtn').addEventListener('click',()=>{localStorage.removeItem(TOKEN_KEY);tokenInput.value='';cachedHtml='';openBtn.disabled=true;step('s1','1. 토큰 인증 대기');step('s2','2. baking-class-ops 접근 대기');step('s3','3. 운영 HTML 읽기 대기');tokenInput.focus()});
-</script>
-</body>
-</html>
+const CFG={owner:'hansoullee20',repo:'baking-class-ops',branch:'main'};const KEY='baking-ops-github-token';
+const $=id=>document.getElementById(id),money=v=>'₩'+Math.round(Number(v)||0).toLocaleString('ko-KR');let token='',schedule=null,recipes=[],historyData={records:[]},costData={items:[]},scheduleSha=null,dirty=false;
+function pill(id,text,type=''){const e=$(id);e.textContent=text;e.className='pill'+(type?' '+type:'')}
+function headers(){return {'Accept':'application/vnd.github+json','Authorization':`Bearer ${token}`,'X-GitHub-Api-Version':'2022-11-28'}}
+function api(path=''){return `https://api.github.com/repos/${CFG.owner}/${CFG.repo}${path}`}
+function decode64(s){const b=Uint8Array.from(atob(String(s).replace(/\n/g,'')),c=>c.charCodeAt(0));return new TextDecoder().decode(b)}
+function encode64(s){const bytes=new TextEncoder().encode(s);let bin='';for(const b of bytes)bin+=String.fromCharCode(b);return btoa(bin)}
+async function getJson(path){const r=await fetch(api(`/contents/${path}?ref=${encodeURIComponent(CFG.branch)}`),{headers:headers(),cache:'no-store'});if(!r.ok)throw new Error(`${path}: HTTP ${r.status}`);const f=await r.json();return {value:JSON.parse(decode64(f.content)),sha:f.sha}}
+async function connect(){token=$('token').value.trim()||localStorage.getItem(KEY)||'';if(!token){$('diag').textContent='연결 키를 입력하세요.';return}pill('auth','인증 중','warn');pill('repo','저장소 확인 중','warn');pill('data','데이터 확인 중','warn');try{const u=await fetch('https://api.github.com/user',{headers:headers(),cache:'no-store'});if(!u.ok)throw new Error(`토큰 인증 HTTP ${u.status}`);const user=await u.json();pill('auth',`인증 ${user.login}`,'ok');const rr=await fetch(api(),{headers:headers(),cache:'no-store'});if(!rr.ok)throw new Error(`저장소 접근 HTTP ${rr.status}`);pill('repo','저장소 접근','ok');const [s,r,h,c]=await Promise.all([getJson('data/schedule.json'),getJson('data/recipes.json'),getJson('data/history.json'),getJson('data/ingredient-costs.json')]);schedule=s.value;recipes=r.value;historyData=h.value;costData=c.value;scheduleSha=s.sha;localStorage.setItem(KEY,token);pill('data','데이터 연결 완료','ok');pill('saveState','변경 없음','ok');$('diag').textContent=`일정 ${schedule.rows?.length||0}건 · 레시피 ${recipes.length||0}개 · 완료기록 ${historyData.records?.length||0}건 · 재료단가 ${costData.items?.length||0}개`;dirty=false;$('saveSchedule').disabled=true;renderAll()}catch(e){pill('data','연결 실패','bad');$('diag').textContent=e.message}}
+function renderAll(){renderDashboard();renderSchedule();renderRecipes();renderHistory();renderCosts()}
+function renderDashboard(){const rows=schedule?.rows||[],hist=historyData.records||[],today=new Date().toISOString().slice(0,10),future=rows.filter(x=>x.date>=today&&x.status!=='취소').sort((a,b)=>a.date.localeCompare(b.date)).slice(0,8);const totalRevenue=hist.reduce((a,x)=>a+(Number(x.revenue)||0),0);$('kpis').innerHTML=[['예정 일정',rows.filter(x=>x.status!=='취소'&&x.date>=today).length+'건'],['레시피',recipes.length+'개'],['완료 기록',hist.length+'건'],['기록 수입',money(totalRevenue)]].map(x=>`<div class="kpi"><b>${x[1]}</b><span>${x[0]}</span></div>`).join('');$('upcoming').innerHTML=future.length?future.map(x=>`<div class="row"><span class="name">${x.date} · ${x.session}</span><div class="sub">${x.menu||'메뉴 미정'} · ${x.people}명 · ${money((Number(x.people)||0)*(Number(x.fee)||0))}</div></div>`).join(''):'<div class="empty">예정 수업이 없습니다.</div>'}
+function menuOptions(sel){return `<option value="">메뉴 미정</option>`+recipes.map(r=>`<option ${r.name===sel?'selected':''}>${esc(r.name)}</option>`).join('')}
+function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+function renderSchedule(){const rows=schedule?.rows||[];$('scheduleList').innerHTML=rows.length?rows.map((x,i)=>`<div class="row" data-i="${i}"><div class="rowgrid"><input data-k="date" type="date" value="${x.date}"><select data-k="session"><option ${x.session==='오전반'?'selected':''}>오전반</option><option ${x.session==='오후반'?'selected':''}>오후반</option><option ${x.session==='기타'?'selected':''}>기타</option></select><select class="wide" data-k="menu">${menuOptions(x.menu)}</select><input data-k="people" type="number" min="0" value="${x.people}"><select data-k="status"><option ${x.status==='예정'?'selected':''}>예정</option><option ${x.status==='확정'?'selected':''}>확정</option><option ${x.status==='완료'?'selected':''}>완료</option><option ${x.status==='취소'?'selected':''}>취소</option></select></div><div class="sub">수강료 ${money(x.fee)} / 대관료 ${money(x.rent)} · ${esc(x.memo||'')}</div></div>`).join(''):'<div class="empty">일정 데이터가 없습니다.</div>'}
+function renderRecipes(){$('recipeList').innerHTML=recipes.length?recipes.map(r=>`<details class="recipe"><summary>${esc(r.name)} · ${r.cost==null?(r.partial_cost==null?'원가 미산정':money(r.partial_cost)+' 부분원가'):money(r.cost)}</summary><div class="body"><div class="chips">${(r.ingredients||[]).map(i=>`<span class="chip">${esc(i.name)} ${i.amount??'—'}${esc(i.unit||'')}</span>`).join('')}</div><ol>${(r.process||[]).map(p=>`<li>${esc(p)}</li>`).join('')}</ol></div></details>`).join(''):'<div class="empty">레시피 데이터가 없습니다.</div>'}
+function renderHistory(){const a=(historyData.records||[]).slice().sort((a,b)=>b.date.localeCompare(a.date));$('historyBody').innerHTML=a.map(x=>`<tr><td>${x.date}</td><td>${esc(x.time||'')}</td><td>${esc(x.menu||x.classTitle||'')}</td><td>${x.people??'—'}</td><td>${x.revenue==null?'—':money(x.revenue)}</td></tr>`).join('')}
+function renderCosts(){$('costBody').innerHTML=(costData.items||[]).map(x=>`<tr><td><b>${esc(x.name)}</b></td><td>${esc(x.unit||'')}</td><td>${money(x.unit_cost)}</td><td>${esc(x.status||'')}</td><td>${esc(x.basis||'')}</td></tr>`).join('')}
+function markDirty(){dirty=true;pill('saveState','저장 필요','warn');$('saveSchedule').disabled=false;renderDashboard()}
+$('scheduleList').addEventListener('change',e=>{const row=e.target.closest('.row');if(!row||!e.target.dataset.k)return;const x=schedule.rows[Number(row.dataset.i)],k=e.target.dataset.k;let v=e.target.value;if(k==='people')v=Number(v);x[k]=v;markDirty()});
+async function saveSchedule(){if(!dirty||!schedule)return;try{pill('saveState','저장 중','warn');const latest=await getJson('data/schedule.json');if(latest.sha!==scheduleSha)throw new Error('다른 변경이 먼저 저장됐습니다. 데이터를 다시 연결하세요.');const body={message:`Update schedule ${new Date().toISOString()}`,content:encode64(JSON.stringify(schedule,null,2)),sha:scheduleSha,branch:CFG.branch};const r=await fetch(api('/contents/data/schedule.json'),{method:'PUT',headers:{...headers(),'Content-Type':'application/json'},body:JSON.stringify(body)});if(!r.ok)throw new Error(`저장 HTTP ${r.status}`);const out=await r.json();scheduleSha=out.content.sha;dirty=false;pill('saveState','저장 완료','ok');$('saveSchedule').disabled=true}catch(e){pill('saveState','저장 실패','bad');$('diag').textContent=e.message}}
+$('connectBtn').addEventListener('click',connect);$('saveSchedule').addEventListener('click',saveSchedule);$('clearBtn').addEventListener('click',()=>{localStorage.removeItem(KEY);token='';$('token').value='';$('diag').textContent='저장된 키를 지웠습니다.'});document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));b.classList.add('active');$(b.dataset.page).classList.add('active')}));
+const remembered=localStorage.getItem(KEY);if(remembered){$('token').value=remembered;connect()}
+</script></body></html>
