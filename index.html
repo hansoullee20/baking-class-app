@@ -1,5 +1,4 @@
 <!doctype html>
-<!-- pages-redeploy: 2026-08-24 -->
 <html lang="ko">
 <head>
 <meta charset="utf-8">
@@ -7,46 +6,59 @@
 <meta name="theme-color" content="#382920">
 <title>베이킹 운영 관리</title>
 <style>
-:root{--bg:#f6f3ee;--paper:#fff;--ink:#2b241f;--muted:#7b7169;--line:#e7ded6;--brand:#382920;--brand2:#76513a;--bad:#a44b42;--shadow:0 8px 26px rgba(53,38,29,.08)}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,Pretendard,"Noto Sans KR",system-ui,-apple-system,sans-serif}.wrap{max-width:520px;margin:0 auto;padding:24px 16px}.hero{background:linear-gradient(135deg,var(--brand),var(--brand2));color:#fff;border-radius:22px;padding:22px;box-shadow:var(--shadow)}.hero small{font-size:10px;letter-spacing:.12em;opacity:.72;font-weight:800}.hero h1{margin:6px 0 5px;font-size:25px}.hero p{font-size:12px;opacity:.82;line-height:1.55;margin:0}.card{margin-top:12px;background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:14px;box-shadow:var(--shadow)}label{display:block;font-size:11px;color:var(--muted);font-weight:700;margin-bottom:6px}input{width:100%;border:1px solid var(--line);border-radius:11px;padding:12px;font-size:14px}button{width:100%;margin-top:9px;border:0;border-radius:11px;padding:12px;background:var(--brand);color:#fff;font-weight:800;font-size:14px}.note{font-size:11px;color:var(--muted);line-height:1.6;margin-top:10px}.status{font-size:12px;font-weight:700;margin-top:10px}.bad{color:var(--bad)}
+:root{--bg:#f6f3ee;--paper:#fff;--ink:#2b241f;--muted:#7b7169;--line:#e7ded6;--brand:#382920;--brand2:#76513a;--ok:#2f7356;--warn:#9a681f;--bad:#a44b42;--shadow:0 8px 26px rgba(53,38,29,.08)}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,Pretendard,"Noto Sans KR",system-ui,-apple-system,sans-serif}.wrap{max-width:520px;margin:0 auto;padding:24px 16px}.hero{background:linear-gradient(135deg,var(--brand),var(--brand2));color:#fff;border-radius:22px;padding:22px;box-shadow:var(--shadow)}.hero small{font-size:10px;letter-spacing:.12em;opacity:.72;font-weight:800}.hero h1{margin:6px 0 5px;font-size:25px}.hero p{font-size:12px;opacity:.82;line-height:1.55;margin:0}.card{margin-top:12px;background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:14px;box-shadow:var(--shadow)}label{display:block;font-size:11px;color:var(--muted);font-weight:700;margin-bottom:6px}input{width:100%;border:1px solid var(--line);border-radius:11px;padding:12px;font-size:14px}button{width:100%;margin-top:9px;border:0;border-radius:11px;padding:12px;background:var(--brand);color:#fff;font-weight:800;font-size:14px}button.secondary{background:#fff;color:var(--ink);border:1px solid var(--line)}button:disabled{opacity:.4}.note{font-size:11px;color:var(--muted);line-height:1.6;margin-top:10px}.steps{margin-top:12px;display:grid;gap:7px}.step{border:1px solid var(--line);border-radius:10px;padding:9px 10px;font-size:12px}.step.ok{border-color:#b9d9c8;background:#eef8f2;color:var(--ok)}.step.bad{border-color:#e4b8b3;background:#fff0ef;color:var(--bad)}.step.wait{color:var(--muted)}.detail{font-size:10px;line-height:1.45;margin-top:4px;word-break:break-word}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <div class="hero"><small>BRANCH · BAKING CLASS OPERATIONS</small><h1>베이킹 운영 관리</h1><p>공개 페이지에는 운영 데이터가 저장되지 않습니다. 각자 본인의 GitHub 연결 키로 비공개 운영 저장소에 접속합니다.</p></div>
-  <div class="card" id="loginCard">
+  <div class="hero"><small>BRANCH · BAKING CLASS OPERATIONS</small><h1>베이킹 운영 관리</h1><p>공개 화면에서 연결 상태를 확인한 뒤 비공개 운영 데이터를 불러옵니다.</p></div>
+  <div class="card">
     <label for="token">GitHub 연결 키</label>
     <input id="token" type="password" placeholder="본인 토큰을 입력하세요" autocomplete="off">
-    <button id="openBtn">운영 화면 열기</button>
-    <div id="status" class="status"></div>
-    <div class="note">연결 키는 이 휴대폰 브라우저의 로컬 저장소에만 저장됩니다. 서로의 토큰을 공유하지 마세요.</div>
+    <button id="checkBtn">연결 진단</button>
+    <button id="openBtn" class="secondary" disabled>운영 화면 열기</button>
+    <button id="clearBtn" class="secondary">저장된 키 지우기</button>
+    <div class="steps">
+      <div id="s1" class="step wait">1. 토큰 인증 대기</div>
+      <div id="s2" class="step wait">2. baking-class-ops 접근 대기</div>
+      <div id="s3" class="step wait">3. 운영 HTML 읽기 대기</div>
+    </div>
+    <div class="note">토큰 값 자체는 화면에 표시하지 않습니다. 연결에 성공한 키만 이 브라우저의 로컬 저장소에 보관합니다.</div>
   </div>
 </div>
 <script>
 const TOKEN_KEY='baking-ops-github-token';
 const OWNER='hansoullee20', REPO='baking-class-ops', BRANCH='main';
-const tokenInput=document.getElementById('token');
-const statusEl=document.getElementById('status');
-const remembered=localStorage.getItem(TOKEN_KEY)||'';
-if(remembered) tokenInput.value=remembered;
+const tokenInput=document.getElementById('token'),checkBtn=document.getElementById('checkBtn'),openBtn=document.getElementById('openBtn');
+let cachedHtml='';
+const remembered=localStorage.getItem(TOKEN_KEY)||''; if(remembered) tokenInput.value=remembered;
+function step(id,text,type='wait',detail=''){const e=document.getElementById(id);e.className='step '+type;e.innerHTML=text+(detail?`<div class="detail">${detail}</div>`:'')}
+function headers(token){return {'Accept':'application/vnd.github+json','Authorization':`Bearer ${token}`,'X-GitHub-Api-Version':'2022-11-28'}}
 function decode64(s){const bytes=Uint8Array.from(atob(String(s).replace(/\n/g,'')),c=>c.charCodeAt(0));return new TextDecoder().decode(bytes)}
-async function openApp(){
-  const token=tokenInput.value.trim();
-  if(!token){statusEl.textContent='GitHub 연결 키를 입력하세요.';statusEl.className='status bad';return}
-  statusEl.textContent='운영 화면을 불러오는 중…';statusEl.className='status';
-  try{
-    const url=`https://api.github.com/repos/${OWNER}/${REPO}/contents/index.html?ref=${encodeURIComponent(BRANCH)}`;
-    const r=await fetch(url,{headers:{'Accept':'application/vnd.github+json','Authorization':`Bearer ${token}`,'X-GitHub-Api-Version':'2022-11-28'},cache:'no-store'});
-    if(!r.ok) throw new Error(r.status===401?'토큰이 올바르지 않습니다.':r.status===403?'이 계정에 저장소 접근 권한이 없습니다.':`GitHub 오류 ${r.status}`);
-    const file=await r.json();
-    const html=decode64(file.content);
-    localStorage.setItem(TOKEN_KEY,token);
-    document.open();document.write(html);document.close();
-  }catch(e){statusEl.textContent=e.message;statusEl.className='status bad'}
+async function jsonFetch(url,token){const r=await fetch(url,{headers:headers(token),cache:'no-store'});let data=null;try{data=await r.json()}catch{}return {r,data}}
+async function diagnose(){
+ const token=tokenInput.value.trim(); cachedHtml=''; openBtn.disabled=true;
+ step('s1','1. 토큰 확인 중…');step('s2','2. 저장소 접근 대기');step('s3','3. 운영 HTML 읽기 대기');
+ if(!token){step('s1','1. 토큰이 입력되지 않음','bad');return}
+ checkBtn.disabled=true;
+ try{
+   const u=await jsonFetch('https://api.github.com/user',token);
+   if(!u.r.ok){const msg=u.data?.message||`HTTP ${u.r.status}`;step('s1',`1. 토큰 인증 실패 (${u.r.status})`,'bad',msg);return}
+   step('s1',`1. 토큰 인증 성공 · ${u.data?.login||'계정 확인됨'}`,'ok');
+   const repo=await jsonFetch(`https://api.github.com/repos/${OWNER}/${REPO}`,token);
+   if(!repo.r.ok){let hint=repo.data?.message||`HTTP ${repo.r.status}`;if(repo.r.status===404)hint+=' · Fine-grained token에서 Resource owner가 hansoullee20인지, Repository access에 baking-class-ops가 선택됐는지 확인하세요.';step('s2',`2. private 저장소 접근 실패 (${repo.r.status})`,'bad',hint);return}
+   step('s2',`2. baking-class-ops 접근 성공`,'ok',`저장소: ${repo.data?.full_name||OWNER+'/'+REPO} · private=${repo.data?.private}`);
+   const file=await jsonFetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/index.html?ref=${encodeURIComponent(BRANCH)}`,token);
+   if(!file.r.ok){step('s3',`3. 운영 HTML 읽기 실패 (${file.r.status})`,'bad',file.data?.message||'Contents 권한을 확인하세요.');return}
+   cachedHtml=decode64(file.data.content||'');
+   if(!cachedHtml.includes('<html')){step('s3','3. 운영 HTML 형식 확인 실패','bad');cachedHtml='';return}
+   localStorage.setItem(TOKEN_KEY,token);step('s3','3. 운영 HTML 읽기 성공','ok','연결 진단 완료. 아래 “운영 화면 열기”를 누르세요.');openBtn.disabled=false;
+ }catch(e){step('s3','연결 중 브라우저 오류','bad',e.message||String(e))}finally{checkBtn.disabled=false}
 }
-document.getElementById('openBtn').addEventListener('click',openApp);
-tokenInput.addEventListener('keydown',e=>{if(e.key==='Enter')openApp()});
-if(remembered) openApp();
+async function openApp(){if(!cachedHtml){await diagnose();if(!cachedHtml)return}document.open();document.write(cachedHtml);document.close()}
+checkBtn.addEventListener('click',diagnose);openBtn.addEventListener('click',openApp);tokenInput.addEventListener('keydown',e=>{if(e.key==='Enter')diagnose()});tokenInput.addEventListener('input',()=>{cachedHtml='';openBtn.disabled=true});
+document.getElementById('clearBtn').addEventListener('click',()=>{localStorage.removeItem(TOKEN_KEY);tokenInput.value='';cachedHtml='';openBtn.disabled=true;step('s1','1. 토큰 인증 대기');step('s2','2. baking-class-ops 접근 대기');step('s3','3. 운영 HTML 읽기 대기');tokenInput.focus()});
 </script>
 </body>
 </html>
