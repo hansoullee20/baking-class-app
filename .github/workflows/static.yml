@@ -24,8 +24,23 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
       - name: Setup Pages
         uses: actions/configure-pages@v5
+
+      - name: Fix dashboard JavaScript syntax
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+          bad = ".sort((a,b)=>({missing:0,partial:1,final:2}[group(a)]-({missing:0,partial:1,final:2}[group(b)])||a.name.localeCompare(b.name,'ko'));"
+          good = ".sort((a,b)=>({missing:0,partial:1,final:2}[group(a)]-({missing:0,partial:1,final:2}[group(b)]))||a.name.localeCompare(b.name,'ko'));"
+          if bad in s:
+              s = s.replace(bad, good, 1)
+          p.write_text(s, encoding='utf-8')
+          PY
+
       - name: Add persistent auth UX
         run: |
           python - <<'PY'
@@ -37,10 +52,29 @@ jobs:
               s = s.replace('</body>', tag + '</body>')
               p.write_text(s, encoding='utf-8')
           PY
+
+      - name: Validate dashboard JavaScript
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          html = Path('index.html').read_text(encoding='utf-8')
+          scripts = []
+          for m in re.finditer(r'<script([^>]*)>(.*?)</script>', html, flags=re.S|re.I):
+              if 'src=' not in m.group(1).lower():
+                  scripts.append(m.group(2))
+          if not scripts:
+              raise SystemExit('No inline dashboard script found')
+          Path('/tmp/dashboard-inline.js').write_text('\n'.join(scripts), encoding='utf-8')
+          PY
+          node --check /tmp/dashboard-inline.js
+          node --check auth-persist.js
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: '.'
+
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v5
