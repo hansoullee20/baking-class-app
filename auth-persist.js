@@ -16,31 +16,33 @@
     tokenBox?.insertAdjacentElement('afterend', savedLabel);
   }
 
+  function persistOnly() {
+    const value = tokenInput.value.trim();
+    if (value) localStorage.setItem(KEY, value);
+  }
+
   function showSavedState() {
     const saved = localStorage.getItem(KEY);
     if (saved) {
+      if (!tokenInput.value) tokenInput.value = saved;
       if (tokenBox) tokenBox.style.display = 'none';
       savedLabel.style.display = 'block';
-      if (!tokenInput.value) tokenInput.value = saved;
-    } else {
-      if (tokenBox) tokenBox.style.display = '';
-      savedLabel.style.display = 'none';
     }
   }
 
-  function persistCurrentToken() {
-    const value = tokenInput.value.trim();
-    if (value) {
-      localStorage.setItem(KEY, value);
-      showSavedState();
-    }
+  function showInputState() {
+    if (tokenBox) tokenBox.style.display = '';
+    savedLabel.style.display = 'none';
   }
 
-  tokenInput.addEventListener('change', persistCurrentToken);
-  tokenInput.addEventListener('blur', persistCurrentToken);
-  connectBtn.addEventListener('click', persistCurrentToken, true);
+  // Save the value without hiding the input. Hiding on blur caused mobile
+  // browsers to cancel the Connect button tap because the layout shifted.
+  tokenInput.addEventListener('change', persistOnly);
+  tokenInput.addEventListener('blur', persistOnly);
+  connectBtn.addEventListener('pointerdown', persistOnly, true);
+  connectBtn.addEventListener('click', persistOnly, true);
   tokenInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') persistCurrentToken();
+    if (e.key === 'Enter') persistOnly();
   }, true);
 
   if (clearBtn) {
@@ -48,8 +50,7 @@
       setTimeout(() => {
         localStorage.removeItem(KEY);
         tokenInput.value = '';
-        if (tokenBox) tokenBox.style.display = '';
-        savedLabel.style.display = 'none';
+        showInputState();
         tokenInput.focus();
       }, 0);
     });
@@ -57,9 +58,13 @@
 
   if (connection) {
     new MutationObserver(() => {
-      if (connection.textContent.includes('GitHub 연결됨')) showSavedState();
+      const text = connection.textContent || '';
+      if (text.includes('GitHub 연결됨')) showSavedState();
+      if (text.includes('연결 실패')) showInputState();
     }).observe(connection, { childList: true, subtree: true, characterData: true });
   }
 
-  showSavedState();
+  // Only collapse the input on startup when a key was already saved from a
+  // previous visit. The app's inline script will auto-connect with it.
+  if (localStorage.getItem(KEY)) showSavedState();
 })();
