@@ -53,16 +53,23 @@ jobs:
               p.write_text(s, encoding='utf-8')
           PY
 
-      - name: Apply Sunny's Atelier theme
+      - name: Apply Sunny's Atelier light and dark themes
         run: |
           python - <<'PY'
           from pathlib import Path
           p = Path('index.html')
           s = p.read_text(encoding='utf-8')
-          css = '<link rel="stylesheet" href="./sunny-theme.css?v=20260829">'
-          js = '<script src="./sunny-theme.js?v=20260829"></script>'
-          if css not in s:
-              s = s.replace('</head>', css + '</head>')
+          boot = '''<script>(function(){try{var k='sunny-atelier-color-mode';var v=localStorage.getItem(k);var m=v||((window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light');document.documentElement.dataset.theme=m;document.documentElement.style.colorScheme=m;}catch(e){}})();</script>'''
+          css = '<link rel="stylesheet" href="./sunny-theme.css?v=20260829-dark1">'
+          dark = '<link rel="stylesheet" href="./sunny-dark.css?v=20260829-dark1">'
+          js = '<script src="./sunny-theme.js?v=20260829-dark1"></script>'
+          if boot not in s:
+              s = s.replace('</head>', boot + css + dark + '</head>')
+          else:
+              if css not in s:
+                  s = s.replace('</head>', css + '</head>')
+              if dark not in s:
+                  s = s.replace('</head>', dark + '</head>')
           if js not in s:
               s = s.replace('</body>', js + '</body>')
           p.write_text(s, encoding='utf-8')
