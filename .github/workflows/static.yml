@@ -75,14 +75,14 @@ jobs:
           p.write_text(s, encoding='utf-8')
           PY
 
-      - name: Add live analytics and visualizations
+      - name: Add embedded analytics and visualizations
         run: |
           python - <<'PY'
           from pathlib import Path
           p = Path('index.html')
           s = p.read_text(encoding='utf-8')
-          css = '<link rel="stylesheet" href="./analytics.css?v=20260829-a1">'
-          js = '<script src="./analytics.js?v=20260829-a1"></script>'
+          css = '<link rel="stylesheet" href="./analytics.css?v=20260829-a2">'
+          js = '<script src="./analytics.js?v=20260829-a2"></script>'
           if css not in s:
               s = s.replace('</head>', css + '</head>')
           if js not in s:
