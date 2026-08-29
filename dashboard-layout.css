@@ -1,0 +1,58 @@
+#dashboard{max-width:1440px;margin:0 auto}
+#dashboard .hero{padding:18px 20px;margin-bottom:12px;border-radius:18px;box-shadow:none}
+#dashboard .hero h2{font-size:22px;margin:4px 0 3px}
+#dashboard .hero p{font-size:11px}
+.dashboard-section-title{display:flex;align-items:end;justify-content:space-between;gap:12px;margin:16px 2px 8px}
+.dashboard-section-title h3{margin:0;font-size:15px;letter-spacing:-.02em}
+.dashboard-section-title p{margin:3px 0 0;color:var(--muted);font-size:10px;line-height:1.45}
+#dashboard #kpis{gap:8px}
+#dashboard #kpis .kpi{padding:13px 14px;min-height:88px;box-shadow:none}
+#dashboard #kpis .kpi b{font-size:21px}
+#dashboard #kpis .kpi span{font-size:9px;line-height:1.35}
+#dashboard .dashboard-core-grid{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(250px,.55fr);gap:10px;margin-top:0}
+#dashboard .dashboard-core-grid>.card{margin:0;box-shadow:none;min-width:0}
+#dashboard #dashboardUpcomingCard{padding:14px}
+#dashboard #dashboardUpcomingCard>h3{margin-bottom:2px}
+#dashboard .dashboard-card-sub{font-size:10px;color:var(--muted);margin:0 0 10px;line-height:1.45}
+#dashboard #dashboardHealthCard{padding:14px;align-self:start}
+#dashboard #dashboardHealthCard .dashboard-health-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+#dashboard #dashboardHealthCard .dashboard-health-head h3{margin:0;font-size:14px}
+#dashboard #dashboardHealthCard .dashboard-health-head span{font-size:9px;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:4px 7px}
+#dashboard #dashboardHealthCard>h3{font-size:11px;margin:13px 0 5px;color:var(--muted);font-weight:850}
+#dashboard #dashboardHealthCard .barrow{grid-template-columns:82px 1fr 26px;margin:7px 0;font-size:9px}
+#dashboard #dashboardHealthCard .bar{height:6px}
+#dashboard .upcoming-summary{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px;margin:0 0 9px}
+#dashboard .upcoming-summary-item{padding:8px 9px;border-radius:10px;min-height:62px}
+#dashboard .upcoming-summary-item span{font-size:8px}
+#dashboard .upcoming-summary-item b{font-size:13px;margin-top:3px}
+#dashboard .upcoming-summary-item small{font-size:7px;line-height:1.25;margin-top:2px}
+#dashboard .upcoming{gap:6px}
+#dashboard .upcoming-labeled-card{padding:10px 11px;border-radius:12px;gap:8px}
+#dashboard .upcoming-card-head{margin-bottom:7px}
+#dashboard .upcoming-menu{font-size:13px}
+#dashboard .upcoming-date{font-size:9px}
+#dashboard .upcoming-status{font-size:8px;padding:4px 7px}
+#dashboard .upcoming-label-grid{grid-template-columns:repeat(6,minmax(0,1fr));gap:5px}
+#dashboard .upcoming-labeled-value{padding:7px 8px;min-height:51px}
+#dashboard .upcoming-labeled-value span{font-size:7px}
+#dashboard .upcoming-labeled-value b{font-size:10px;margin-top:3px;white-space:nowrap}
+#dashboard .upcoming-labeled-value small{font-size:7px;line-height:1.25}
+#dashboard .upcoming-open-hint{font-size:8px;margin-top:6px;opacity:.7}
+#dashboard #dashboardAnalytics{margin-top:0}
+#dashboard #dashboardAnalytics>.analytics-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin:0 0 8px}
+#dashboard #dashboardAnalytics .analytics-kpi{padding:10px 11px;min-height:72px;box-shadow:none}
+#dashboard #dashboardAnalytics .ak-label{font-size:8px}
+#dashboard #dashboardAnalytics .ak-value{font-size:16px;margin-top:3px}
+#dashboard #dashboardAnalytics .ak-sub{font-size:8px;margin-top:2px;line-height:1.35}
+#dashboard #dashboardAnalytics>.analytics-grid{grid-template-columns:minmax(0,1.35fr) minmax(280px,.65fr);gap:10px}
+#dashboard #dashboardAnalytics .analytics-card{box-shadow:none;padding:13px}
+#dashboard #dashboardAnalytics .analytics-head{margin-bottom:7px}
+#dashboard #dashboardAnalytics .analytics-head h3{font-size:13px}
+#dashboard #dashboardAnalytics .analytics-head p{font-size:9px;line-height:1.35}
+#dashboard #dashboardAnalytics .insights{gap:6px}
+#dashboard #dashboardAnalytics .insight{padding:10px;min-height:auto}
+#dashboard #dashboardAnalytics .insight b{font-size:11px}
+#dashboard #dashboardAnalytics .insight p{font-size:8px;line-height:1.4}
+#dashboard .analytics-svg{max-height:185px}
+@media(max-width:1050px){#dashboard .dashboard-core-grid{grid-template-columns:1fr}#dashboard #dashboardHealthCard{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}#dashboard #dashboardHealthCard .dashboard-health-head{grid-column:1/-1}#dashboard #dashboardAnalytics>.analytics-grid{grid-template-columns:1fr}.upcoming-label-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
+@media(max-width:700px){#dashboard .hero{padding:14px 15px;border-radius:15px}#dashboard .hero h2{font-size:19px}#dashboard #kpis{grid-template-columns:1fr 1fr;gap:6px}#dashboard #kpis .kpi{min-height:74px;padding:10px 11px}#dashboard #kpis .kpi b{font-size:18px}.dashboard-section-title{margin-top:13px}.dashboard-section-title h3{font-size:14px}#dashboard .upcoming-summary{grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}#dashboard .upcoming-summary-item:last-child{grid-column:1/-1}#dashboard .upcoming-label-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}#dashboard #dashboardHealthCard{display:block}#dashboard #dashboardAnalytics>.analytics-kpis{grid-template-columns:1fr 1fr}#dashboard #dashboardAnalytics .analytics-kpi{min-height:65px}#dashboard .analytics-svg{max-height:165px}}
