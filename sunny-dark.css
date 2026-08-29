@@ -1,0 +1,116 @@
+html[data-theme="dark"]{
+  --bg:#0c1420;
+  --paper:#121d2b;
+  --ink:#f4eadf;
+  --muted:#b8a99e;
+  --line:#344153;
+  --blue:#e8d6c5;
+  --blue2:#d68a64;
+  --navy:#102844;
+  --soft:#253344;
+  --ok:#8fc3a2;
+  --warn:#e0ad68;
+  --bad:#e6858b;
+  --shadow:0 14px 34px rgba(0,0,0,.22);
+  --terra:#d68a64;
+  --terra2:#e3a17f;
+  --cream:#0c1420;
+  --cream2:#1b2735;
+  --slate:#87a7c5;
+  color-scheme:dark;
+}
+html[data-theme="dark"],html[data-theme="dark"] body{background:#0c1420;color:var(--ink)}
+html[data-theme="dark"] body{
+  background:
+    radial-gradient(circle at 84% 8%,rgba(214,138,100,.10),transparent 24%),
+    radial-gradient(circle at 12% 90%,rgba(91,126,165,.08),transparent 31%),
+    linear-gradient(180deg,#0b1320 0%,#0e1825 100%);
+}
+html[data-theme="dark"] .side{
+  background:linear-gradient(180deg,#101b29 0%,#111f30 100%);
+  color:var(--ink);border-right-color:#334052;box-shadow:10px 0 36px rgba(0,0,0,.18)
+}
+html[data-theme="dark"] .brand,html[data-theme="dark"] .brand small{color:var(--ink)}
+html[data-theme="dark"] .brand small{color:var(--terra)}
+html[data-theme="dark"] .atelier-seal{
+  background:#151f2c;border-color:var(--terra);box-shadow:inset 0 0 0 7px #111a26,0 8px 24px rgba(0,0,0,.22)
+}
+html[data-theme="dark"] .atelier-seal:after{background:#111a26;color:var(--terra)}
+html[data-theme="dark"] .atelier-seal .seal-top,html[data-theme="dark"] .atelier-seal .seal-name,html[data-theme="dark"] .atelier-seal .seal-bottom{color:#f6eadf}
+html[data-theme="dark"] .nav button{color:#d9cfc7}
+html[data-theme="dark"] .nav button:hover{background:#1d2b3a;border-color:#39495b}
+html[data-theme="dark"] .nav button.active{background:#213d62;color:#fff;box-shadow:0 7px 20px rgba(0,0,0,.22)}
+html[data-theme="dark"] .side-note{background:#161f2b;border-color:#3b4653;color:#d79a78}
+html[data-theme="dark"] .side-note span{color:#dcc9b9!important}
+html[data-theme="dark"] .top{border-bottom-color:rgba(214,138,100,.22)}
+html[data-theme="dark"] .top h1{color:#f6eadf}
+html[data-theme="dark"] .top p{color:#d9a080}
+html[data-theme="dark"] .connect{background:rgba(18,29,43,.92);border-color:#344153;box-shadow:var(--shadow)}
+html[data-theme="dark"] input,html[data-theme="dark"] select,html[data-theme="dark"] textarea{
+  background:#0f1926;border-color:#39485a;color:#f4eadf
+}
+html[data-theme="dark"] input::placeholder,html[data-theme="dark"] textarea::placeholder{color:#837b78}
+html[data-theme="dark"] input:focus,html[data-theme="dark"] select:focus,html[data-theme="dark"] textarea:focus{border-color:#d68a64;box-shadow:0 0 0 3px rgba(214,138,100,.13)}
+html[data-theme="dark"] .btn{background:#25466e;color:#fff}
+html[data-theme="dark"] .btn.secondary{background:#152233;color:#eee2d7;border-color:#3a4859}
+html[data-theme="dark"] .btn.ghost{background:#342820;color:#efad87}
+html[data-theme="dark"] .theme-toggle{min-width:92px;white-space:nowrap}
+html[data-theme="dark"] .pill{background:#252e39;color:#c5b9b0}
+html[data-theme="dark"] .pill.ok{background:#173226;color:#94caaa}
+html[data-theme="dark"] .pill.warn{background:#3a2d1c;color:#e7b873}
+html[data-theme="dark"] .pill.bad{background:#3c2227;color:#ef969d}
+html[data-theme="dark"] .error{background:#3a2022;border-color:#714047;color:#f2a8a6}
+html[data-theme="dark"] .hero{
+  color:#f5e9df;background:linear-gradient(105deg,#172332 0%,#192434 62%,#2f261f 100%);border-color:#3e4650;box-shadow:var(--shadow)
+}
+html[data-theme="dark"] .hero small{color:#dfa07c}
+html[data-theme="dark"] .hero h2{color:#f5e9df}
+html[data-theme="dark"] .hero p{color:#c9bbb0}
+html[data-theme="dark"] .hero:after{opacity:.12}
+html[data-theme="dark"] .kpi,html[data-theme="dark"] .card,html[data-theme="dark"] .schedule,html[data-theme="dark"] .recipe,html[data-theme="dark"] .ing{
+  background:#121d2b;border-color:#344153;box-shadow:var(--shadow)
+}
+html[data-theme="dark"] .kpi b,html[data-theme="dark"] .card h3,html[data-theme="dark"] .section-head h2,html[data-theme="dark"] .month,html[data-theme="dark"] .rname,html[data-theme="dark"] .cost,html[data-theme="dark"] .calc b{color:#f4eadf}
+html[data-theme="dark"] .kpi span,html[data-theme="dark"] .section-head p,html[data-theme="dark"] .rsub,html[data-theme="dark"] .calc,html[data-theme="dark"] .field label,html[data-theme="dark"] .up span{color:#b7a99f}
+html[data-theme="dark"] .up{background:#152231;border-color:#344457}
+html[data-theme="dark"] .up:hover{background:#192a3c;border-color:#5b6270}
+html[data-theme="dark"] .up .menu{color:#f1e6dc}
+html[data-theme="dark"] .bar{background:#293545}
+html[data-theme="dark"] .bar i{background:linear-gradient(90deg,#5e82ad,#d68a64)}
+html[data-theme="dark"] .calc{background:#191e24;border-top-color:#41392f}
+html[data-theme="dark"] details.more{border-top-color:#344153}
+html[data-theme="dark"] details.more>summary{color:#dfa07d}
+html[data-theme="dark"] .week div{color:#9ea5af}
+html[data-theme="dark"] .day{background:#111c29;border-color:#344153;color:#eadecf}
+html[data-theme="dark"] .day:hover{background:#182537;border-color:#5a6573}
+html[data-theme="dark"] .day.out{opacity:.42}
+html[data-theme="dark"] .day.today{outline-color:#d68a64}
+html[data-theme="dark"] .day.sel{background:#283144;border-color:#d68a64}
+html[data-theme="dark"] .daynum{color:#f3e6da}
+html[data-theme="dark"] .event{background:#332a24;color:#ebbd9f;border-left-color:#d68a64}
+html[data-theme="dark"] .event.done{background:#193126;color:#a7d4b5;border-left-color:#79ad8b}
+html[data-theme="dark"] .event.cancel{background:#3b2328;color:#eda0a6;border-left-color:#d66d76}
+html[data-theme="dark"] .seg{background:#121d2b;border-color:#39485a;color:#bcaea4}
+html[data-theme="dark"] .seg.active{background:#25466e;border-color:#315c8e;color:#fff}
+html[data-theme="dark"] .recipe summary{background:linear-gradient(90deg,#121d2b,#17212e)}
+html[data-theme="dark"] .recipe-body{border-top-color:#344153}
+html[data-theme="dark"] .chip{background:#263547;color:#b7cbe0}
+html[data-theme="dark"] .chip.missing{background:#3a2c1d;color:#e9ba77}
+html[data-theme="dark"] table{color:#e9ddd3}
+html[data-theme="dark"] th{color:#a99a90}
+html[data-theme="dark"] td,html[data-theme="dark"] th{border-bottom-color:#303c4b}
+html[data-theme="dark"] tr:hover td{background:rgba(255,255,255,.018)}
+html[data-theme="dark"] .ing{background:#15202d}
+html[data-theme="dark"] .empty{color:#918982}
+html[data-theme="dark"] .mobile-nav{background:rgba(16,27,41,.97)!important;border-color:#344153!important;box-shadow:0 12px 28px rgba(0,0,0,.32)!important}
+html[data-theme="dark"] .mobile-nav button{color:#b8aba2!important}
+html[data-theme="dark"] .mobile-nav button.active{background:#25466e!important;color:#fff!important}
+html[data-theme="dark"] #savedTokenLabel{background:#14231d!important;border-color:#2f5b45!important;color:#94caaa!important}
+html[data-theme="dark"] ::selection{background:#784b39;color:#fff4e8}
+
+/* Smooth but subtle theme transition; data-heavy elements stay crisp. */
+body,.side,.card,.kpi,.schedule,.recipe,.ing,.day,.up,.connect,.mobile-nav,input,select,textarea,.seg,.btn{transition:background-color .18s ease,border-color .18s ease,color .18s ease,box-shadow .18s ease}
+
+@media(max-width:900px){
+  .theme-toggle{min-width:0;flex:0 0 auto}
+}
