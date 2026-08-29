@@ -1,7 +1,32 @@
 (() => {
+  const THEME_KEY = 'sunny-atelier-color-mode';
+  const root = document.documentElement;
+  const metaTheme = document.querySelector('meta[name="theme-color"]');
+  const media = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
+
+  function preferredMode() {
+    const saved = localStorage.getItem(THEME_KEY);
+    if (saved === 'dark' || saved === 'light') return saved;
+    return media && media.matches ? 'dark' : 'light';
+  }
+
+  function applyMode(mode, persist = false) {
+    root.dataset.theme = mode;
+    root.style.colorScheme = mode;
+    if (metaTheme) metaTheme.setAttribute('content', mode === 'dark' ? '#0c1420' : '#17375e');
+    const btn = document.getElementById('themeToggle');
+    if (btn) {
+      btn.textContent = mode === 'dark' ? '☀ Light' : '☾ Dark';
+      btn.setAttribute('aria-label', mode === 'dark' ? 'Switch to light mode' : 'Switch to dark mode');
+      btn.setAttribute('title', mode === 'dark' ? 'Light mode' : 'Dark mode');
+    }
+    if (persist) localStorage.setItem(THEME_KEY, mode);
+  }
+
+  // Apply the saved/device preference before adding branded components.
+  applyMode(preferredMode());
+
   document.title = "Sunny's Atelier · 베이킹 운영";
-  const theme = document.querySelector('meta[name="theme-color"]');
-  if (theme) theme.setAttribute('content', '#17375e');
 
   const brand = document.querySelector('.brand');
   if (brand) {
@@ -30,5 +55,25 @@
     if (small) small.textContent = 'PÂTISSERIE · PARIS · SEOUL';
     if (h2) h2.textContent = '오늘의 베이킹 운영';
     if (p) p.textContent = '수업 일정, 레시피 원가, 수입과 예상이익을 한곳에서 관리합니다.';
+  }
+
+  const connect = document.querySelector('.connect');
+  if (connect && !document.getElementById('themeToggle')) {
+    const toggle = document.createElement('button');
+    toggle.id = 'themeToggle';
+    toggle.type = 'button';
+    toggle.className = 'btn secondary small theme-toggle';
+    connect.prepend(toggle);
+    toggle.addEventListener('click', () => {
+      const next = root.dataset.theme === 'dark' ? 'light' : 'dark';
+      applyMode(next, true);
+    });
+  }
+  applyMode(root.dataset.theme || preferredMode());
+
+  if (media && media.addEventListener) {
+    media.addEventListener('change', (event) => {
+      if (!localStorage.getItem(THEME_KEY)) applyMode(event.matches ? 'dark' : 'light');
+    });
   }
 })();
