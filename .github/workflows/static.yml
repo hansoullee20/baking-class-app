@@ -41,6 +41,44 @@ jobs:
           p.write_text(s, encoding='utf-8')
           PY
 
+      - name: Link recipe aliases
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+          old = "function recipeOf(x){return recipes.find(r=>r.name===x)||null}"
+          new = "function recipeOf(x){const aliases={'꾸덕브라우니':'브라우니'};return recipes.find(r=>r.name===x)||recipes.find(r=>r.name===aliases[x])||null}"
+          if old in s:
+              s = s.replace(old, new, 1)
+          p.write_text(s, encoding='utf-8')
+
+          p = Path('class-ops.js')
+          s = p.read_text(encoding='utf-8')
+          old = "return (recipes || []).find(r => r.name === name) || null;"
+          new = "const aliases = {'꾸덕브라우니':'브라우니'}; return (recipes || []).find(r => r.name === name) || (recipes || []).find(r => r.name === aliases[name]) || null;"
+          if old in s:
+              s = s.replace(old, new, 1)
+          p.write_text(s, encoding='utf-8')
+
+          p = Path('profit-fix.js')
+          s = p.read_text(encoding='utf-8')
+          old = "const names = [raw?.menu, raw?.recipeCandidate].filter(Boolean);"
+          new = "const aliases = {'꾸덕브라우니':'브라우니'}; const names = [raw?.menu, raw?.recipeCandidate, aliases[raw?.menu]].filter(Boolean);"
+          if old in s:
+              s = s.replace(old, new, 1)
+          p.write_text(s, encoding='utf-8')
+
+          p = Path('upcoming-labels.js')
+          s = p.read_text(encoding='utf-8')
+          old = "const r = (recipes || []).find(x => x.name === name) || null;"
+          new = "const aliases = {'꾸덕브라우니':'브라우니'}; const r = (recipes || []).find(x => x.name === name) || (recipes || []).find(x => x.name === aliases[name]) || null;"
+          if old in s:
+              s = s.replace(old, new, 1)
+          p.write_text(s, encoding='utf-8')
+          PY
+
       - name: Add persistent auth UX
         run: |
           python - <<'PY'
@@ -96,8 +134,8 @@ jobs:
           from pathlib import Path
           p = Path('index.html')
           s = p.read_text(encoding='utf-8')
-          css = '<link rel="stylesheet" href="./class-ops.css?v=20260830-ops1">'
-          js = '<script src="./class-ops.js?v=20260830-ops1"></script>'
+          css = '<link rel="stylesheet" href="./class-ops.css?v=20260830-ops2">'
+          js = '<script src="./class-ops.js?v=20260830-ops2"></script>'
           if css not in s:
               s = s.replace('</head>', css + '</head>')
           if js not in s:
@@ -111,7 +149,7 @@ jobs:
           from pathlib import Path
           p = Path('index.html')
           s = p.read_text(encoding='utf-8')
-          js = '<script src="./profit-fix.js?v=20260830-profit1"></script>'
+          js = '<script src="./profit-fix.js?v=20260830-profit2"></script>'
           if js not in s:
               s = s.replace('</body>', js + '</body>')
           p.write_text(s, encoding='utf-8')
@@ -123,8 +161,8 @@ jobs:
           from pathlib import Path
           p = Path('index.html')
           s = p.read_text(encoding='utf-8')
-          css = '<link rel="stylesheet" href="./upcoming-labels.css?v=20260830-up1">'
-          js = '<script src="./upcoming-labels.js?v=20260830-up1"></script>'
+          css = '<link rel="stylesheet" href="./upcoming-labels.css?v=20260830-up2">'
+          js = '<script src="./upcoming-labels.js?v=20260830-up2"></script>'
           if css not in s:
               s = s.replace('</head>', css + '</head>')
           if js not in s:
