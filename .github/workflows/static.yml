@@ -117,6 +117,21 @@ jobs:
           p.write_text(s, encoding='utf-8')
           PY
 
+      - name: Label upcoming class metrics
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+          css = '<link rel="stylesheet" href="./upcoming-labels.css?v=20260830-up1">'
+          js = '<script src="./upcoming-labels.js?v=20260830-up1"></script>'
+          if css not in s:
+              s = s.replace('</head>', css + '</head>')
+          if js not in s:
+              s = s.replace('</body>', js + '</body>')
+          p.write_text(s, encoding='utf-8')
+          PY
+
       - name: Validate dashboard JavaScript
         run: |
           python - <<'PY'
@@ -137,6 +152,7 @@ jobs:
           node --check analytics.js
           node --check class-ops.js
           node --check profit-fix.js
+          node --check upcoming-labels.js
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
