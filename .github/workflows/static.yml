@@ -105,6 +105,18 @@ jobs:
           p.write_text(s, encoding='utf-8')
           PY
 
+      - name: Fix completed-class profit calculations
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+          js = '<script src="./profit-fix.js?v=20260830-profit1"></script>'
+          if js not in s:
+              s = s.replace('</body>', js + '</body>')
+          p.write_text(s, encoding='utf-8')
+          PY
+
       - name: Validate dashboard JavaScript
         run: |
           python - <<'PY'
@@ -124,6 +136,7 @@ jobs:
           node --check sunny-theme.js
           node --check analytics.js
           node --check class-ops.js
+          node --check profit-fix.js
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
