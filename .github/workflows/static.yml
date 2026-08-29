@@ -53,6 +53,21 @@ jobs:
               p.write_text(s, encoding='utf-8')
           PY
 
+      - name: Apply Sunny's Atelier theme
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+          css = '<link rel="stylesheet" href="./sunny-theme.css?v=20260829">'
+          js = '<script src="./sunny-theme.js?v=20260829"></script>'
+          if css not in s:
+              s = s.replace('</head>', css + '</head>')
+          if js not in s:
+              s = s.replace('</body>', js + '</body>')
+          p.write_text(s, encoding='utf-8')
+          PY
+
       - name: Validate dashboard JavaScript
         run: |
           python - <<'PY'
@@ -69,6 +84,7 @@ jobs:
           PY
           node --check /tmp/dashboard-inline.js
           node --check auth-persist.js
+          node --check sunny-theme.js
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
