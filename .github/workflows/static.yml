@@ -146,7 +146,7 @@ jobs:
           python - <<'PY'
           from pathlib import Path
           p=Path('index.html'); s=p.read_text(encoding='utf-8')
-          css='<link rel="stylesheet" href="./chart-interactions.css?v=20260830-paychart5">'; pay='<script src="./bulk-payment.js?v=20260830-paychart5"></script>'; chart='<script src="./chart-interactions.js?v=20260830-paychart5"></script>'
+          css='<link rel="stylesheet" href="./chart-interactions.css?v=20260830-paychart6">'; pay='<script src="./bulk-payment.js?v=20260830-paychart6"></script>'; chart='<script src="./chart-interactions.js?v=20260830-paychart6"></script>'
           if css not in s: s=s.replace('</head>',css+'</head>')
           if pay not in s: s=s.replace('</body>',pay+'</body>')
           if chart not in s: s=s.replace('</body>',chart+'</body>')
