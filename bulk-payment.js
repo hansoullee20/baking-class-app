@@ -11,10 +11,14 @@
     const direct = e.target.closest?.('[data-ops-index]');
     if (direct && direct.dataset.opsIndex != null) {
       activeIndex = Number(direct.dataset.opsIndex);
+      setTimeout(ensureButton, 0);
       return;
     }
     const card = e.target.closest?.('#scheduleList .schedule');
-    if (card && card.dataset.i != null) activeIndex = Number(card.dataset.i);
+    if (card && card.dataset.i != null) {
+      activeIndex = Number(card.dataset.i);
+      setTimeout(ensureButton, 0);
+    }
   }
 
   function currentRow(){
@@ -59,21 +63,26 @@
     row.paymentCompletedAt = paidAt;
     row.paymentCompletedAmount = row.participants.reduce((s,p)=>s+num(p.amountPaid),0);
     try { mark('schedule'); } catch(e) {}
-    const btn = document.getElementById('opsMarkAllPaid');
-    if (btn) {
-      btn.textContent = '입금 완료 ✓';
-      btn.disabled = true;
-      btn.classList.add('secondary');
-    }
-    const summary = document.getElementById('opsPaymentSummary');
-    if (summary) summary.insertAdjacentHTML('afterbegin','<div class="ops-bulk-paid-note"><span>수업 전체</span><b>입금 완료 ✓</b></div>');
+    refreshButton();
     setTimeout(() => {
       const close = document.querySelector('#classOpsModal [data-ops-close]');
       if (close) close.click();
       else {
         try { renderSchedule(); renderDashboard(); renderFinance(); } catch(e) {}
       }
-    }, 220);
+    }, 120);
+  }
+
+  function refreshButton(){
+    const btn = document.getElementById('opsMarkAllPaid');
+    if (!btn) return;
+    const row = currentRow();
+    const done = !!row && allPaid(row);
+    const nextText = done ? '입금 완료 ✓' : '전체 입금 완료';
+    if (btn.textContent !== nextText) btn.textContent = nextText;
+    if (btn.disabled !== done) btn.disabled = done;
+    btn.classList.toggle('secondary', done);
+    btn.title = done ? '이 수업은 전액 입금 완료로 처리되어 있습니다.' : '참가자 이름을 입력하지 않고 이 수업 전체를 전액 입금 완료로 처리합니다.';
   }
 
   function ensureButton(){
@@ -90,16 +99,12 @@
       btn.addEventListener('click', completeClassPayment);
       actions.prepend(btn);
     }
-    const row = currentRow();
-    const done = row && allPaid(row);
-    btn.textContent = done ? '입금 완료 ✓' : '전체 입금 완료';
-    btn.disabled = !!done;
-    btn.classList.toggle('secondary', !!done);
-    btn.title = done ? '이 수업은 전액 입금 완료로 처리되어 있습니다.' : '참가자 이름을 입력하지 않고 이 수업 전체를 전액 입금 완료로 처리합니다.';
+    refreshButton();
   }
 
   document.addEventListener('click', captureIndex, true);
-  const observer = new MutationObserver(() => ensureButton());
-  observer.observe(document.documentElement, {childList:true, subtree:true, attributes:true, attributeFilter:['class','aria-hidden']});
+  document.addEventListener('click', e => {
+    if (e.target.closest?.('[data-ops-close]')) activeIndex = null;
+  });
   setTimeout(ensureButton, 350);
 })();
