@@ -1,0 +1,8 @@
+/* Profit screen tablet layout overrides */
+#finance .ops-rank-list{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important}
+#finance .ops-rank-row{min-width:0!important;width:auto!important}
+#finance .ops-rank-row>span,#finance .ops-rank-row>strong{min-width:0}
+#finance .ops-planner-grid>*{min-width:0}
+@media(max-width:520px){
+  #finance .ops-rank-list{grid-template-columns:1fr!important}
+}
