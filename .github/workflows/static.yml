@@ -30,14 +30,11 @@ jobs:
           node --check business-engine.js
           node --check data-normalization.js
           node --check business-engine-adapter.js
-          node --check decision-ui.js
+          node --check operations-ui.js
           node --check auth-persist.js
           node --check sunny-theme.js
-          node --check analytics.js
           node --check class-ops.js
           node --check bulk-payment.js
-          node --check chart-interactions.js
-          node --check dashboard-layout.js
 
       - name: Test canonical business rules
         run: node tests/business-engine.test.js
@@ -50,15 +47,15 @@ jobs:
           python - <<'PY'
           from pathlib import Path
           html=Path('index.html').read_text(encoding='utf-8')
-          forbidden=['rent-rule.js','profit-fix.js','finance-breakdown.js','finance-pro.js','recipe-costing-fix.js','upcoming-labels.js']
+          forbidden=['rent-rule.js','profit-fix.js','finance-breakdown.js','finance-pro.js','recipe-costing-fix.js','upcoming-labels.js','analytics.js','dashboard-layout.js','chart-interactions.js','decision-ui.js']
           found=[x for x in forbidden if x in html]
           if found:
-              raise SystemExit('Legacy calculation modules are still loaded: '+', '.join(found))
-          required=['business-engine.js','data-normalization.js','business-engine-adapter.js','decision-ui.js','decision-ui.css']
+              raise SystemExit('Deprecated runtime modules are still loaded: '+', '.join(found))
+          required=['business-engine.js','data-normalization.js','business-engine-adapter.js','operations-ui.js','decision-ui.css','operations-ui.css']
           missing=[x for x in required if x not in html]
           if missing:
               raise SystemExit('Required runtime module missing: '+', '.join(missing))
-          print('runtime composition guard passed')
+          print('Release 4 runtime composition guard passed')
           PY
 
       - name: Setup Pages
