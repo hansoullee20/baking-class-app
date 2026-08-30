@@ -1,7 +1,7 @@
 (() => {
   if (!document.querySelector('script[data-sunny-rent-rule]')) {
     const s=document.createElement('script');
-    s.src='./rent-rule.js?v=20260830-rent3';
+    s.src='./rent-rule.js?v=20260830-rent4';
     s.dataset.sunnyRentRule='1';
     document.head.appendChild(s);
   }
@@ -27,8 +27,12 @@
   function calc(raw){
     const revenue=raw?.status==='취소'?0:(raw?.revenue!=null?num(raw.revenue):num(raw?.people)*num(raw?.fee));
     const rec=recipeFor(raw),material=costReady(rec)?num(rec.cost)*num(raw?.batchCount||1):null;
-    const rent=window.sunnyRentalQuote?window.sunnyRentalQuote(raw).total:(raw?.rent!==''&&raw?.rent!=null?num(raw.rent):rentFor(raw?.date)),packing=num(raw?.packing),other=num(raw?.other);
-    const total=material==null?null:material+rent+packing+other;
+    let rent;
+    if(window.sunnyRentalQuote){
+      const q=window.sunnyRentalQuote(raw);rent=q?.total==null?null:Number(q.total);
+    }else rent=raw?.rent!==''&&raw?.rent!=null?num(raw.rent):rentFor(raw?.date);
+    const packing=num(raw?.packing),other=num(raw?.other);
+    const total=(material==null||rent==null)?null:material+rent+packing+other;
     return {revenue,material,rent,packing,other,total,net:total==null?null:revenue-total};
   }
   function rows(){
@@ -48,13 +52,13 @@
   function render(){
     const card=install(); if(!card)return;
     const all=rows(),ready=all.filter(x=>x.calc.total!=null),totalRevenue=all.reduce((s,x)=>s+x.calc.revenue,0);
-    const revenue=ready.reduce((s,x)=>s+x.calc.revenue,0),material=ready.reduce((s,x)=>s+x.calc.material,0),rent=ready.reduce((s,x)=>s+x.calc.rent,0),packing=ready.reduce((s,x)=>s+x.calc.packing,0),other=ready.reduce((s,x)=>s+x.calc.other,0),extra=packing+other,totalCost=material+rent+extra,net=revenue-totalCost,margin=revenue?net/revenue*100:null;
+    const revenue=ready.reduce((s,x)=>s+x.calc.revenue,0),material=ready.reduce((s,x)=>s+x.calc.material,0),rent=ready.reduce((s,x)=>s+(x.calc.rent||0),0),packing=ready.reduce((s,x)=>s+x.calc.packing,0),other=ready.reduce((s,x)=>s+x.calc.other,0),extra=packing+other,totalCost=material+rent+extra,net=revenue-totalCost,margin=revenue?net/revenue*100:null;
     const missingRevenue=Math.max(0,totalRevenue-revenue),positiveNet=Math.max(0,net),loss=Math.max(0,-net);
     const denom=net>=0?Math.max(revenue,1):Math.max(material+rent+extra+loss,1);
     const segments=[['재료비',material,'material'],['대관비',rent,'rent'],['포장·기타',extra,'extra'],[net>=0?'남는 금액':'초과 비용',net>=0?positiveNet:loss,net>=0?'net':'loss']];
     card.innerHTML=`
-      <div class="finance-flow-head"><div><h3>돈의 흐름 · 최종 남는 금액</h3><p>매출에서 재료비, 실제 인원·시간 기준 대관비, 포장·기타비를 차감한 운영 잔액입니다.</p></div><div class="finance-flow-coverage">${ready.length}/${all.length}회 계산 기준</div></div>
-      <div class="finance-net-hero"><span>최종 남는 금액</span><b>${ready.length?won(net):'원가 입력 필요'}</b><small>${ready.length?`계산대상 매출 ${won(revenue)} · 마진 ${pct(margin)}`:'계산 가능한 수업이 없습니다.'}</small></div>
+      <div class="finance-flow-head"><div><h3>돈의 흐름 · 최종 남는 금액</h3><p>매출에서 재료비, 장소별 대관비, 포장·기타비를 차감한 운영 잔액입니다.</p></div><div class="finance-flow-coverage">${ready.length}/${all.length}회 계산 기준</div></div>
+      <div class="finance-net-hero"><span>최종 남는 금액</span><b>${ready.length?won(net):'원가·대관비 입력 필요'}</b><small>${ready.length?`계산대상 매출 ${won(revenue)} · 마진 ${pct(margin)}`:'계산 가능한 수업이 없습니다.'}</small></div>
       <div class="finance-flow-steps">
         <div class="finance-flow-step revenue"><span>계산대상 매출</span><b>${won(revenue)}</b><small>선택 기간 총매출 ${won(totalRevenue)}</small></div>
         <div class="finance-flow-arrow">−</div>
@@ -71,8 +75,8 @@
       </div>
       <div class="finance-stack-legend">${segments.map(x=>`<div><i class="${x[2]}"></i><span>${x[0]}</span><b>${won(x[1])}</b><small>${pct(share(x[1],revenue))}</small></div>`).join('')}</div>
       <div class="finance-flow-equation"><b>${won(revenue)}</b> 매출 − <b>${won(material)}</b> 재료 − <b>${won(rent)}</b> 대관 − <b>${won(extra)}</b> 포장·기타 = <strong>${won(net)}</strong> 남음</div>
-      ${missingRevenue>0?`<div class="finance-flow-note">원가가 아직 연결되지 않은 수업 매출 ${won(missingRevenue)}은 최종 남는 금액 계산에서 제외되어 있습니다.</div>`:''}
-      <div class="finance-flow-note subtle">대관 총인원은 당근 모임 표시 인원을 그대로 사용합니다(셰프 1명 포함). 표시 인원이 없는 기록만 실제 수강생+셰프 1명으로 계산합니다. 최소 3시간 · 기본 2인 포함 · 총 3인부터 1인당 10,000원 추가 · 평일 낮 17,000원/h · 평일 저녁 19,000원/h · 주말 20,000원/h.</div>`;
+      ${missingRevenue>0?`<div class="finance-flow-note">원가 또는 장소별 대관비가 아직 연결되지 않은 수업 매출 ${won(missingRevenue)}은 최종 남는 금액 계산에서 제외되어 있습니다.</div>`:''}
+      <div class="finance-flow-note subtle"><b>달크닉 공방</b>은 당근 모임 표시 인원(셰프 포함)을 대관 총인원으로 사용하며 최소 3시간 · 기본 2인 포함 · 3인부터 1인당 10,000원 추가 · 평일 낮 17,000원/h · 평일 저녁 19,000원/h · 주말 20,000원/h로 자동 계산합니다. 다른 장소는 해당 수업의 대관비를 직접 입력합니다.</div>`;
     const summary=$('profitabilitySummary');
     if(summary){
       summary.classList.add('finance-margin-only');
