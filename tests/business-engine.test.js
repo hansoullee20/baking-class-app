@@ -34,6 +34,17 @@ assert.equal(B.costState(overlayRecipe).confidence,'estimated','overlay conditio
 assert(!JSON.stringify(overlayRecipe).includes('__costOverlay'),'effective overlay must never persist through JSON serialization');
 assert.equal(JSON.parse(JSON.stringify(overlayRecipe)).cost,null,'source recipe cost must remain null when serialized');
 
+const partialRoster=B.payment({people:4,fee:60000,participants:[{amountDue:60000,amountPaid:60000,paymentStatus:'입금완료'}]});
+assert.equal(partialRoster.expected,240000,'missing roster rows must still contribute class fee to expected payment');
+assert.equal(partialRoster.collected,60000);
+assert.equal(partialRoster.outstanding,180000);
+assert.equal(partialRoster.rate,25);
+assert.equal(partialRoster.missingRosterCount,3);
+
+const discountedFullRoster=B.payment({people:2,fee:60000,participants:[{amountDue:50000,amountPaid:50000,paymentStatus:'입금완료'},{amountDue:50000,amountPaid:0,paymentStatus:'미입금'}]});
+assert.equal(discountedFullRoster.expected,100000,'full participant roster may override fee through individual amountDue');
+assert.equal(discountedFullRoster.outstanding,50000);
+
 const eclair=B.classFinancials({date:'2026-09-03',menu:'밤 에끌레어',people:4,fee:60000,batchCount:1,rent:81000,packing:0,other:0},{recipes,schedule,source:'schedule'});
 assert.equal(eclair.revenue,240000);
 assert.equal(eclair.material,9826);
