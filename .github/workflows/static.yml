@@ -30,6 +30,7 @@ jobs:
           node --check business-engine.js
           node --check data-normalization.js
           node --check business-engine-adapter.js
+          node --check decision-ui.js
           node --check auth-persist.js
           node --check sunny-theme.js
           node --check analytics.js
@@ -44,7 +45,7 @@ jobs:
       - name: Test normalized data layer
         run: node tests/data-normalization.test.js
 
-      - name: Guard against legacy finance overrides
+      - name: Guard runtime composition
         run: |
           python - <<'PY'
           from pathlib import Path
@@ -53,7 +54,7 @@ jobs:
           found=[x for x in forbidden if x in html]
           if found:
               raise SystemExit('Legacy calculation modules are still loaded: '+', '.join(found))
-          required=['business-engine.js','data-normalization.js','business-engine-adapter.js']
+          required=['business-engine.js','data-normalization.js','business-engine-adapter.js','decision-ui.js','decision-ui.css']
           missing=[x for x in required if x not in html]
           if missing:
               raise SystemExit('Required runtime module missing: '+', '.join(missing))
