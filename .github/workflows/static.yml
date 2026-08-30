@@ -162,6 +162,17 @@ jobs:
           p.write_text(s,encoding='utf-8')
           PY
 
+      - name: Professionalize finance workspace
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('index.html'); s=p.read_text(encoding='utf-8')
+          css='<link rel="stylesheet" href="./finance-pro.css?v=20260830-fin1">'; js='<script src="./finance-pro.js?v=20260830-fin1"></script>'
+          if css not in s: s=s.replace('</head>',css+'</head>')
+          if js not in s: s=s.replace('</body>',js+'</body>')
+          p.write_text(s,encoding='utf-8')
+          PY
+
       - name: Validate dashboard JavaScript
         run: |
           python - <<'PY'
@@ -172,7 +183,7 @@ jobs:
             if 'src=' not in m.group(1).lower(): scripts.append(m.group(2))
           if not scripts: raise SystemExit('No inline dashboard script found')
           Path('/tmp/dashboard-inline.js').write_text('\n'.join(scripts),encoding='utf-8')
-          for name in ('bulk-payment.js','dashboard-layout.js'):
+          for name in ('bulk-payment.js','dashboard-layout.js','finance-pro.js'):
             if 'MutationObserver' in Path(name).read_text(encoding='utf-8'): raise SystemExit(f'Unsafe DOM observer found in {name}')
           PY
           node --check /tmp/dashboard-inline.js
@@ -185,6 +196,7 @@ jobs:
           node --check dashboard-layout.js
           node --check bulk-payment.js
           node --check chart-interactions.js
+          node --check finance-pro.js
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
