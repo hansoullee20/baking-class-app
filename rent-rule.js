@@ -29,7 +29,7 @@
   }
   function rentalQuote(raw){
     const students = Math.max(0, num(raw?.people));
-    const totalPeople = students + 1; // 수강생 + 강사 1명
+    const totalPeople = students + 1;
     const includedPeople = 2;
     const extraPeople = Math.max(0, totalPeople - includedPeople);
     const extraPersonFee = 10000;
@@ -37,20 +37,7 @@
     const start = startHour(raw);
     const base = baseRental(raw?.date, start, hours);
     const extra = extraPeople * extraPersonFee;
-    return {
-      total: base + extra,
-      base,
-      extra,
-      students,
-      totalPeople,
-      includedPeople,
-      extraPeople,
-      extraPersonFee,
-      hours,
-      start,
-      day: dayName(raw?.date),
-      rateStart: hourlyRate(raw?.date, start)
-    };
+    return {total:base+extra,base,extra,students,totalPeople,includedPeople,extraPeople,extraPersonFee,hours,start,day:dayName(raw?.date),rateStart:hourlyRate(raw?.date,start)};
   }
   function rentalEstimate(students, type='weekday', start=10, hours=3){
     const fakeDate = type === 'sat' ? '2026-08-29' : '2026-08-31';
@@ -59,7 +46,10 @@
   }
   function rentalLabel(raw){
     const q = rentalQuote(raw);
-    const rate = q.day === '토' ? '토요일 20,000원/h' : q.start >= 18 ? '평일 저녁 19,000원/h' : '평일 낮 17,000원/h';
+    let rate;
+    if (q.day === '토') rate='토요일 20,000원/h';
+    else if (q.start >= 18) rate='평일 저녁 19,000원/h';
+    else rate='평일 낮 17,000원/h';
     return `${q.hours}시간 · 총 ${q.totalPeople}인(수강생 ${q.students}+강사 1) · ${rate} · 추가 ${q.extraPeople}인`;
   }
 
@@ -71,65 +61,88 @@
     try {
       if (schedule?.settings){
         schedule.settings.rentPricing = {
-          minimumHours: 3,
-          weekdayDayHourly: 17000,
-          weekdayEveningHourly: 19000,
-          saturdayHourly: 20000,
-          includedPeople: 2,
-          instructorCount: 1,
-          extraPersonFee: 10000,
-          note: '수강생+강사 총 인원 기준. 총 3인부터 1인당 10,000원 추가.'
+          minimumHours:3,weekdayDayHourly:17000,weekdayEveningHourly:19000,saturdayHourly:20000,
+          includedPeople:2,instructorCount:1,extraPersonFee:10000,
+          note:'수강생+강사 총 인원 기준. 총 3인부터 1인당 10,000원 추가.'
         };
       }
       (schedule?.rows || []).forEach(r => {
         if (r.rentManual === true) return;
-        const q = rentalQuote(r);
-        r.rent = q.total;
-        r.rentAuto = true;
-        r.rentalHours = q.hours;
-        r.rentalHeadcount = q.totalPeople;
+        const q=rentalQuote(r);
+        r.rent=q.total;r.rentAuto=true;r.rentalHours=q.hours;r.rentalHeadcount=q.totalPeople;
       });
       (history?.records || []).forEach(r => {
         if (r.rentManual === true) return;
-        const q = rentalQuote(r);
-        r.rent = q.total;
-        r.rentAuto = true;
-        r.rentalHours = q.hours;
-        r.rentalHeadcount = q.totalPeople;
+        const q=rentalQuote(r);
+        r.rent=q.total;r.rentAuto=true;r.rentalHours=q.hours;r.rentalHeadcount=q.totalPeople;
       });
     } catch(e) {}
   }
 
-  // 사용자가 대관료 입력칸을 직접 바꾸면 이후에는 그 수업만 수동값을 우선합니다.
+  function decorateSchedule(){
+    try {
+      document.querySelectorAll('#scheduleList .schedule').forEach(card=>{
+        const i=Number(card.dataset.i),row=schedule?.rows?.[i];if(!row)return;
+        const rentInput=card.querySelector('[data-k="rent"]');
+        const rentField=rentInput?.closest('.field');
+        const grid=rentField?.parentElement;
+        if(grid&&!grid.querySelector('[data-rental-hours]')){
+          const f=document.createElement('div');f.className='field';
+          f.innerHTML=`<label>대관 시간</label><input data-rental-hours type="number" min="3" step="0.5" value="${rentalQuote(row).hours}">`;
+          grid.insertBefore(f,rentField);
+        }
+        if(rentField){
+          const label=rentField.querySelector('label');if(label)label.textContent=row.rentManual?'대관료 · 수동':'대관료 · 자동';
+          rentInput.title=row.rentManual?'직접 입력한 대관료를 사용합니다.':rentalLabel(row);
+        }
+      });
+    } catch(e) {}
+  }
+  function decorateModal(){
+    try {
+      const rowIndex=[...document.querySelectorAll('#scheduleList .schedule')].findIndex(()=>false);
+      const modal=document.getElementById('classOpsModal');if(!modal||!modal.classList.contains('open'))return;
+      const title=document.getElementById('opsSubtitle');
+      const menu=document.getElementById('opsTitle')?.textContent;
+      const row=(schedule?.rows||[]).find(r=>(r.menu||r.classTitle||'')===menu && title?.textContent?.includes(r.date||''));
+      if(!row)return;
+      const cells=[...document.querySelectorAll('#opsProfit .ops-profit-item')];
+      const rentCell=cells.find(c=>c.querySelector('span')?.textContent?.includes('대관'));
+      if(rentCell){const small=rentCell.querySelector('small');if(small)small.textContent=rentalLabel(row);}
+    } catch(e) {}
+  }
+
   document.addEventListener('change', e => {
-    const el = e.target.closest?.('#scheduleList [data-k="rent"]');
+    const hours=e.target.closest?.('#scheduleList [data-rental-hours]');
+    if(hours){
+      const card=hours.closest('.schedule'),i=Number(card?.dataset?.i),row=schedule?.rows?.[i];if(!row)return;
+      row.rentalHours=Math.max(3,num(hours.value)||3);row.durationHours=row.rentalHours;row.rentManual=false;row.rentAuto=true;
+      normalizeRows();try{mark('schedule')}catch(e){};
+      try{renderSchedule();renderDashboard();renderFinance()}catch(e){};
+      setTimeout(decorateSchedule,0);return;
+    }
+    const el=e.target.closest?.('#scheduleList [data-k="rent"]');
     if (!el) return;
-    const card = el.closest('.schedule');
-    const i = Number(card?.dataset?.i);
-    if (!Number.isFinite(i) || !schedule?.rows?.[i]) return;
-    schedule.rows[i].rentManual = true;
-    schedule.rows[i].rentAuto = false;
+    const card=el.closest('.schedule'),i=Number(card?.dataset?.i);
+    if(!Number.isFinite(i)||!schedule?.rows?.[i])return;
+    schedule.rows[i].rentManual=true;schedule.rows[i].rentAuto=false;
   }, true);
 
   function wrap(name){
     try {
-      const old = window[name];
-      if (typeof old !== 'function') return;
-      window[name] = function(...args){
-        normalizeRows();
-        return old.apply(this,args);
-      };
+      const old=window[name];if(typeof old!=='function')return;
+      window[name]=function(...args){normalizeRows();const out=old.apply(this,args);if(name==='renderSchedule')setTimeout(decorateSchedule,0);return out;};
     } catch(e) {}
   }
   ['renderSchedule','renderDashboard','renderFinance','renderAll'].forEach(wrap);
 
+  document.addEventListener('click',()=>setTimeout(decorateModal,80),true);
   function refresh(){
     normalizeRows();
-    try { renderDashboard(); } catch(e) {}
-    try { renderSchedule(); } catch(e) {}
-    try { renderFinance(); } catch(e) {}
+    try{renderDashboard()}catch(e){};try{renderSchedule()}catch(e){};try{renderFinance()}catch(e){};
+    setTimeout(()=>{decorateSchedule();decorateModal()},0);
   }
-  setTimeout(refresh, 500);
-  setTimeout(normalizeRows, 1200);
+  setTimeout(refresh,500);
+  setTimeout(normalizeRows,1200);
   document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')setTimeout(refresh,120)});
 })();
