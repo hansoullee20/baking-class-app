@@ -2,7 +2,7 @@
   const $ = id => document.getElementById(id);
   const num = v => Number.isFinite(Number(v)) ? Number(v) : 0;
   const won = v => Number.isFinite(Number(v)) ? '₩' + Math.round(Number(v)).toLocaleString('ko-KR') : '—';
-  const esc = s => String(s ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  const esc = s => String(s ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[m]));
   const monthLabel = k => { const [y,m]=k.split('-'); return `${Number(m)}월${String(new Date().getFullYear())===y?'':` '${y.slice(2)}`}`; };
   const currentMonth = () => { const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`; };
 
@@ -77,7 +77,7 @@
       <svg class="analytics-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="월별 예상 총수입과 실제 확보 수업료">
         ${grid}
         <path class="chart-line" d="${path('forecast')}"/>
-        <path d="${path('secured')}" style="fill:none;stroke:var(--terra);stroke-width:2.7;stroke-dasharray:7 5;stroke-linecap:round;stroke-linejoin:round"/>
+        <path d="${path('secured')}" style="fill:none;stroke:var(--terra);stroke-width:2.7;stroke-dasharray:3 4;stroke-linecap:round;stroke-linejoin:round"/>
         <rect class="chart-selection-bar" x="${x(0)-2}" y="${T}" width="4" height="${ih}" rx="2" opacity="0"/>
         ${months.map((m,i)=>`<circle class="chart-dot" cx="${x(i)}" cy="${y(m.forecast)}" r="4"></circle><circle cx="${x(i)}" cy="${y(m.secured)}" r="3.8" style="fill:var(--terra);stroke:var(--paper);stroke-width:2"></circle><rect class="chart-month-hit" data-revenue-month="${i}" data-x="${x(i)}" x="${x(i)-hitWidth/2}" y="${T}" width="${hitWidth}" height="${ih+B}" fill="transparent"/>`).join('')}
         ${labels}
