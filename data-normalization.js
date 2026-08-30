@@ -110,11 +110,13 @@
     let min=0,max=0,priced=0,costable=0;const missing=[];
     rows.forEach(x=>{if(x.state==='structural')return;costable++;if(x.state==='ok'){priced++;min+=x.min;max+=x.max}else missing.push({ingredient:x.ing.name,state:x.state,note:x.note||''})});
     const complete=costable>0&&priced===costable;
-    const saved=has(recipe?.cost)?Number(recipe.cost):null;
+    const spec=B?.effectiveCostSpec?B.effectiveCostSpec(recipe):null;
+    const saved=spec&&has(spec.cost)?Number(spec.cost):(has(recipe?.cost)?Number(recipe.cost):null);
+    const savedSource=spec?.source||(saved!=null?'recipe':'missing');
     const calculated=complete?(min+max)/2:null;
     const variance=saved!=null&&calculated!=null?saved-calculated:null;
     const variancePct=variance!=null&&calculated?variance/calculated*100:null;
-    return{recipe_id:recipe?.recipe_id||null,name:recipe?.name||'',complete,priced,costable,min,max,calculated,saved,variance,variancePct,missing,rows};
+    return{recipe_id:recipe?.recipe_id||null,name:recipe?.name||'',complete,priced,costable,min,max,calculated,saved,savedSource,variance,variancePct,missing,rows};
   }
   function reconciliation(recipes,ingredientMaster,thresholdPct=5){
     const rows=(recipes||[]).map(r=>recipeCalculatedCost(r,ingredientMaster));
@@ -123,5 +125,5 @@
     return{total:rows.length,complete:rows.filter(x=>x.complete).length,comparable:comparable.length,materialVariance,needsCostInput:rows.filter(x=>!x.complete),rows};
   }
 
-  root.BakingData={version:'2.0.0',setIndex,setProvenance,getIndex,getProvenance,applyEntityIndex,identityCoverage,ingredientProvenance,provenanceAudit,recipeCalculatedCost,reconciliation};
+  root.BakingData={version:'2.1.0',setIndex,setProvenance,getIndex,getProvenance,applyEntityIndex,identityCoverage,ingredientProvenance,provenanceAudit,recipeCalculatedCost,reconciliation};
 })(typeof globalThis!=='undefined'?globalThis:this);
