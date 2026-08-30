@@ -1,29 +1,56 @@
 (() => {
   const B = window.BakingBusiness;
+  const D = window.BakingData;
   if (!B) return;
   const won = v => Number.isFinite(Number(v)) ? '₩' + Math.round(Number(v)).toLocaleString('ko-KR') : '—';
   const pc = v => Number.isFinite(Number(v)) ? Math.round(Number(v)) + '%' : '—';
   let rulesLoaded = false;
+  let indexLoaded = false;
+  let provenanceLoaded = false;
   let activeIndex = null;
 
   const context = source => ({ recipes: typeof recipes !== 'undefined' ? recipes : [], schedule: typeof schedule !== 'undefined' ? schedule : null, source });
   const sourceOf = raw => { try { return (history?.records || []).includes(raw) ? 'history' : 'schedule'; } catch (e) { return 'schedule'; } };
 
-  async function loadRules() {
+  async function loadGovernance() {
+    if (typeof token === 'undefined' || !token || typeof get !== 'function' || typeof dec !== 'function') return false;
     try {
-      if (typeof token === 'undefined' || !token || typeof get !== 'function' || typeof dec !== 'function') return false;
       const file = await get('data/business-rules.json');
       B.setRules(JSON.parse(dec(file.content)));
       rulesLoaded = true;
-      return true;
     } catch (e) {
       rulesLoaded = false;
       console.warn('Using embedded canonical business rules', e);
-      return false;
     }
+    if (D) {
+      try {
+        const file = await get('data/entity-index.json');
+        D.setIndex(JSON.parse(dec(file.content)));
+        indexLoaded = true;
+      } catch (e) {
+        indexLoaded = false;
+        console.warn('Entity index unavailable', e);
+      }
+      try {
+        const file = await get('data/price-provenance.json');
+        D.setProvenance(JSON.parse(dec(file.content)));
+        provenanceLoaded = true;
+      } catch (e) {
+        provenanceLoaded = false;
+        console.warn('Price provenance unavailable', e);
+      }
+    }
+    applyNormalizedIds();
+    return rulesLoaded && (!D || indexLoaded);
+  }
+
+  function applyNormalizedIds() {
+    if (!D) return null;
+    try { return D.applyEntityIndex(recipes, ingredients, schedule, history); } catch (e) { return null; }
   }
 
   function installCore() {
+    applyNormalizedIds();
     try { recipeOf = name => B.findRecipeByName(name, recipes); } catch (e) {}
     try { finalCost = recipe => B.costState(recipe).usable; } catch (e) {}
     try {
@@ -38,13 +65,13 @@
         (history?.records || []).forEach((r,i) => {
           if (!r?.date) return;
           const menu = r.menu || r.recipeCandidate || r.classTitle || '수업';
-          const key = [r.date, r.time || r.session || '', B.canonicalRecipeName(menu)].join('|');
+          const key = r.class_id || [r.date, r.time || r.session || '', B.canonicalRecipeName(menu)].join('|');
           map.set(key, { source:'history', id:r.class_id || r.id || 'h'+i, date:r.date, status:r.status || '완료', session:r.time || r.session || '', menu, people:Number(r.people)||0, revenue:B.revenue(r), raw:r });
         });
         (schedule?.rows || []).forEach((r,i) => {
           if (!r?.date) return;
           const menu = r.menu || r.classTitle || '메뉴 미정';
-          const key = [r.date, r.time || r.session || '', B.canonicalRecipeName(menu)].join('|');
+          const key = r.class_id || [r.date, r.time || r.session || '', B.canonicalRecipeName(menu)].join('|');
           if (map.has(key)) return;
           map.set(key, { source:'schedule', id:r.class_id || r.id || 's'+i, index:i, date:r.date, status:r.status || '예정', session:r.session || r.time || '', menu, people:Number(r.people)||0, revenue:B.revenue(r), raw:r });
         });
@@ -59,6 +86,37 @@
         return { date:e.date, source:e.source, menu:e.menu, people:e.people, revenue:e.revenue, profit:c.profit, label };
       };
     } catch (e) {}
+  }
+
+  function dataAuditItems() {
+    const rows = (schedule?.rows || []).filter(r => r.status !== '취소');
+    const unlinked = [...new Set(rows.filter(r => !B.findRecipe(r,recipes)).map(r => r.menu || r.classTitle).filter(Boolean))];
+    const incomplete = recipes.filter(r => !B.costState(r).usable).map(r => r.name);
+    const out = [
+      ['Business rules', rulesLoaded ? 'canonical file loaded' : 'embedded canonical fallback'],
+      ['Entity index', indexLoaded ? 'loaded' : (D ? 'load failed' : 'normalization module unavailable')],
+      ['Price provenance', provenanceLoaded ? 'loaded' : (D ? 'load failed' : 'normalization module unavailable')],
+      ['일정 ↔ 레시피 미연결', unlinked.length ? unlinked.join(', ') : '없음'],
+      ['원가 미완료 레시피', incomplete.length ? incomplete.join(', ') : '없음']
+    ];
+    if (!D) return out;
+    try {
+      const id = D.identityCoverage(recipes,ingredients,schedule,history);
+      out.push(['ID 커버리지', `레시피 ${id.recipes.ready}/${id.recipes.total} · 재료 ${id.ingredients.ready}/${id.ingredients.total} · 일정 ${id.schedule.ready}/${id.schedule.total} · 이력 ${id.history.ready}/${id.history.total}`]);
+    } catch (e) {}
+    try {
+      const p = D.provenanceAudit(ingredients);
+      out.push(['구매처 검증', `${p.verified}/${p.total} 확인 · 재확인 ${p.needsReview.length}개${p.needsReview.length ? ' (' + p.needsReview.slice(0,5).join(', ') + (p.needsReview.length>5?' 외':'') + ')' : ''}`]);
+    } catch (e) {}
+    try {
+      const r = D.reconciliation(recipes,ingredients,5);
+      const names = r.materialVariance.slice(0,5).map(x => `${x.name} ${x.variancePct > 0 ? '+' : ''}${Math.round(x.variancePct)}%`);
+      out.push(['원가 재계산 완성도', `${r.complete}/${r.total} 레시피 · 저장원가 비교 가능 ${r.comparable}개`]);
+      out.push(['저장원가 ↔ 재계산 차이 ≥5%', r.materialVariance.length ? `${r.materialVariance.length}개 (${names.join(', ')}${r.materialVariance.length>5?' 외':''})` : '없음']);
+      const specific = r.rows.flatMap(x => x.missing.filter(m => m.state === 'specific-price-missing').map(m => `${x.name}: ${m.ingredient}`));
+      if (specific.length) out.push(['지정 제품 단가 필요', specific.slice(0,6).join(', ') + (specific.length>6?' 외':'')]);
+    } catch (e) {}
+    return out;
   }
 
   function syncVisible() {
@@ -88,16 +146,7 @@
     } catch (e) {}
     try {
       const audit = document.getElementById('dataAudit');
-      if (audit) {
-        const rows = (schedule?.rows || []).filter(r => r.status !== '취소');
-        const unlinked = [...new Set(rows.filter(r => !B.findRecipe(r,recipes)).map(r => r.menu || r.classTitle).filter(Boolean))];
-        const incomplete = recipes.filter(r => !B.costState(r).usable).map(r => r.name);
-        audit.innerHTML = [
-          ['Business rules', rulesLoaded ? 'canonical file loaded' : 'embedded canonical fallback'],
-          ['일정 ↔ 레시피 미연결', unlinked.length ? unlinked.join(', ') : '없음'],
-          ['원가 미완료 레시피', incomplete.length ? incomplete.join(', ') : '없음']
-        ].map(x => `<div class="audit-item"><b>${x[0]}</b><span class="subtle">${x[1]}</span></div>`).join('');
-      }
+      if (audit) audit.innerHTML = dataAuditItems().map(x => `<div class="audit-item"><b>${x[0]}</b><span class="subtle">${x[1]}</span></div>`).join('');
     } catch (e) {}
   }
 
@@ -105,7 +154,7 @@
     const baseConnect = connect;
     connect = async function(...args) {
       const result = await baseConnect.apply(this,args);
-      await loadRules();
+      await loadGovernance();
       syncVisible();
       try { renderAll(); } catch (e) {}
       return result;
@@ -141,7 +190,7 @@
   const boot = setInterval(async () => {
     attempts++;
     if (typeof token !== 'undefined' && token && typeof schedule !== 'undefined' && schedule) {
-      await loadRules();
+      await loadGovernance();
       syncVisible();
       try { renderAll(); } catch (e) {}
       clearInterval(boot);
