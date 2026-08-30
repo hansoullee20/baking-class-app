@@ -1,0 +1,8 @@
+#dashboard #opsKpis.monthly-forecast-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+#dashboard #opsKpis.monthly-forecast-grid .monthly-forecast-primary{grid-column:1/-1;padding:16px 18px;min-height:96px;background:color-mix(in srgb,var(--paper) 84%,var(--soft));border-color:color-mix(in srgb,var(--terra) 38%,var(--line))}
+#dashboard #opsKpis.monthly-forecast-grid .monthly-forecast-primary .ak-label{font-size:9px;letter-spacing:.05em;text-transform:uppercase}
+#dashboard #opsKpis.monthly-forecast-grid .monthly-forecast-primary .ak-value{font-size:27px;margin-top:5px}
+#dashboard #opsKpis.monthly-forecast-grid .monthly-forecast-primary .ak-sub{font-size:9px;margin-top:5px}
+#dashboard #opsKpis.monthly-forecast-grid>.analytics-kpi:not(.monthly-forecast-primary){min-height:76px}
+html[data-theme="dark"] #dashboard #opsKpis.monthly-forecast-grid .monthly-forecast-primary{background:#1b2028;border-color:#6f4d42}
+@media(max-width:700px){#dashboard #opsKpis.monthly-forecast-grid{grid-template-columns:1fr 1fr}#dashboard #opsKpis.monthly-forecast-grid .monthly-forecast-primary{grid-column:1/-1;min-height:88px;padding:14px 15px}#dashboard #opsKpis.monthly-forecast-grid .monthly-forecast-primary .ak-value{font-size:23px}#dashboard #opsKpis.monthly-forecast-grid>.analytics-kpi:last-child{grid-column:1/-1}}
