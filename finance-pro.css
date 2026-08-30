@@ -1,0 +1,67 @@
+/* Professional finance / profitability workspace */
+#finance.finance-pro{max-width:1320px;margin:0 auto;padding-bottom:112px}
+#finance.finance-pro>.section-head{margin-bottom:8px}
+#finance.finance-pro>.section-head h2{font-size:22px}
+#finance.finance-pro>.section-head p{font-size:10px;max-width:760px}
+.finance-pro-controls{display:grid;grid-template-columns:auto minmax(420px,1fr);gap:10px;align-items:end;padding:10px 12px;margin-bottom:10px;border:1px solid var(--line);border-radius:14px;background:var(--paper);box-shadow:none}
+.finance-pro-controls .period,.finance-pro-controls .period-fields{margin:0}
+.finance-pro-controls .period{align-self:center}
+.finance-pro-controls .period-fields{grid-template-columns:minmax(120px,1fr) minmax(120px,1fr) auto}
+#financeProBody{display:grid;gap:10px}
+#finance #financeKpis{grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
+#finance #financeKpis .kpi{min-height:84px;padding:12px 14px;box-shadow:none}
+#finance #financeKpis .kpi:first-child{border-color:color-mix(in srgb,var(--terra) 38%,var(--line));background:color-mix(in srgb,var(--paper) 92%,var(--soft))}
+#finance #financeKpis .kpi b{font-size:22px}
+#finance #financeKpis .kpi span{font-size:8px;line-height:1.35}
+#finance #profitCoverageNote{margin:0 2px!important;font-size:8px!important}
+.finance-brief-card,.finance-engineering{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:13px;box-shadow:none}
+.finance-pro-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:9px}
+.finance-pro-head h3{margin:0;font-family:Georgia,"Times New Roman",serif;font-size:16px;color:var(--ink)}
+.finance-pro-head p{margin:3px 0 0;font-size:8px;line-height:1.4;color:var(--muted)}
+.finance-scope-note{font-size:8px;font-weight:800;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:5px 8px;white-space:nowrap}
+.finance-brief-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
+.finance-brief-item{min-width:0;border:1px solid var(--line);border-radius:12px;padding:10px;background:color-mix(in srgb,var(--paper) 94%,var(--soft))}
+.finance-brief-item span{display:block;font-size:8px;color:var(--muted);font-weight:850}
+.finance-brief-item b{display:block;font-size:13px;margin-top:4px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.finance-brief-item small{display:block;font-size:7px;line-height:1.35;color:var(--muted);margin-top:3px}
+.finance-brief-item.warn{border-color:color-mix(in srgb,var(--warn) 42%,var(--line))}.finance-brief-item.good{border-color:color-mix(in srgb,var(--ok) 35%,var(--line))}
+#finance #profitabilitySummary{margin:0;box-shadow:none;padding:13px;border-radius:16px}
+#finance #profitabilitySummary .analytics-head{margin-bottom:8px}
+#finance #profitabilitySummary .ops-payment-kpis{grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin:0 0 9px}
+#finance #profitabilitySummary .ops-payment-kpis>div{padding:9px 10px;min-width:0}
+#finance #profitabilitySummary .ops-payment-kpis span{font-size:7px}#finance #profitabilitySummary .ops-payment-kpis b{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#finance #profitabilitySummary .ops-margin-bars{grid-template-columns:1fr 1fr;gap:6px 14px;margin-top:7px}
+#finance #profitabilitySummary .viz-row{margin:0;grid-template-columns:minmax(92px,150px) 1fr 34px}
+#finance #profitabilitySummary .viz-name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#finance #financeAnalytics{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(300px,.85fr);gap:10px;margin:0}
+#finance #financeAnalytics .analytics-card{padding:13px;box-shadow:none}
+#finance #financeMenu .viz-row:nth-child(n+6){display:none}
+.finance-coverage-compact{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:center;padding:6px 2px}
+.finance-coverage-number{width:82px;height:82px;border-radius:50%;display:grid;place-items:center;border:9px solid color-mix(in srgb,var(--terra) 72%,var(--line));background:var(--paper)}
+.finance-coverage-number b{font-family:Georgia,"Times New Roman",serif;font-size:21px}.finance-coverage-number span{display:block;text-align:center;font-size:7px;color:var(--muted);margin-top:-13px}
+.finance-coverage-copy b{font-size:12px}.finance-coverage-copy p{font-size:8px;color:var(--muted);line-height:1.45;margin:4px 0 0}
+.finance-engineering-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+.finance-menu-card{border:1px solid var(--line);border-radius:12px;padding:10px;min-width:0;background:color-mix(in srgb,var(--paper) 96%,var(--soft))}
+.finance-menu-card-head{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}.finance-menu-card h4{margin:0;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.finance-menu-tag{font-size:7px;font-weight:900;border-radius:999px;padding:4px 6px;background:var(--soft);color:var(--blue);white-space:nowrap}.finance-menu-tag.star{background:color-mix(in srgb,var(--ok) 14%,var(--paper));color:var(--ok)}.finance-menu-tag.popular{background:color-mix(in srgb,var(--warn) 15%,var(--paper));color:var(--warn)}.finance-menu-tag.profit{background:color-mix(in srgb,var(--blue) 12%,var(--paper));color:var(--blue)}.finance-menu-tag.review{background:color-mix(in srgb,var(--bad) 11%,var(--paper));color:var(--bad)}
+.finance-menu-meta{font-size:7px;color:var(--muted);margin-top:4px}.finance-menu-values{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-top:8px}.finance-menu-values span{font-size:7px;color:var(--muted)}.finance-menu-values b{display:block;font-size:10px;color:var(--ink);margin-top:2px}
+#finance #profitPlanner{margin:0;padding:13px;box-shadow:none}
+#finance #profitPlanner .ops-section-head{margin:0 0 9px}
+#finance #profitPlanner .ops-planner-controls{grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;margin-bottom:8px}
+#finance #profitPlanner .ops-profit-grid{grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+#finance #profitPlanner .ops-profit-item{padding:9px 10px;border-radius:11px}#finance #profitPlanner .ops-profit-item b{font-size:16px}
+#finance #profitPlanner .ops-planner-grid{grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:10px;margin-top:10px}
+#finance #profitPlanner .ops-rank-list{grid-template-columns:1fr 1fr!important;gap:6px!important}
+#finance #profitPlanner .ops-rank-row{padding:8px;min-width:0!important}
+#finance #planRanking:not(.show-all) .ops-rank-row:nth-child(n+5){display:none}
+.finance-rank-toggle{border:0;background:transparent;color:var(--blue);font-size:8px;font-weight:900;padding:3px 0;margin-top:6px}
+#finance #planMatrix{overflow-x:auto;overscroll-behavior-x:contain;scrollbar-gutter:stable;max-width:100%}
+#finance #planMatrix table{min-width:650px;width:100%;table-layout:fixed}
+#finance #planMatrix th:first-child,#finance #planMatrix td:first-child{position:sticky;left:0;z-index:2;width:155px;min-width:155px;max-width:155px;background:var(--paper);box-shadow:1px 0 0 var(--line);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#finance #planMatrix th:not(:first-child),#finance #planMatrix td:not(:first-child){text-align:center;width:110px}
+#finance #planAdvice{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:8px}
+#finance #planAdvice .insight{padding:9px;min-height:0}
+.finance-detail-area{display:grid;gap:7px;margin-bottom:8px}.finance-detail-title{margin:4px 2px 0;font-size:12px;color:var(--muted);font-weight:900;letter-spacing:.02em}.finance-detail{border:1px solid var(--line);border-radius:13px;background:var(--paper);overflow:hidden}.finance-detail>summary{cursor:pointer;list-style:none;padding:11px 13px;font-size:10px;font-weight:900;color:var(--ink);display:flex;justify-content:space-between;gap:10px}.finance-detail>summary::-webkit-details-marker{display:none}.finance-detail>summary small{font-size:8px;color:var(--muted);font-weight:700}.finance-detail[open]>summary{border-bottom:1px solid var(--line)}.finance-detail-inner{border:0!important;border-radius:0!important;box-shadow:none!important;margin:0!important;padding:11px!important}.finance-detail-inner>h3{display:none}.finance-detail-area>details.card{margin:0!important;box-shadow:none}.finance-detail-area>details.card>summary{padding:11px 13px!important}
+html[data-theme="dark"] .finance-pro-controls,html[data-theme="dark"] .finance-brief-card,html[data-theme="dark"] .finance-engineering,html[data-theme="dark"] .finance-detail{background:#151a22;border-color:#303844}html[data-theme="dark"] .finance-brief-item,html[data-theme="dark"] .finance-menu-card{background:#171d25;border-color:#303844}html[data-theme="dark"] #finance #planMatrix th:first-child,html[data-theme="dark"] #finance #planMatrix td:first-child{background:#151a22}
+@media(max-width:1050px){.finance-pro-controls{grid-template-columns:1fr}.finance-brief-grid{grid-template-columns:1fr 1fr}#finance #financeAnalytics{grid-template-columns:1fr 1fr}.finance-engineering-grid{grid-template-columns:1fr 1fr}#finance #profitPlanner .ops-planner-controls{grid-template-columns:repeat(3,1fr)}#finance #profitPlanner .ops-planner-grid{grid-template-columns:1fr}#finance #profitabilitySummary .ops-margin-bars{grid-template-columns:1fr 1fr}}
+@media(max-width:700px){#finance.finance-pro{padding-bottom:120px}#finance #financeKpis{grid-template-columns:1fr 1fr}.finance-brief-grid{grid-template-columns:1fr 1fr}#finance #financeAnalytics{grid-template-columns:1fr}.finance-engineering-grid{grid-template-columns:1fr 1fr}#finance #profitabilitySummary .ops-payment-kpis{grid-template-columns:1fr 1fr}#finance #profitabilitySummary .ops-payment-kpis>div:last-child{grid-column:1/-1}#finance #profitabilitySummary .ops-margin-bars{grid-template-columns:1fr}#finance #profitPlanner .ops-planner-controls{grid-template-columns:1fr 1fr}#finance #profitPlanner .ops-profit-grid{grid-template-columns:1fr 1fr}#finance #profitPlanner .ops-profit-item:last-child{grid-column:1/-1}#finance #profitPlanner .ops-rank-list{grid-template-columns:1fr 1fr!important}#finance #planAdvice{grid-template-columns:1fr}.finance-scope-note{white-space:normal}}
+@media(max-width:520px){.finance-pro-controls .period-fields{grid-template-columns:1fr 1fr}.finance-pro-controls .period-fields button{grid-column:1/-1}.finance-engineering-grid{grid-template-columns:1fr}#finance #profitPlanner .ops-rank-list{grid-template-columns:1fr!important}.finance-brief-grid{grid-template-columns:1fr 1fr}}
