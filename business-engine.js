@@ -90,17 +90,19 @@
     return{amount:cs.amount*b,min:cs.min*b,max:cs.max*b,batchCount:b,costState:cs};
   }
   function payment(raw){
-    const list=Array.isArray(raw?.participants)?raw.participants:[];
-    const expected=list.length?list.reduce((s,p)=>s+(hasNum(p?.amountDue)?Number(p.amountDue):num(raw?.fee)),0):num(raw?.people)*num(raw?.fee);
+    const list=Array.isArray(raw?.participants)?raw.participants:[],fee=num(raw?.fee),people=Math.max(0,num(raw?.people));
+    const participantExpected=list.reduce((s,p)=>s+(hasNum(p?.amountDue)?Number(p.amountDue):fee),0);
+    const missingRosterCount=Math.max(0,people-list.length);
+    const expected=participantExpected+missingRosterCount*fee;
     const collected=list.reduce((s,p)=>{
-      const due=hasNum(p?.amountDue)?Number(p.amountDue):num(raw?.fee);
+      const due=hasNum(p?.amountDue)?Number(p.amountDue):fee;
       if(p?.paymentStatus==='입금완료'&&!hasNum(p?.amountPaid))return s+due;
       return s+num(p?.amountPaid);
     },0);
     const completed=raw?.paymentComplete===true;
     const completedAmount=completed?(hasNum(raw?.paymentCompletedAmount)?Number(raw.paymentCompletedAmount):expected):null;
     const paid=completed?Math.max(collected,completedAmount):collected;
-    return{expected,collected:paid,outstanding:Math.max(0,expected-paid),rate:expected>0?paid/expected*100:0,participantCount:list.length};
+    return{expected,collected:paid,outstanding:Math.max(0,expected-paid),rate:expected>0?paid/expected*100:0,participantCount:list.length,missingRosterCount};
   }
   function classFinancials(raw,ctx){
     const source=ctx?.source||'schedule',recipe=findRecipe(raw,ctx?.recipes||[]),rev=revenue(raw),mat=materialCost(raw,recipe),r=rent(raw,ctx?.schedule),packing=num(raw?.packing),other=num(raw?.other);
@@ -112,7 +114,7 @@
     const profit=actual!=null?actual:est;
     const margin=profit==null||rev<=0?null:profit/rev*100;
     const roi=profit==null||total==null||total<=0?null:profit/total*100;
-    const fee=num(raw?.fee),breakEven=total!=null&&fee>0?Math.ceil(total/fee):null;
+    const feePerPerson=num(raw?.fee),breakEven=total!=null&&feePerPerson>0?Math.ceil(total/feePerPerson):null;
     let label=rules?.profit?.plannedEstimateLabel||'예상이익';
     if(actual!=null)label=rules?.profit?.actualLabel||'실제이익';
     else if(source==='history')label=rules?.profit?.historyEstimateLabel||'현재 원가 기준 추정이익';
@@ -123,5 +125,5 @@
   function dedupeEvents(rows){
     const seen=new Set();return (rows||[]).filter(x=>{const k=classKey(x?.raw||x);if(seen.has(k))return false;seen.add(k);return true});
   }
-  return{version:'1.1.0',DEFAULT_RULES,setRules,getRules,dow,canonicalRecipeName,findRecipeByName,findRecipe,effectiveCostSpec,costState,batchCount,revenue,rent,materialCost,payment,classFinancials,classKey,dedupeEvents};
+  return{version:'1.2.0',DEFAULT_RULES,setRules,getRules,dow,canonicalRecipeName,findRecipeByName,findRecipe,effectiveCostSpec,costState,batchCount,revenue,rent,materialCost,payment,classFinancials,classKey,dedupeEvents};
 });
