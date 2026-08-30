@@ -6,19 +6,37 @@
   const monthLabel = k => { const [y,m]=k.split('-'); return `${Number(m)}월${String(new Date().getFullYear())===y?'':` '${y.slice(2)}`}`; };
   const currentMonth = () => { const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`; };
 
+  function paidForRow(row){
+    const full = num(row.people) * num(row.fee);
+    if (row.paymentComplete === true) {
+      return row.paymentCompletedAmount == null || row.paymentCompletedAmount === '' ? full : num(row.paymentCompletedAmount);
+    }
+    const list = Array.isArray(row.participants) ? row.participants : [];
+    return list.reduce((sum,p) => {
+      const due = p.amountDue == null || p.amountDue === '' ? num(row.fee) : num(p.amountDue);
+      if (p.paymentStatus === '입금완료' && (p.amountPaid == null || p.amountPaid === '')) return sum + due;
+      return sum + num(p.amountPaid);
+    },0);
+  }
+
   function monthlyData(){
     const by = {};
+    const get = m => by[m] ??= {month:m,done:0,plan:0,forecast:0,secured:0};
     (history?.records || []).forEach(r => {
       if (!r.date || r.status === '취소') return;
-      const m = r.date.slice(0,7);
-      by[m] ??= {month:m,done:0,plan:0};
-      by[m].done += r.revenue == null ? num(r.people)*num(r.fee) : num(r.revenue);
+      const x = get(r.date.slice(0,7));
+      const revenue = r.revenue == null ? num(r.people)*num(r.fee) : num(r.revenue);
+      x.done += revenue;
+      x.forecast += revenue;
+      x.secured += revenue;
     });
     (schedule?.rows || []).forEach(r => {
       if (!r.date || r.status === '취소' || r.status === '완료') return;
-      const m = r.date.slice(0,7);
-      by[m] ??= {month:m,done:0,plan:0};
-      by[m].plan += num(r.people)*num(r.fee);
+      const x = get(r.date.slice(0,7));
+      const expected = num(r.people)*num(r.fee);
+      x.plan += expected;
+      x.forecast += expected;
+      x.secured += Math.min(expected, paidForRow(r));
     });
     return Object.values(by).sort((a,b)=>a.month.localeCompare(b.month)).slice(-6);
   }
@@ -36,7 +54,7 @@
     if (!months.length) return;
 
     const W=760,H=230,L=54,R=16,T=18,B=42,iw=W-L-R,ih=H-T-B;
-    const rawMax = Math.max(1,...months.map(m=>Math.max(m.done,m.plan)));
+    const rawMax = Math.max(1,...months.map(m=>Math.max(m.forecast,m.secured)));
     const maxMan = rawMax/10000;
     const stepMan = niceStepMan(maxMan);
     const niceMaxMan = Math.max(stepMan, Math.ceil(maxMan/stepMan)*stepMan);
@@ -56,16 +74,16 @@
     const hitWidth = Math.max(56, iw/Math.max(1,months.length));
 
     host.innerHTML = `<div class="interactive-revenue-chart">
-      <svg class="analytics-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="월별 완료 매출과 예약 매출">
+      <svg class="analytics-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="월별 예상 총수입과 실제 확보 수업료">
         ${grid}
-        <path class="chart-line" d="${path('done')}"/>
-        <path d="${path('plan')}" style="fill:none;stroke:var(--terra);stroke-width:2.5;stroke-dasharray:6 5;stroke-linecap:round"/>
+        <path class="chart-line" d="${path('forecast')}"/>
+        <path d="${path('secured')}" style="fill:none;stroke:var(--terra);stroke-width:2.7;stroke-dasharray:7 5;stroke-linecap:round;stroke-linejoin:round"/>
         <rect class="chart-selection-bar" x="${x(0)-2}" y="${T}" width="4" height="${ih}" rx="2" opacity="0"/>
-        ${months.map((m,i)=>`<circle class="chart-dot" cx="${x(i)}" cy="${y(m.done)}" r="4"></circle><circle cx="${x(i)}" cy="${y(m.plan)}" r="3.5" style="fill:var(--terra);stroke:var(--paper);stroke-width:2"></circle><rect class="chart-month-hit" data-revenue-month="${i}" data-x="${x(i)}" x="${x(i)-hitWidth/2}" y="${T}" width="${hitWidth}" height="${ih+B}" fill="transparent"/>`).join('')}
+        ${months.map((m,i)=>`<circle class="chart-dot" cx="${x(i)}" cy="${y(m.forecast)}" r="4"></circle><circle cx="${x(i)}" cy="${y(m.secured)}" r="3.8" style="fill:var(--terra);stroke:var(--paper);stroke-width:2"></circle><rect class="chart-month-hit" data-revenue-month="${i}" data-x="${x(i)}" x="${x(i)-hitWidth/2}" y="${T}" width="${hitWidth}" height="${ih+B}" fill="transparent"/>`).join('')}
         ${labels}
       </svg>
       <div class="chart-value-tooltip" hidden></div>
-      <div class="mini-legend"><span><i style="background:var(--blue)"></i>완료 매출</span><span><i style="background:var(--terra)"></i>예약 매출</span><span class="chart-click-hint">월을 누르면 정확한 금액 표시</span></div>
+      <div class="mini-legend"><span><i style="background:var(--blue)"></i>예상 총수입</span><span><i style="background:var(--terra)"></i>확보된 수업료</span><span class="chart-click-hint">월을 누르면 정확한 금액 표시</span></div>
     </div>`;
 
     if (!host.dataset.chartBound) {
@@ -84,24 +102,12 @@
         const xx = Number(hit?.dataset.x || 0);
         if (bar) { bar.setAttribute('x', String(xx-2)); bar.setAttribute('opacity','1'); }
         if (tooltip) {
+          const remaining = Math.max(0,m.forecast-m.secured);
           tooltip.hidden = false;
-          tooltip.innerHTML = `<b>${esc(monthLabel(m.month))}</b><span>완료 매출 ${won(m.done)}</span><span>예약 매출 ${won(m.plan)}</span><strong>합계 ${won(m.done+m.plan)}</strong>`;
+          tooltip.innerHTML = `<b>${esc(monthLabel(m.month))}</b><span>예상 총수입 ${won(m.forecast)}</span><span>확보 수업료 ${won(m.secured)}</span><strong>남은 금액 ${won(remaining)}</strong>`;
         }
       });
     }
-  }
-
-  function paidForRow(row){
-    const full = num(row.people) * num(row.fee);
-    if (row.paymentComplete === true) {
-      return row.paymentCompletedAmount == null || row.paymentCompletedAmount === '' ? full : num(row.paymentCompletedAmount);
-    }
-    const list = Array.isArray(row.participants) ? row.participants : [];
-    return list.reduce((sum,p) => {
-      const due = p.amountDue == null || p.amountDue === '' ? num(row.fee) : num(p.amountDue);
-      if (p.paymentStatus === '입금완료' && (p.amountPaid == null || p.amountPaid === '')) return sum + due;
-      return sum + num(p.amountPaid);
-    },0);
   }
 
   function renderMonthlyForecast(){
@@ -110,11 +116,10 @@
     const month = currentMonth();
     const completed = (history?.records || []).filter(r => String(r.date || '').startsWith(month) && r.status !== '취소');
     const plannedRows = (schedule?.rows || []).filter(r => String(r.date || '').startsWith(month) && r.status !== '취소' && r.status !== '완료');
-
     const completedRevenue = completed.reduce((sum,r) => sum + (r.revenue == null ? num(r.people)*num(r.fee) : num(r.revenue)),0);
     const reservedRevenue = plannedRows.reduce((sum,r) => sum + num(r.people)*num(r.fee),0);
     const forecast = completedRevenue + reservedRevenue;
-    const incomingPaid = plannedRows.reduce((sum,r) => sum + paidForRow(r),0);
+    const incomingPaid = plannedRows.reduce((sum,r) => sum + Math.min(num(r.people)*num(r.fee),paidForRow(r)),0);
     const secured = completedRevenue + incomingPaid;
     const remaining = Math.max(0, forecast - secured);
     const securedRate = forecast > 0 ? secured / forecast * 100 : 0;
@@ -123,30 +128,16 @@
 
     host.classList.add('monthly-forecast-grid');
     host.innerHTML = `
-      <div class="analytics-kpi monthly-forecast-primary">
-        <div class="ak-label">이번 달 예상 총수입</div>
-        <div class="ak-value">${won(forecast)}</div>
-        <div class="ak-sub">완료 수업 ${won(completedRevenue)} + 예약 수업 ${won(reservedRevenue)}</div>
-      </div>
-      <div class="analytics-kpi">
-        <div class="ak-label">지금까지 들어온 수업료</div>
-        <div class="ak-value">${won(secured)}</div>
-        <div class="ak-sub">완료분 + 실제 입금 · 예상 총수입의 ${Math.round(securedRate)}%</div>
-      </div>
-      <div class="analytics-kpi">
-        <div class="ak-label">아직 들어올 수업료</div>
-        <div class="ak-value">${won(remaining)}</div>
-        <div class="ak-sub">이번 달 예약 중 아직 확보되지 않은 금액</div>
-      </div>
-      <div class="analytics-kpi">
-        <div class="ak-label">예정 충원율</div>
-        <div class="ak-value">${fill == null ? '—' : Math.round(fill) + '%'}</div>
-        <div class="ak-sub">${capped.length}개 예정 수업의 현재 예약 인원 기준</div>
-      </div>`;
+      <div class="analytics-kpi monthly-forecast-primary"><div class="ak-label">이번 달 예상 총수입</div><div class="ak-value">${won(forecast)}</div><div class="ak-sub">완료 수업 ${won(completedRevenue)} + 예약 수업 ${won(reservedRevenue)}</div></div>
+      <div class="analytics-kpi"><div class="ak-label">지금까지 들어온 수업료</div><div class="ak-value">${won(secured)}</div><div class="ak-sub">완료분 + 실제 입금 · 예상 총수입의 ${Math.round(securedRate)}%</div></div>
+      <div class="analytics-kpi"><div class="ak-label">아직 들어올 수업료</div><div class="ak-value">${won(remaining)}</div><div class="ak-sub">이번 달 예약 중 아직 확보되지 않은 금액</div></div>
+      <div class="analytics-kpi"><div class="ak-label">예정 충원율</div><div class="ak-value">${fill == null ? '—' : Math.round(fill) + '%'}</div><div class="ak-sub">${capped.length}개 예정 수업의 현재 예약 인원 기준</div></div>`;
 
     const trend = $('dashboardTrendTitle');
     const trendText = trend?.querySelector('p');
-    if (trendText) trendText.textContent = '이번 달 예상 총수입과 실제 입금액을 먼저 보고, 아래에서 월별 매출 흐름을 확인합니다.';
+    if (trendText) trendText.textContent = '예상 총수입과 실제 확보 수업료의 차이를 월별로 확인합니다.';
+    const head = $('opsRevenue')?.closest('.analytics-card')?.querySelector('.analytics-head p');
+    if (head) head.textContent = '월별 예상 총수입과 실제 확보된 수업료를 비교합니다.';
   }
 
   function scheduleRender(){ setTimeout(() => { renderMonthlyForecast(); renderInteractiveChart(); }, 80); }
