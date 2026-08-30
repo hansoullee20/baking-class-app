@@ -1,7 +1,7 @@
 (() => {
   if (!document.querySelector('script[data-sunny-rent-rule]')) {
     const s=document.createElement('script');
-    s.src='./rent-rule.js?v=20260830-rent2';
+    s.src='./rent-rule.js?v=20260830-rent3';
     s.dataset.sunnyRentRule='1';
     document.head.appendChild(s);
   }
@@ -72,7 +72,7 @@
       <div class="finance-stack-legend">${segments.map(x=>`<div><i class="${x[2]}"></i><span>${x[0]}</span><b>${won(x[1])}</b><small>${pct(share(x[1],revenue))}</small></div>`).join('')}</div>
       <div class="finance-flow-equation"><b>${won(revenue)}</b> 매출 − <b>${won(material)}</b> 재료 − <b>${won(rent)}</b> 대관 − <b>${won(extra)}</b> 포장·기타 = <strong>${won(net)}</strong> 남음</div>
       ${missingRevenue>0?`<div class="finance-flow-note">원가가 아직 연결되지 않은 수업 매출 ${won(missingRevenue)}은 최종 남는 금액 계산에서 제외되어 있습니다.</div>`:''}
-      <div class="finance-flow-note subtle">대관비는 최소 3시간, 실제 입장 인원(수강생+강사 1명) 기준입니다. 기본 2인 포함, 총 3인부터 1인당 10,000원 추가. 평일 낮 17,000원/h · 평일 저녁 19,000원/h · 주말 20,000원/h.</div>`;
+      <div class="finance-flow-note subtle">대관 총인원은 당근 모임 표시 인원을 그대로 사용합니다(셰프 1명 포함). 표시 인원이 없는 기록만 실제 수강생+셰프 1명으로 계산합니다. 최소 3시간 · 기본 2인 포함 · 총 3인부터 1인당 10,000원 추가 · 평일 낮 17,000원/h · 평일 저녁 19,000원/h · 주말 20,000원/h.</div>`;
     const summary=$('profitabilitySummary');
     if(summary){
       summary.classList.add('finance-margin-only');
