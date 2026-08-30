@@ -5,6 +5,10 @@
     try { return dow(date); } catch(e) {}
     try { return ['일','월','화','수','목','금','토'][new Date(`${date}T00:00:00`).getDay()]; } catch(e) { return ''; }
   }
+  function isWeekend(date){
+    const d=dayName(date);
+    return d==='토'||d==='일';
+  }
   function startHour(raw){
     const t = String(raw?.time || '').match(/^(\d{1,2})(?::(\d{2}))?/);
     if (t) return Number(t[1]) + Number(t[2] || 0) / 60;
@@ -14,7 +18,7 @@
     return 10;
   }
   function hourlyRate(date, hour){
-    if (dayName(date) === '토') return 20000;
+    if (isWeekend(date)) return 20000;
     return hour >= 18 ? 19000 : 17000;
   }
   function baseRental(date, start, hours){
@@ -29,7 +33,8 @@
   }
   function rentalQuote(raw){
     const students = Math.max(0, num(raw?.people));
-    const totalPeople = students + 1;
+    const instructorCount = 1;
+    const totalPeople = students + instructorCount;
     const includedPeople = 2;
     const extraPeople = Math.max(0, totalPeople - includedPeople);
     const extraPersonFee = 10000;
@@ -37,17 +42,17 @@
     const start = startHour(raw);
     const base = baseRental(raw?.date, start, hours);
     const extra = extraPeople * extraPersonFee;
-    return {total:base+extra,base,extra,students,totalPeople,includedPeople,extraPeople,extraPersonFee,hours,start,day:dayName(raw?.date),rateStart:hourlyRate(raw?.date,start)};
+    return {total:base+extra,base,extra,students,instructorCount,totalPeople,includedPeople,extraPeople,extraPersonFee,hours,start,day:dayName(raw?.date),weekend:isWeekend(raw?.date),rateStart:hourlyRate(raw?.date,start)};
   }
   function rentalEstimate(students, type='weekday', start=10, hours=3){
-    const fakeDate = type === 'sat' ? '2026-08-29' : '2026-08-31';
+    const fakeDate = ['weekend','sat','sun'].includes(type) ? '2026-08-30' : '2026-08-31';
     const fakeStart = type === 'evening' ? 19 : start;
     return rentalQuote({date:fakeDate,time:`${String(Math.floor(fakeStart)).padStart(2,'0')}:00`,people:students,durationHours:hours}).total;
   }
   function rentalLabel(raw){
     const q = rentalQuote(raw);
     let rate;
-    if (q.day === '토') rate='토요일 20,000원/h';
+    if (q.weekend) rate='주말 20,000원/h';
     else if (q.start >= 18) rate='평일 저녁 19,000원/h';
     else rate='평일 낮 17,000원/h';
     return `${q.hours}시간 · 총 ${q.totalPeople}인(수강생 ${q.students}+강사 1) · ${rate} · 추가 ${q.extraPeople}인`;
@@ -61,9 +66,9 @@
     try {
       if (schedule?.settings){
         schedule.settings.rentPricing = {
-          minimumHours:3,weekdayDayHourly:17000,weekdayEveningHourly:19000,saturdayHourly:20000,
+          minimumHours:3,weekdayDayHourly:17000,weekdayEveningHourly:19000,weekendHourly:20000,
           includedPeople:2,instructorCount:1,extraPersonFee:10000,
-          note:'수강생+강사 총 인원 기준. 총 3인부터 1인당 10,000원 추가.'
+          note:'실제 입장 인원=수강생+강사 1명. 기본 2인 포함, 총 3인부터 1인당 10,000원 추가. 주말은 토·일.'
         };
       }
       (schedule?.rows || []).forEach(r => {
@@ -100,7 +105,6 @@
   }
   function decorateModal(){
     try {
-      const rowIndex=[...document.querySelectorAll('#scheduleList .schedule')].findIndex(()=>false);
       const modal=document.getElementById('classOpsModal');if(!modal||!modal.classList.contains('open'))return;
       const title=document.getElementById('opsSubtitle');
       const menu=document.getElementById('opsTitle')?.textContent;
