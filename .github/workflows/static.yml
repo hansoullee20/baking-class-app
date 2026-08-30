@@ -42,6 +42,9 @@ jobs:
       - name: Test normalized data layer
         run: node tests/data-normalization.test.js
 
+      - name: Test runtime architecture
+        run: node tests/runtime-architecture.test.js
+
       - name: Guard runtime and repository composition
         run: |
           python - <<'PY'
