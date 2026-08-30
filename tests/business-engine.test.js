@@ -8,11 +8,14 @@ B.setRules({
   costing:{costStatuses:{'확정':{usableForEstimate:true,confidence:'confirmed'},'조건부':{usableForEstimate:true,confidence:'estimated'},'부분원가':{usableForEstimate:false,confidence:'incomplete'},'미산정':{usableForEstimate:false,confidence:'incomplete'}}}
 });
 
+const overlayRecipe={name:'쿠키',recipe_id:'r017',cost:null,cost_status:'미산정'};
+Object.defineProperty(overlayRecipe,'__costOverlay',{value:{apply:true,cost:6695,cost_status:'조건부'},enumerable:false,configurable:true});
 const recipes=[
   {name:'브라우니',cost:4752,cost_status:'조건부'},
   {name:'밤 에끌레어',cost:9826,cost_status:'조건부',cost_range:{min:9725,max:9826}},
   {name:'소금빵',cost:3931,cost_status:'확정'},
-  {name:'미완료',cost:null,cost_status:'미산정'}
+  {name:'미완료',cost:null,cost_status:'미산정'},
+  overlayRecipe
 ];
 const schedule={settings:{weekdayRent:81000,satRent:90000}};
 
@@ -25,6 +28,11 @@ assert.equal(B.batchCount({people:8}),1,'batch count must not auto-scale with st
 assert.equal(B.batchCount({people:8,batchCount:2.5}),2.5,'explicit batch count must be respected');
 assert.equal(B.costState(recipes[0]).confidence,'estimated','conditional cost must be labeled estimated');
 assert.equal(B.costState(recipes[3]).usable,false,'missing cost cannot be used for profit');
+assert.equal(B.costState(overlayRecipe).amount,6695,'effective overlay cost must be used');
+assert.equal(B.costState(overlayRecipe).source,'overlay','overlay source must remain identifiable');
+assert.equal(B.costState(overlayRecipe).confidence,'estimated','overlay conditional cost must remain estimated');
+assert(!JSON.stringify(overlayRecipe).includes('__costOverlay'),'effective overlay must never persist through JSON serialization');
+assert.equal(JSON.parse(JSON.stringify(overlayRecipe)).cost,null,'source recipe cost must remain null when serialized');
 
 const eclair=B.classFinancials({date:'2026-09-03',menu:'밤 에끌레어',people:4,fee:60000,batchCount:1,rent:81000,packing:0,other:0},{recipes,schedule,source:'schedule'});
 assert.equal(eclair.revenue,240000);
@@ -39,6 +47,12 @@ assert.equal(eclair.profitLabel,'예상이익');
 const brownie=B.classFinancials({date:'2026-08-31',menu:'꾸덕브라우니',people:5,fee:50000,batchCount:1,rent:81000},{recipes,schedule,source:'schedule'});
 assert.equal(brownie.recipe.name,'브라우니');
 assert.equal(brownie.profit,164248);
+
+const cookie=B.classFinancials({date:'2026-09-10',menu:'쿠키',people:4,fee:60000,batchCount:1,rent:81000},{recipes,schedule,source:'schedule'});
+assert.equal(cookie.material,6695);
+assert.equal(cookie.profit,152305);
+assert.equal(cookie.costSource,'overlay');
+assert.equal(cookie.confidence,'estimated');
 
 const history=B.classFinancials({date:'2026-08-10',menu:'소금빵',people:4,fee:50000,rent:81000},{recipes,schedule,source:'history'});
 assert.equal(history.profitLabel,'현재 원가 기준 추정이익','historical modeled profit must be labeled as current-cost estimate');
