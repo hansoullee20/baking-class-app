@@ -1,0 +1,135 @@
+(() => {
+  const num = v => Number.isFinite(Number(v)) ? Number(v) : 0;
+
+  function dayName(date){
+    try { return dow(date); } catch(e) {}
+    try { return ['일','월','화','수','목','금','토'][new Date(`${date}T00:00:00`).getDay()]; } catch(e) { return ''; }
+  }
+  function startHour(raw){
+    const t = String(raw?.time || '').match(/^(\d{1,2})(?::(\d{2}))?/);
+    if (t) return Number(t[1]) + Number(t[2] || 0) / 60;
+    const s = String(raw?.session || '');
+    if (s.includes('저녁') || s.includes('야간')) return 19;
+    if (s.includes('오후')) return 13;
+    return 10;
+  }
+  function hourlyRate(date, hour){
+    if (dayName(date) === '토') return 20000;
+    return hour >= 18 ? 19000 : 17000;
+  }
+  function baseRental(date, start, hours){
+    let left = Math.max(3, num(hours) || 3), h = start, total = 0;
+    while (left > 0.0001){
+      const step = Math.min(1, left);
+      total += hourlyRate(date, h) * step;
+      h += step;
+      left -= step;
+    }
+    return Math.round(total);
+  }
+  function rentalQuote(raw){
+    const students = Math.max(0, num(raw?.people));
+    const totalPeople = students + 1; // 수강생 + 강사 1명
+    const includedPeople = 2;
+    const extraPeople = Math.max(0, totalPeople - includedPeople);
+    const extraPersonFee = 10000;
+    const hours = Math.max(3, num(raw?.durationHours || raw?.rentalHours || 3));
+    const start = startHour(raw);
+    const base = baseRental(raw?.date, start, hours);
+    const extra = extraPeople * extraPersonFee;
+    return {
+      total: base + extra,
+      base,
+      extra,
+      students,
+      totalPeople,
+      includedPeople,
+      extraPeople,
+      extraPersonFee,
+      hours,
+      start,
+      day: dayName(raw?.date),
+      rateStart: hourlyRate(raw?.date, start)
+    };
+  }
+  function rentalEstimate(students, type='weekday', start=10, hours=3){
+    const fakeDate = type === 'sat' ? '2026-08-29' : '2026-08-31';
+    const fakeStart = type === 'evening' ? 19 : start;
+    return rentalQuote({date:fakeDate,time:`${String(Math.floor(fakeStart)).padStart(2,'0')}:00`,people:students,durationHours:hours}).total;
+  }
+  function rentalLabel(raw){
+    const q = rentalQuote(raw);
+    const rate = q.day === '토' ? '토요일 20,000원/h' : q.start >= 18 ? '평일 저녁 19,000원/h' : '평일 낮 17,000원/h';
+    return `${q.hours}시간 · 총 ${q.totalPeople}인(수강생 ${q.students}+강사 1) · ${rate} · 추가 ${q.extraPeople}인`;
+  }
+
+  window.sunnyRentalQuote = rentalQuote;
+  window.sunnyRentalEstimate = rentalEstimate;
+  window.sunnyRentalLabel = rentalLabel;
+
+  function normalizeRows(){
+    try {
+      if (schedule?.settings){
+        schedule.settings.rentPricing = {
+          minimumHours: 3,
+          weekdayDayHourly: 17000,
+          weekdayEveningHourly: 19000,
+          saturdayHourly: 20000,
+          includedPeople: 2,
+          instructorCount: 1,
+          extraPersonFee: 10000,
+          note: '수강생+강사 총 인원 기준. 총 3인부터 1인당 10,000원 추가.'
+        };
+      }
+      (schedule?.rows || []).forEach(r => {
+        if (r.rentManual === true) return;
+        const q = rentalQuote(r);
+        r.rent = q.total;
+        r.rentAuto = true;
+        r.rentalHours = q.hours;
+        r.rentalHeadcount = q.totalPeople;
+      });
+      (history?.records || []).forEach(r => {
+        if (r.rentManual === true) return;
+        const q = rentalQuote(r);
+        r.rent = q.total;
+        r.rentAuto = true;
+        r.rentalHours = q.hours;
+        r.rentalHeadcount = q.totalPeople;
+      });
+    } catch(e) {}
+  }
+
+  // 사용자가 대관료 입력칸을 직접 바꾸면 이후에는 그 수업만 수동값을 우선합니다.
+  document.addEventListener('change', e => {
+    const el = e.target.closest?.('#scheduleList [data-k="rent"]');
+    if (!el) return;
+    const card = el.closest('.schedule');
+    const i = Number(card?.dataset?.i);
+    if (!Number.isFinite(i) || !schedule?.rows?.[i]) return;
+    schedule.rows[i].rentManual = true;
+    schedule.rows[i].rentAuto = false;
+  }, true);
+
+  function wrap(name){
+    try {
+      const old = window[name];
+      if (typeof old !== 'function') return;
+      window[name] = function(...args){
+        normalizeRows();
+        return old.apply(this,args);
+      };
+    } catch(e) {}
+  }
+  ['renderSchedule','renderDashboard','renderFinance','renderAll'].forEach(wrap);
+
+  function refresh(){
+    normalizeRows();
+    try { renderDashboard(); } catch(e) {}
+    try { renderSchedule(); } catch(e) {}
+    try { renderFinance(); } catch(e) {}
+  }
+  setTimeout(refresh, 500);
+  setTimeout(normalizeRows, 1200);
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')setTimeout(refresh,120)});
+})();
