@@ -178,7 +178,7 @@ jobs:
           python - <<'PY'
           from pathlib import Path
           p=Path('index.html'); s=p.read_text(encoding='utf-8')
-          css='<link rel="stylesheet" href="./finance-breakdown.css?v=20260830-flow1">'; js='<script src="./finance-breakdown.js?v=20260830-flow1"></script>'
+          css='<link rel="stylesheet" href="./finance-breakdown.css?v=20260830-flow1">'; js='<script src="./finance-breakdown.js?v=20260830-flow2"></script>'
           if css not in s: s=s.replace('</head>',css+'</head>')
           if js not in s: s=s.replace('</body>',js+'</body>')
           p.write_text(s,encoding='utf-8')
@@ -209,6 +209,7 @@ jobs:
           node --check chart-interactions.js
           node --check finance-pro.js
           node --check finance-breakdown.js
+          node --check rent-rule.js
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
