@@ -12,7 +12,7 @@ permissions:
 
 concurrency:
   group: "pages"
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   deploy:
@@ -42,20 +42,31 @@ jobs:
       - name: Test normalized data layer
         run: node tests/data-normalization.test.js
 
-      - name: Guard runtime composition
+      - name: Guard runtime and repository composition
         run: |
           python - <<'PY'
           from pathlib import Path
           html=Path('index.html').read_text(encoding='utf-8')
-          forbidden=['rent-rule.js','profit-fix.js','finance-breakdown.js','finance-pro.js','recipe-costing-fix.js','upcoming-labels.js','analytics.js','dashboard-layout.js','chart-interactions.js','decision-ui.js']
-          found=[x for x in forbidden if x in html]
-          if found:
-              raise SystemExit('Deprecated runtime modules are still loaded: '+', '.join(found))
+          deprecated=[
+            'rent-rule.js','profit-fix.js','finance-breakdown.js','finance-breakdown.css',
+            'finance-pro.js','finance-pro.css','recipe-costing-fix.js','recipe-costing.js','recipe-costing.css',
+            'upcoming-labels.js','upcoming-labels.css','analytics.js','analytics.css',
+            'dashboard-layout.js','dashboard-layout.css','chart-interactions.js','chart-interactions.css',
+            'decision-ui.js','monthly-forecast.js','monthly-forecast.css','tablet-profit-fix.css'
+          ]
+          loaded=[x for x in deprecated if x in html]
+          existing=[x for x in deprecated if Path(x).exists()]
+          if loaded:
+              raise SystemExit('Deprecated modules are loaded: '+', '.join(loaded))
+          if existing:
+              raise SystemExit('Deprecated files reintroduced: '+', '.join(existing))
           required=['business-engine.js','data-normalization.js','business-engine-adapter.js','operations-ui.js','decision-ui.css','operations-ui.css']
-          missing=[x for x in required if x not in html]
+          missing=[x for x in required if x not in html or not Path(x).exists()]
           if missing:
-              raise SystemExit('Required runtime module missing: '+', '.join(missing))
-          print('Release 4 runtime composition guard passed')
+              raise SystemExit('Required runtime asset missing: '+', '.join(missing))
+          if Path('docs/index.html').exists():
+              raise SystemExit('Obsolete duplicate docs/index.html must not be restored')
+          print('Release 5 repository guard passed')
           PY
 
       - name: Setup Pages
