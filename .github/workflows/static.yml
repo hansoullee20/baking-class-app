@@ -176,8 +176,8 @@ jobs:
           from pathlib import Path
           p = Path('index.html')
           s = p.read_text(encoding='utf-8')
-          css = '<link rel="stylesheet" href="./dashboard-layout.css?v=20260830-d2">'
-          js = '<script src="./dashboard-layout.js?v=20260830-d2"></script>'
+          css = '<link rel="stylesheet" href="./dashboard-layout.css?v=20260830-d3">'
+          js = '<script src="./dashboard-layout.js?v=20260830-d3"></script>'
           if css not in s:
               s = s.replace('</head>', css + '</head>')
           if js not in s:
@@ -191,9 +191,9 @@ jobs:
           from pathlib import Path
           p = Path('index.html')
           s = p.read_text(encoding='utf-8')
-          css = '<link rel="stylesheet" href="./chart-interactions.css?v=20260830-paychart1">'
-          pay = '<script src="./bulk-payment.js?v=20260830-paychart1"></script>'
-          chart = '<script src="./chart-interactions.js?v=20260830-paychart1"></script>'
+          css = '<link rel="stylesheet" href="./chart-interactions.css?v=20260830-paychart2">'
+          pay = '<script src="./bulk-payment.js?v=20260830-paychart2"></script>'
+          chart = '<script src="./chart-interactions.js?v=20260830-paychart2"></script>'
           if css not in s:
               s = s.replace('</head>', css + '</head>')
           if pay not in s:
@@ -216,6 +216,9 @@ jobs:
           if not scripts:
               raise SystemExit('No inline dashboard script found')
           Path('/tmp/dashboard-inline.js').write_text('\n'.join(scripts), encoding='utf-8')
+          for name in ('bulk-payment.js','dashboard-layout.js'):
+              if 'MutationObserver' in Path(name).read_text(encoding='utf-8'):
+                  raise SystemExit(f'Unsafe DOM observer found in {name}')
           PY
           node --check /tmp/dashboard-inline.js
           node --check auth-persist.js
