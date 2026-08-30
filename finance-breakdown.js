@@ -1,4 +1,20 @@
 (() => {
+  if (!document.querySelector('link[data-recipe-costing]')) {
+    const l=document.createElement('link');
+    l.rel='stylesheet';
+    l.href='./recipe-costing.css?v=20260830-recipe1';
+    l.dataset.recipeCosting='1';
+    document.head.appendChild(l);
+  }
+  if (!document.querySelector('script[data-recipe-costing]')) {
+    const s=document.createElement('script');
+    s.src='./recipe-costing.js?v=20260830-recipe1';
+    s.dataset.recipeCosting='1';
+    document.head.appendChild(s);
+  }
+})();
+
+(() => {
   if (!document.querySelector('script[data-sunny-rent-rule]')) {
     const s=document.createElement('script');
     s.src='./rent-rule.js?v=20260830-rent4';
