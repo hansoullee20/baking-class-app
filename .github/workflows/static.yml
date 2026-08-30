@@ -1,4 +1,3 @@
-# Simple workflow for deploying static content to GitHub Pages
 name: Deploy static content to Pages
 
 on:
@@ -25,194 +24,40 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
-
-      - name: Fix dashboard JavaScript syntax
+      - name: Validate JavaScript
         run: |
-          python - <<'PY'
-          from pathlib import Path
-          p = Path('index.html')
-          s = p.read_text(encoding='utf-8')
-          bad = ".sort((a,b)=>({missing:0,partial:1,final:2}[group(a)]-({missing:0,partial:1,final:2}[group(b)])||a.name.localeCompare(b.name,'ko'));"
-          good = ".sort((a,b)=>({missing:0,partial:1,final:2}[group(a)]-({missing:0,partial:1,final:2}[group(b)]))||a.name.localeCompare(b.name,'ko'));"
-          if bad in s:
-              s = s.replace(bad, good, 1)
-          p.write_text(s, encoding='utf-8')
-          PY
-
-      - name: Link recipe aliases
-        run: |
-          python - <<'PY'
-          from pathlib import Path
-          p = Path('index.html'); s = p.read_text(encoding='utf-8')
-          old = "function recipeOf(x){return recipes.find(r=>r.name===x)||null}"
-          new = "function recipeOf(x){const aliases={'꾸덕브라우니':'브라우니','크랙소금빵':'소금빵','크랙소금빵 원데이':'소금빵'};return recipes.find(r=>r.name===x)||recipes.find(r=>r.name===aliases[x])||null}"
-          if old in s: s = s.replace(old, new, 1)
-          p.write_text(s, encoding='utf-8')
-          p = Path('class-ops.js'); s = p.read_text(encoding='utf-8')
-          old = "return (recipes || []).find(r => r.name === name) || null;"
-          new = "const aliases = {'꾸덕브라우니':'브라우니','크랙소금빵':'소금빵','크랙소금빵 원데이':'소금빵'}; return (recipes || []).find(r => r.name === name) || (recipes || []).find(r => r.name === aliases[name]) || null;"
-          if old in s: s = s.replace(old, new, 1)
-          p.write_text(s, encoding='utf-8')
-          p = Path('profit-fix.js'); s = p.read_text(encoding='utf-8')
-          old = "const names = [raw?.menu, raw?.recipeCandidate].filter(Boolean);"
-          new = "const aliases = {'꾸덕브라우니':'브라우니','크랙소금빵':'소금빵','크랙소금빵 원데이':'소금빵'}; const names = [raw?.menu, raw?.recipeCandidate, aliases[raw?.menu], aliases[raw?.classTitle]].filter(Boolean);"
-          if old in s: s = s.replace(old, new, 1)
-          p.write_text(s, encoding='utf-8')
-          p = Path('upcoming-labels.js'); s = p.read_text(encoding='utf-8')
-          old = "const r = (recipes || []).find(x => x.name === name) || null;"
-          new = "const aliases = {'꾸덕브라우니':'브라우니','크랙소금빵':'소금빵','크랙소금빵 원데이':'소금빵'}; const r = (recipes || []).find(x => x.name === name) || (recipes || []).find(x => x.name === aliases[name]) || null;"
-          if old in s: s = s.replace(old, new, 1)
-          p.write_text(s, encoding='utf-8')
-          PY
-
-      - name: Add persistent auth UX
-        run: |
-          python - <<'PY'
-          from pathlib import Path
-          p=Path('index.html'); s=p.read_text(encoding='utf-8'); tag='<script src="./auth-persist.js"></script>'
-          if tag not in s: s=s.replace('</body>',tag+'</body>'); p.write_text(s,encoding='utf-8')
-          PY
-
-      - name: Apply Sunny's Atelier light and dark themes
-        run: |
-          python - <<'PY'
-          from pathlib import Path
-          p=Path('index.html'); s=p.read_text(encoding='utf-8')
-          boot='''<script>(function(){try{var k='sunny-atelier-color-mode';var v=localStorage.getItem(k);var m=v||((window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light');document.documentElement.dataset.theme=m;document.documentElement.style.colorScheme=m==='light'?'only light':'dark';}catch(e){}})();</script>'''
-          scheme='<meta name="color-scheme" content="light dark">'
-          css='<link rel="stylesheet" href="./sunny-theme.css?v=20260830-dark2">'; dark='<link rel="stylesheet" href="./sunny-dark.css?v=20260830-dark2">'; js='<script src="./sunny-theme.js?v=20260830-dark2"></script>'
-          if scheme not in s: s=s.replace('</head>',scheme+'</head>')
-          if boot not in s: s=s.replace('</head>',boot+css+dark+'</head>')
-          else:
-            if css not in s: s=s.replace('</head>',css+'</head>')
-            if dark not in s: s=s.replace('</head>',dark+'</head>')
-          if js not in s: s=s.replace('</body>',js+'</body>')
-          p.write_text(s,encoding='utf-8')
-          PY
-
-      - name: Add embedded analytics and visualizations
-        run: |
-          python - <<'PY'
-          from pathlib import Path
-          p=Path('index.html'); s=p.read_text(encoding='utf-8'); css='<link rel="stylesheet" href="./analytics.css?v=20260830-a3">'; js='<script src="./analytics.js?v=20260829-a2"></script>'
-          if css not in s: s=s.replace('</head>',css+'</head>')
-          if js not in s: s=s.replace('</body>',js+'</body>')
-          p.write_text(s,encoding='utf-8')
-          PY
-
-      - name: Add class payments and profitability planning
-        run: |
-          python - <<'PY'
-          from pathlib import Path
-          p=Path('index.html'); s=p.read_text(encoding='utf-8'); css='<link rel="stylesheet" href="./class-ops.css?v=20260830-ops4">'; js='<script src="./class-ops.js?v=20260830-ops4"></script>'
-          if css not in s: s=s.replace('</head>',css+'</head>')
-          if js not in s: s=s.replace('</body>',js+'</body>')
-          p.write_text(s,encoding='utf-8')
-          PY
-
-      - name: Add tablet profitability layout fix
-        run: |
-          python - <<'PY'
-          from pathlib import Path
-          p=Path('index.html'); s=p.read_text(encoding='utf-8'); css='<link rel="stylesheet" href="./tablet-profit-fix.css?v=20260830-tablet1">'
-          if css not in s: s=s.replace('</head>',css+'</head>')
-          p.write_text(s,encoding='utf-8')
-          PY
-
-      - name: Fix completed-class profit calculations
-        run: |
-          python - <<'PY'
-          from pathlib import Path
-          p=Path('index.html'); s=p.read_text(encoding='utf-8'); js='<script src="./profit-fix.js?v=20260830-profit3"></script>'
-          if js not in s: s=s.replace('</body>',js+'</body>')
-          p.write_text(s,encoding='utf-8')
-          PY
-
-      - name: Label upcoming class metrics
-        run: |
-          python - <<'PY'
-          from pathlib import Path
-          p=Path('index.html'); s=p.read_text(encoding='utf-8'); css='<link rel="stylesheet" href="./upcoming-labels.css?v=20260830-up3">'; js='<script src="./upcoming-labels.js?v=20260830-up3"></script>'
-          if css not in s: s=s.replace('</head>',css+'</head>')
-          if js not in s: s=s.replace('</body>',js+'</body>')
-          p.write_text(s,encoding='utf-8')
-          PY
-
-      - name: Organize dashboard layout
-        run: |
-          python - <<'PY'
-          from pathlib import Path
-          p=Path('index.html'); s=p.read_text(encoding='utf-8'); css='<link rel="stylesheet" href="./dashboard-layout.css?v=20260830-d3">'; js='<script src="./dashboard-layout.js?v=20260830-d3"></script>'
-          if css not in s: s=s.replace('</head>',css+'</head>')
-          if js not in s: s=s.replace('</body>',js+'</body>')
-          p.write_text(s,encoding='utf-8')
-          PY
-
-      - name: Add bulk payment and interactive monthly chart
-        run: |
-          python - <<'PY'
-          from pathlib import Path
-          p=Path('index.html'); s=p.read_text(encoding='utf-8')
-          css='<link rel="stylesheet" href="./chart-interactions.css?v=20260830-paychart6">'; pay='<script src="./bulk-payment.js?v=20260830-paychart6"></script>'; chart='<script src="./chart-interactions.js?v=20260830-paychart6"></script>'
-          if css not in s: s=s.replace('</head>',css+'</head>')
-          if pay not in s: s=s.replace('</body>',pay+'</body>')
-          if chart not in s: s=s.replace('</body>',chart+'</body>')
-          p.write_text(s,encoding='utf-8')
-          PY
-
-      - name: Professionalize finance workspace
-        run: |
-          python - <<'PY'
-          from pathlib import Path
-          p=Path('index.html'); s=p.read_text(encoding='utf-8')
-          css='<link rel="stylesheet" href="./finance-pro.css?v=20260830-fin1">'; js='<script src="./finance-pro.js?v=20260830-fin1"></script>'
-          if css not in s: s=s.replace('</head>',css+'</head>')
-          if js not in s: s=s.replace('</body>',js+'</body>')
-          p.write_text(s,encoding='utf-8')
-          PY
-
-      - name: Add finance money flow breakdown
-        run: |
-          python - <<'PY'
-          from pathlib import Path
-          p=Path('index.html'); s=p.read_text(encoding='utf-8')
-          css='<link rel="stylesheet" href="./finance-breakdown.css?v=20260830-flow1">'; js='<script src="./finance-breakdown.js?v=20260830-flow3"></script>'; fix='<script src="./recipe-costing-fix.js?v=20260830-recipefix1"></script>'
-          if css not in s: s=s.replace('</head>',css+'</head>')
-          if js not in s: s=s.replace('</body>',js+'</body>')
-          if fix not in s: s=s.replace('</body>',fix+'</body>')
-          p.write_text(s,encoding='utf-8')
-          PY
-
-      - name: Validate dashboard JavaScript
-        run: |
-          python - <<'PY'
-          from pathlib import Path
-          import re
-          html=Path('index.html').read_text(encoding='utf-8'); scripts=[]
-          for m in re.finditer(r'<script([^>]*)>(.*?)</script>',html,flags=re.S|re.I):
-            if 'src=' not in m.group(1).lower(): scripts.append(m.group(2))
-          if not scripts: raise SystemExit('No inline dashboard script found')
-          Path('/tmp/dashboard-inline.js').write_text('\n'.join(scripts),encoding='utf-8')
-          for name in ('bulk-payment.js','dashboard-layout.js','finance-pro.js','finance-breakdown.js','recipe-costing.js','recipe-costing-fix.js'):
-            if 'MutationObserver' in Path(name).read_text(encoding='utf-8'): raise SystemExit(f'Unsafe DOM observer found in {name}')
-          PY
-          node --check /tmp/dashboard-inline.js
+          node --check app.js
+          node --check business-engine.js
+          node --check business-engine-adapter.js
           node --check auth-persist.js
           node --check sunny-theme.js
           node --check analytics.js
           node --check class-ops.js
-          node --check profit-fix.js
-          node --check upcoming-labels.js
-          node --check dashboard-layout.js
           node --check bulk-payment.js
           node --check chart-interactions.js
-          node --check finance-pro.js
-          node --check finance-breakdown.js
-          node --check recipe-costing.js
-          node --check recipe-costing-fix.js
-          node --check rent-rule.js
+          node --check dashboard-layout.js
+
+      - name: Test canonical business rules
+        run: node tests/business-engine.test.js
+
+      - name: Guard against legacy finance overrides
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          html=Path('index.html').read_text(encoding='utf-8')
+          forbidden=['rent-rule.js','profit-fix.js','finance-breakdown.js','finance-pro.js','recipe-costing-fix.js','upcoming-labels.js']
+          found=[x for x in forbidden if x in html]
+          if found:
+              raise SystemExit('Legacy calculation modules are still loaded: '+', '.join(found))
+          required=['business-engine.js','business-engine-adapter.js']
+          missing=[x for x in required if x not in html]
+          if missing:
+              raise SystemExit('Canonical engine module missing: '+', '.join(missing))
+          print('runtime composition guard passed')
+          PY
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
