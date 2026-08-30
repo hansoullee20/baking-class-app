@@ -106,9 +106,18 @@ jobs:
         run: |
           python - <<'PY'
           from pathlib import Path
-          p=Path('index.html'); s=p.read_text(encoding='utf-8'); css='<link rel="stylesheet" href="./class-ops.css?v=20260830-ops3">'; js='<script src="./class-ops.js?v=20260830-ops3"></script>'
+          p=Path('index.html'); s=p.read_text(encoding='utf-8'); css='<link rel="stylesheet" href="./class-ops.css?v=20260830-ops4">'; js='<script src="./class-ops.js?v=20260830-ops4"></script>'
           if css not in s: s=s.replace('</head>',css+'</head>')
           if js not in s: s=s.replace('</body>',js+'</body>')
+          p.write_text(s,encoding='utf-8')
+          PY
+
+      - name: Add tablet profitability layout fix
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('index.html'); s=p.read_text(encoding='utf-8'); css='<link rel="stylesheet" href="./tablet-profit-fix.css?v=20260830-tablet1">'
+          if css not in s: s=s.replace('</head>',css+'</head>')
           p.write_text(s,encoding='utf-8')
           PY
 
