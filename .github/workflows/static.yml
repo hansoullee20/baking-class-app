@@ -96,7 +96,7 @@ jobs:
         run: |
           python - <<'PY'
           from pathlib import Path
-          p=Path('index.html'); s=p.read_text(encoding='utf-8'); css='<link rel="stylesheet" href="./analytics.css?v=20260829-a2">'; js='<script src="./analytics.js?v=20260829-a2"></script>'
+          p=Path('index.html'); s=p.read_text(encoding='utf-8'); css='<link rel="stylesheet" href="./analytics.css?v=20260830-a3">'; js='<script src="./analytics.js?v=20260829-a2"></script>'
           if css not in s: s=s.replace('</head>',css+'</head>')
           if js not in s: s=s.replace('</body>',js+'</body>')
           p.write_text(s,encoding='utf-8')
