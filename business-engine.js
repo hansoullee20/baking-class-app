@@ -51,16 +51,22 @@
     for(const name of names){const hit=findRecipeByName(name,list);if(hit)return hit}
     return null;
   }
+  function effectiveCostSpec(recipe){
+    if(!recipe)return null;
+    const overlay=recipe.__costOverlay&&typeof recipe.__costOverlay==='object'?recipe.__costOverlay:null;
+    if(overlay&&overlay.apply!==false&&hasNum(overlay.cost))return{source:'overlay',cost:Number(overlay.cost),status:overlay.cost_status||'조건부',range:overlay.cost_range||null,overlay};
+    return{source:'recipe',cost:hasNum(recipe.cost)?Number(recipe.cost):null,status:recipe.cost_status||'미산정',range:recipe.cost_range||null,overlay:null};
+  }
   function costState(recipe){
-    if(!recipe)return{usable:false,status:'미연결',confidence:'incomplete',amount:null,min:null,max:null};
-    const status=recipe.cost_status||'미산정';
+    if(!recipe)return{usable:false,status:'미연결',confidence:'incomplete',amount:null,min:null,max:null,source:'missing'};
+    const spec=effectiveCostSpec(recipe),status=spec.status;
     const rule=rules?.costing?.costStatuses?.[status]||{usableForEstimate:false,confidence:'incomplete'};
-    const usable=!!rule.usableForEstimate&&hasNum(recipe.cost);
-    let amount=usable?Number(recipe.cost):null,min=amount,max=amount;
-    if(usable&&recipe.cost_range&&hasNum(recipe.cost_range.min)&&hasNum(recipe.cost_range.max)){
-      min=Number(recipe.cost_range.min);max=Number(recipe.cost_range.max);
+    const usable=!!rule.usableForEstimate&&hasNum(spec.cost);
+    let amount=usable?Number(spec.cost):null,min=amount,max=amount;
+    if(usable&&spec.range&&hasNum(spec.range.min)&&hasNum(spec.range.max)){
+      min=Number(spec.range.min);max=Number(spec.range.max);
     }
-    return{usable,status,confidence:rule.confidence||'incomplete',amount,min,max};
+    return{usable,status,confidence:rule.confidence||'incomplete',amount,min,max,source:spec.source,overlay:spec.overlay};
   }
   function batchCount(raw){
     const def=num(rules?.batching?.defaultBatchCount)||1;
@@ -111,11 +117,11 @@
     if(actual!=null)label=rules?.profit?.actualLabel||'실제이익';
     else if(source==='history')label=rules?.profit?.historyEstimateLabel||'현재 원가 기준 추정이익';
     const confidence=actual!=null?'actual':mat.costState.confidence;
-    return{source,recipe,revenue:rev,material:mat.amount,materialMin:mat.min,materialMax:mat.max,batchCount:mat.batchCount,rent:r,packing,other,total,estimatedProfit:est,estimatedProfitMin:estMin,estimatedProfitMax:estMax,actualProfit:actual,profit,margin,roi,breakEven,costStatus:mat.costState.status,confidence,profitLabel:label};
+    return{source,recipe,revenue:rev,material:mat.amount,materialMin:mat.min,materialMax:mat.max,batchCount:mat.batchCount,rent:r,packing,other,total,estimatedProfit:est,estimatedProfitMin:estMin,estimatedProfitMax:estMax,actualProfit:actual,profit,margin,roi,breakEven,costStatus:mat.costState.status,costSource:mat.costState.source,confidence,profitLabel:label};
   }
   function classKey(raw){return raw?.class_id||raw?.id||[raw?.date,raw?.time||raw?.session,canonicalRecipeName(raw?.menu||raw?.classTitle||'')].join('|')}
   function dedupeEvents(rows){
     const seen=new Set();return (rows||[]).filter(x=>{const k=classKey(x?.raw||x);if(seen.has(k))return false;seen.add(k);return true});
   }
-  return{version:'1.0.0',DEFAULT_RULES,setRules,getRules,dow,canonicalRecipeName,findRecipeByName,findRecipe,costState,batchCount,revenue,rent,materialCost,payment,classFinancials,classKey,dedupeEvents};
+  return{version:'1.1.0',DEFAULT_RULES,setRules,getRules,dow,canonicalRecipeName,findRecipeByName,findRecipe,effectiveCostSpec,costState,batchCount,revenue,rent,materialCost,payment,classFinancials,classKey,dedupeEvents};
 });
