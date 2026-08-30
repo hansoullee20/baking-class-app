@@ -44,6 +44,14 @@ jobs:
       - name: Test normalized data layer
         run: node tests/data-normalization.test.js
 
+      - name: Checkout live ops data
+        run: git clone --depth 1 https://github.com/hansoullee20/baking-class-ops.git /tmp/baking-class-ops
+
+      - name: Test live ops data model
+        env:
+          OPS_DATA_DIR: /tmp/baking-class-ops/data
+        run: node tests/ops-data-integration.test.js
+
       - name: Guard against legacy finance overrides
         run: |
           python - <<'PY'
