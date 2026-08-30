@@ -2,6 +2,7 @@
   const THEME_KEY = 'sunny-atelier-color-mode';
   const root = document.documentElement;
   const metaTheme = document.querySelector('meta[name="theme-color"]');
+  const metaScheme = document.querySelector('meta[name="color-scheme"]');
   const media = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
 
   function preferredMode() {
@@ -12,8 +13,11 @@
 
   function applyMode(mode, persist = false) {
     root.dataset.theme = mode;
-    root.style.colorScheme = mode;
-    if (metaTheme) metaTheme.setAttribute('content', mode === 'dark' ? '#0c1420' : '#17375e');
+    // Chromium/Safari use color-scheme as a signal for built-in auto darkening.
+    // `only light` keeps the authored light palette from being darkened a second time.
+    root.style.colorScheme = mode === 'light' ? 'only light' : 'dark';
+    if (metaScheme) metaScheme.setAttribute('content', mode === 'light' ? 'only light' : 'dark');
+    if (metaTheme) metaTheme.setAttribute('content', mode === 'dark' ? '#0c1420' : '#f7f0e5');
     const btn = document.getElementById('themeToggle');
     if (btn) {
       btn.textContent = mode === 'dark' ? '☀ Light' : '☾ Dark';
@@ -23,7 +27,6 @@
     if (persist) localStorage.setItem(THEME_KEY, mode);
   }
 
-  // Apply the saved/device preference before adding branded components.
   applyMode(preferredMode());
 
   document.title = "Sunny's Atelier · 베이킹 운영";
