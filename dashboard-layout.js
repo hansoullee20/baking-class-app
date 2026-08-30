@@ -4,6 +4,9 @@
   const won=v=>Number.isFinite(Number(v))?'₩'+Math.round(Number(v)).toLocaleString('ko-KR'):'—';
   const safe=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[m]));
 
+  function setText(el,value){
+    if(el && el.textContent!==value) el.textContent=value;
+  }
   function sectionTitle(id,title,sub,before){
     let el=byId(id);
     if(!el){
@@ -13,9 +16,8 @@
       el.innerHTML=`<div><h3>${title}</h3><p>${sub}</p></div>`;
       before?.parentNode?.insertBefore(el,before);
     }else{
-      const h=el.querySelector('h3'),p=el.querySelector('p');
-      if(h) h.textContent=title;
-      if(p) p.textContent=sub;
+      setText(el.querySelector('h3'),title);
+      setText(el.querySelector('p'),sub);
     }
     return el;
   }
@@ -59,15 +61,16 @@
     }catch(e){}
 
     const summary=rows.reduce((a,x)=>{const p=payment(x.row);a.people+=num(x.row.people);a.paid+=p.paid;a.outstanding+=p.outstanding;return a},{people:0,paid:0,outstanding:0});
-    let sum=byId('upcomingSummary');
+    const sum=byId('upcomingSummary');
     if(sum){
       sum.classList.add('dashboard-compact-summary');
-      sum.innerHTML=[
+      const html=[
         ['예정',`${rows.length}회`],
         ['예약',`${summary.people}명`],
         ['입금',won(summary.paid)],
         ['미수금',won(summary.outstanding)]
       ].map(x=>`<div class="dashboard-mini-stat"><span>${x[0]}</span><b>${x[1]}</b></div>`).join('');
+      if(sum.innerHTML!==html) sum.innerHTML=html;
     }
 
     const shown=rows.slice(0,3);
@@ -91,10 +94,9 @@
     const dash=byId('dashboard'); if(!dash) return;
     const hero=dash.querySelector('.hero');
     if(hero){
-      const small=hero.querySelector('small'),h=hero.querySelector('h2'),p=hero.querySelector('p');
-      if(small) small.textContent="SUNNY'S ATELIER · OPERATIONS";
-      if(h) h.textContent='운영 한눈에 보기';
-      if(p) p.textContent='이번 달 숫자와 다음 수업, 매출 흐름만 빠르게 확인합니다.';
+      setText(hero.querySelector('small'),"SUNNY'S ATELIER · OPERATIONS");
+      setText(hero.querySelector('h2'),'운영 한눈에 보기');
+      setText(hero.querySelector('p'),'이번 달 숫자와 다음 수업, 매출 흐름만 빠르게 확인합니다.');
     }
     const kpis=byId('kpis');
     if(kpis) sectionTitle('dashboardSummaryTitle','이번 달 요약','수업 · 수강생 · 매출 · 계산 이익',kpis);
@@ -107,10 +109,10 @@
       if(up){
         up.id='dashboardUpcomingCard';
         const h=up.querySelector(':scope > h3');
-        if(h) h.textContent='다음 수업';
+        setText(h,'다음 수업');
         let sub=up.querySelector('.dashboard-card-sub');
         if(!sub){sub=document.createElement('p');sub.className='dashboard-card-sub';h?.insertAdjacentElement('afterend',sub)}
-        if(sub) sub.textContent='가장 가까운 3개 수업의 인원 · 입금 · 예상이익';
+        setText(sub,'가장 가까운 3개 수업의 인원 · 입금 · 예상이익');
       }
       if(health){health.id='dashboardHealthCard';health.hidden=true}
       sectionTitle('dashboardUpcomingTitle','다음 수업','세부 일정 관리는 일정 탭에서 확인',grid);
@@ -137,8 +139,6 @@
     });
     try{const old=renderDashboard;renderDashboard=function(){old();setTimeout(organize,0)}}catch(e){}
     try{const old=renderAll;renderAll=function(){old();setTimeout(organize,0)}}catch(e){}
-    const dash=byId('dashboard');
-    if(dash){new MutationObserver(()=>{clearTimeout(window.__dashboardOrganizeTimer);window.__dashboardOrganizeTimer=setTimeout(organize,45)}).observe(dash,{childList:true,subtree:true})}
     setTimeout(organize,450);
   }
   install();
