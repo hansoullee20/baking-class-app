@@ -8,7 +8,7 @@
   const DEFAULT_RULES={
     version:1,timezone:'Asia/Seoul',currency:'KRW',
     rental:{mode:'stored_or_default',manualClassValueHasPriority:true,defaultByDay:{saturday:90000,other:81000},hourlyHeadcountAutoModelEnabled:false},
-    batching:{mode:'recipe_per_student_or_manual',defaultBatchCount:1,autoScaleByStudentCount:true,perStudentByRecipe:{},extraBatchByRecipe:{}},
+    batching:{mode:'recipe_per_student',defaultBatchPerStudent:1,defaultBatchCount:1,autoScaleByStudentCount:true,perStudentByRecipe:{},extraBatchByRecipe:{}},
     recipeMatching:{aliases:{'꾸덕브라우니':'브라우니','크랙소금빵':'소금빵','크랙소금빵 원데이':'소금빵','무화과깜빠뉴':'무화과깜파뉴','밤에끌레어':'밤 에끌레어','판나코타':'판나코타 (panna cotta)'}},
     costing:{costStatuses:{'확정':{usableForEstimate:true,confidence:'confirmed'},'조건부':{usableForEstimate:true,confidence:'estimated'},'부분원가':{usableForEstimate:false,confidence:'incomplete'},'미산정':{usableForEstimate:false,confidence:'incomplete'}}},
     profit:{actualProfitOverride:true,historyMethod:'current_recipe_cost_estimate_unless_actual_profit_exists',historyEstimateLabel:'현재 원가 기준 추정이익',plannedEstimateLabel:'예상이익',actualLabel:'실제이익'}
@@ -89,22 +89,19 @@
     return{usable,status,confidence:rule.confidence||'incomplete',amount,min,max,source:spec.source,overlay:spec.overlay};
   }
   function batchPlan(raw,recipe){
-    const def=num(rules?.batching?.defaultBatchCount)||1;
     const recipeName=canonicalRecipeName(recipe?.name||raw?.menu||raw?.recipeCandidate||raw?.classTitle||'');
     const recipeRule=recipe?.class_batching||recipe?.classBatching||{};
     const mapped=rules?.batching?.perStudentByRecipe?.[recipeName];
-    const perStudent=hasNum(recipeRule?.batchPerStudent)?Number(recipeRule.batchPerStudent):(hasNum(mapped)?Number(mapped):null);
+    const defaultPerStudent=hasNum(rules?.batching?.defaultBatchPerStudent)?Number(rules.batching.defaultBatchPerStudent):1;
+    const perStudent=hasNum(recipeRule?.batchPerStudent)?Number(recipeRule.batchPerStudent):(hasNum(mapped)?Number(mapped):defaultPerStudent);
     const mappedExtra=rules?.batching?.extraBatchByRecipe?.[recipeName];
     const extra=hasNum(raw?.extraBatchCount)?Number(raw.extraBatchCount):(hasNum(recipeRule?.extraBatchCount)?Number(recipeRule.extraBatchCount):(hasNum(mappedExtra)?Number(mappedExtra):0));
-    if(raw?.batchMode==='manual'&&hasNum(raw?.batchCount)&&Number(raw.batchCount)>0){
+    if(raw?.batchMode==='manual'&&hasNum(raw?.batchCount)&&Number(raw.batchCount)>=0){
       return{count:Number(raw.batchCount),mode:'manual_override',perStudent:null,extra:0,recipeName};
     }
-    if(perStudent!=null&&perStudent>0){
-      const people=Math.max(0,num(raw?.people));
-      return{count:people*perStudent+Math.max(0,extra),mode:'per_student',perStudent,extra:Math.max(0,extra),recipeName};
-    }
-    const count=hasNum(raw?.batchCount)&&Number(raw.batchCount)>0?Number(raw.batchCount):def;
-    return{count,mode:'manual',perStudent:null,extra:0,recipeName};
+    const people=Math.max(0,num(raw?.people));
+    const count=people*Math.max(0,perStudent)+Math.max(0,extra);
+    return{count,mode:'per_student',perStudent:Math.max(0,perStudent),extra:Math.max(0,extra),recipeName};
   }
   function batchCount(raw,recipe){return batchPlan(raw,recipe).count}
   function revenue(raw){
@@ -160,5 +157,5 @@
   function dedupeEvents(rows){
     const seen=new Set();return (rows||[]).filter(x=>{const k=classKey(x?.raw||x);if(seen.has(k))return false;seen.add(k);return true});
   }
-  return{version:'1.4.0',DEFAULT_RULES,setRules,getRules,dow,zonedDate,effectiveStatus,canonicalRecipeName,findRecipeByName,findRecipe,effectiveCostSpec,costState,batchPlan,batchCount,revenue,rent,materialCost,payment,classFinancials,classKey,dedupeEvents};
+  return{version:'1.5.0',DEFAULT_RULES,setRules,getRules,dow,zonedDate,effectiveStatus,canonicalRecipeName,findRecipeByName,findRecipe,effectiveCostSpec,costState,batchPlan,batchCount,revenue,rent,materialCost,payment,classFinancials,classKey,dedupeEvents};
 });
