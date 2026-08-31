@@ -7,6 +7,8 @@ const editor=fs.readFileSync('calendar-class-editor.js','utf8');
 const status=fs.readFileSync('calendar-status.js','utf8');
 const ia=fs.readFileSync('information-architecture.js','utf8');
 const iaCss=fs.readFileSync('information-architecture.css','utf8');
+const refine=fs.readFileSync('workspace-refinement.js','utf8');
+const refineCss=fs.readFileSync('workspace-refinement.css','utf8');
 const html=fs.readFileSync('index.html','utf8');
 
 assert(!ui.includes('toISOString()'),'operations UI must not use UTC ISO conversion for local month boundaries');
@@ -40,14 +42,27 @@ assert(ia.includes('forecast.hidden=true'),'finance must suppress fixed next-mon
 assert(iaCss.includes('#calendar #calendarClassDetail')&&iaCss.includes('display:none!important'),'inline calendar detail must stay hidden in favor of the single day popup');
 assert(iaCss.includes('#dashboard #operationsDashboard'),'legacy repeated dashboard summary must stay hidden');
 
+assert(refine.includes("validCategories=['빵류','디저트류','케이크류']"),'recipe workspace must expose exactly bread, dessert, and cake categories');
+assert(refine.includes('recipeCategory'),'recipe workspace must classify recipes');
+assert(refine.includes("mark('recipes')"),'manual recipe category changes must persist with recipe data');
+assert(refine.includes('data-quick-paid'),'calendar participant rows must expose a direct paid checkbox');
+assert(refine.includes("select.value=check.checked?'입금완료':'미입금'"),'paid checkbox must drive the canonical participant payment status');
+assert(refine.includes('fill.click()'),'participant rows must auto-fill to the booked student count');
+assert(refine.includes('B.payment'),'finance visualization must read canonical payment totals');
+assert(refine.includes('B.classFinancials'),'finance visualization must read canonical revenue/profit calculations');
+assert(refine.includes('renderMonthlyBars')&&refine.includes('renderProfitBars'),'finance must provide visual trend and menu-profit charts');
+assert(refineCss.includes('.finance-month-chart')&&refineCss.includes('.finance-ring')&&refineCss.includes('.finance-profit-bars'),'finance visual styles must remain available');
+
 assert(html.includes('id="calendarClassDetail"'),'calendar compatibility host must exist for legacy runtime');
 assert(!html.includes('<button data-page="schedule">'),'schedule management must not remain a visible navigation destination');
 assert(!html.includes('<button data-page="planner">'),'standalone month planner must not remain a visible navigation destination');
 assert(html.includes('calendar-status.js'),'calendar status runtime must be loaded');
 assert(html.includes('information-architecture.js'),'role-separation runtime must be loaded explicitly');
 assert(html.includes('information-architecture.css'),'role-separation styling must be loaded explicitly');
+assert(html.includes('workspace-refinement.js'),'recipe/payment/finance refinement runtime must be loaded explicitly');
+assert(html.includes('workspace-refinement.css'),'recipe/payment/finance refinement styles must be loaded explicitly');
 
-const order=['app.js','business-engine.js','data-normalization.js','class-ops-canonical.js','business-engine-adapter.js','operations-ui.js','management-planner.js','calendar-class-editor.js','calendar-status.js','information-architecture.js'].map(x=>html.indexOf(x));
+const order=['app.js','business-engine.js','data-normalization.js','class-ops-canonical.js','business-engine-adapter.js','operations-ui.js','management-planner.js','calendar-class-editor.js','calendar-status.js','information-architecture.js','workspace-refinement.js'].map(x=>html.indexOf(x));
 assert(order.every(x=>x>=0),'all canonical runtime modules must be loaded');
 for(let i=1;i<order.length;i++)assert(order[i]>order[i-1],`runtime script order invalid at position ${i}`);
 
