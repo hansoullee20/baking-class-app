@@ -92,3 +92,11 @@
   document.addEventListener('click',e=>{if(e.target.closest('[data-page="calendar"],#prevMonth,#nextMonth,#todayMonth'))setTimeout(decorateCalendar,90)},true);
   setTimeout(decorateCalendar,650);
 })();
+
+(() => {
+  if(document.querySelector('script[data-information-architecture]'))return;
+  const script=document.createElement('script');
+  script.src='information-architecture.js?v=20260831-r1';
+  script.dataset.informationArchitecture='1';
+  document.body.appendChild(script);
+})();
