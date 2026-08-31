@@ -38,6 +38,7 @@ jobs:
           node --check workspace-refinement.js
           node --check recipe-ingredient-costs.js
           node --check finance-ledger-detail.js
+          node --check finance-unified.js
           node --check auth-persist.js
           node --check sunny-theme.js
           node --check class-ops-canonical.js
@@ -65,6 +66,8 @@ jobs:
           recipe_costs=Path('recipe-ingredient-costs.js').read_text(encoding='utf-8')
           ledger=Path('finance-ledger-detail.js').read_text(encoding='utf-8')
           ledger_css=Path('finance-ledger-detail.css').read_text(encoding='utf-8')
+          unified=Path('finance-unified.js').read_text(encoding='utf-8')
+          unified_css=Path('finance-unified.css').read_text(encoding='utf-8')
           deprecated=[
             'rent-rule.js','profit-fix.js','finance-breakdown.js','finance-breakdown.css',
             'finance-pro.js','finance-pro.css','recipe-costing-fix.js','recipe-costing.js','recipe-costing.css',
@@ -76,7 +79,7 @@ jobs:
           existing=[x for x in deprecated if Path(x).exists()]
           if loaded: raise SystemExit('Deprecated modules are loaded: '+', '.join(loaded))
           if existing: raise SystemExit('Deprecated files reintroduced: '+', '.join(existing))
-          required=['business-engine.js','data-normalization.js','business-engine-adapter.js','operations-ui.js','management-planner.js','calendar-class-editor.js','calendar-status.js','information-architecture.js','workspace-refinement.js','recipe-ingredient-costs.js','finance-ledger-detail.js','class-ops-canonical.js','decision-ui.css','operations-ui.css','management-polish.css','calendar-class-editor.css','calendar-status.css','information-architecture.css','workspace-refinement.css','recipe-ingredient-costs.css','finance-ledger-detail.css']
+          required=['business-engine.js','data-normalization.js','business-engine-adapter.js','operations-ui.js','management-planner.js','calendar-class-editor.js','calendar-status.js','information-architecture.js','workspace-refinement.js','recipe-ingredient-costs.js','finance-ledger-detail.js','finance-unified.js','class-ops-canonical.js','decision-ui.css','operations-ui.css','management-polish.css','calendar-class-editor.css','calendar-status.css','information-architecture.css','workspace-refinement.css','recipe-ingredient-costs.css','finance-ledger-detail.css','finance-unified.css']
           missing=[x for x in required if x not in html or not Path(x).exists()]
           if missing: raise SystemExit('Required runtime asset missing from index: '+', '.join(missing))
           if 'information-architecture.js' in status: raise SystemExit('Calendar status must not dynamically load information architecture')
@@ -94,6 +97,7 @@ jobs:
           if 'data-fin-menu' not in ledger or 'function menuPanel' not in ledger or 'function classDetails' not in ledger: raise SystemExit('Finance profitability or drill-down is incomplete')
           if 'function moneyFlow(' in ledger or 'function monthlyFlowPanel' in ledger: raise SystemExit('Legacy past-first finance surfaces reintroduced')
           if '.finance-focus-grid' not in ledger_css or '.focus-flow-card' not in ledger_css or '.flow-stack' not in ledger_css or '.month-selector' not in ledger_css or '.compare-metrics' not in ledger_css or '.finance-detail-shell' not in ledger_css: raise SystemExit('Current-month finance visual hierarchy styles are incomplete')
+          if 'finance-supercard' not in unified or '.finance-supercard' not in unified_css or '.focus-flow-card>.flow-stack' not in unified_css: raise SystemExit('Unified finance visualization is incomplete')
           if '<button data-page="schedule">' in html or '<button data-page="planner">' in html: raise SystemExit('Duplicate planner/schedule navigation reintroduced')
           if Path('docs/index.html').exists(): raise SystemExit('Obsolete duplicate docs/index.html must not be restored')
           print('Current-month finance workspace guard passed')
