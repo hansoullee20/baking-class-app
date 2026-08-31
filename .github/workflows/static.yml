@@ -87,15 +87,16 @@ jobs:
           if '.recipe-process-details' not in refine_css or '.dayops-advanced' not in refine_css: raise SystemExit('Progressive disclosure styles are incomplete')
           if 'usageCalc' not in recipe_costs or 'price_per_100g' not in recipe_costs or '재료별 계산 합계' not in recipe_costs: raise SystemExit('Recipe ingredient cost detail is incomplete')
           if '저장된 레시피 원가' in recipe_costs: raise SystemExit('Recipe total cost is repeated inside expanded ingredient details')
-          if 'avgClassProfit' not in ledger or 'avgStudentProfit' not in ledger or 'costablePeople' not in ledger or 'data-menu-metric' not in ledger: raise SystemExit('Finance unit economics are incomplete')
-          if 'dedupeDashboard' not in ledger or '#dashboard .lean-signal-grid' not in ledger: raise SystemExit('Dashboard repeated signal cards are not removed')
-          if 'function moneyFlow' not in ledger or 'function kpis(' in ledger or 'ledger-kpis' in ledger: raise SystemExit('Finance must use one money flow instead of repeated four-box KPIs')
-          if 'monthlyFlowPanel' not in ledger or 'x.month!==selectedMonth' not in ledger: raise SystemExit('Selected month must not repeat in monthly comparisons')
-          if 'menuRanking' not in ledger or 'classBreakdown' not in ledger: raise SystemExit('Finance profitability ranking or drill-down is incomplete')
-          if '.money-flow-line' not in ledger_css or '.month-flow-row' not in ledger_css or '.menu-rank-list' not in ledger_css or '.ledger-detail-shell' not in ledger_css: raise SystemExit('Single-direction finance visual hierarchy styles are incomplete')
+          if 'B.classFinancials' not in ledger or 'avgClassProfit' not in ledger or 'avgStudentProfit' not in ledger or 'costablePeople' not in ledger: raise SystemExit('Finance unit economics are incomplete')
+          if "timeZone:'Asia/Seoul'" not in ledger or 'function occurred' not in ledger: raise SystemExit('Finance current-state cutoff is incomplete')
+          if "flowCard('current'" not in ledger or "flowCard('forecast'" not in ledger: raise SystemExit('Current and forecast finance flows must both exist')
+          if 'shiftMonth(cur,-1)' not in ledger or 'data-compare-month' not in ledger or 'function comparePanel' not in ledger: raise SystemExit('Previous-month-first comparison is incomplete')
+          if 'data-fin-menu' not in ledger or 'function menuPanel' not in ledger or 'function classDetails' not in ledger: raise SystemExit('Finance profitability or drill-down is incomplete')
+          if 'function moneyFlow(' in ledger or 'function monthlyFlowPanel' in ledger: raise SystemExit('Legacy past-first finance surfaces reintroduced')
+          if '.finance-focus-grid' not in ledger_css or '.focus-flow-card' not in ledger_css or '.flow-stack' not in ledger_css or '.month-selector' not in ledger_css or '.compare-metrics' not in ledger_css or '.finance-detail-shell' not in ledger_css: raise SystemExit('Current-month finance visual hierarchy styles are incomplete')
           if '<button data-page="schedule">' in html or '<button data-page="planner">' in html: raise SystemExit('Duplicate planner/schedule navigation reintroduced')
           if Path('docs/index.html').exists(): raise SystemExit('Obsolete duplicate docs/index.html must not be restored')
-          print('Single money-flow workspace guard passed')
+          print('Current-month finance workspace guard passed')
           PY
 
       - name: Setup Pages
