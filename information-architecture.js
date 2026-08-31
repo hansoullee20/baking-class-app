@@ -1,7 +1,7 @@
 (() => {
   const B=window.BakingBusiness;
   if(!B)return;
-  function ensureStyle(){if(document.querySelector('link[data-information-architecture]'))return;const link=document.createElement('link');link.rel='stylesheet';link.href='information-architecture.css?v=20260831-r2';link.dataset.informationArchitecture='1';document.head.appendChild(link)}
+  function ensureStyle(){if(document.querySelector('link[href*="information-architecture.css"]'))return;const link=document.createElement('link');link.rel='stylesheet';link.href='information-architecture.css?v=20260831-r2';link.dataset.informationArchitecture='1';document.head.appendChild(link)}
   ensureStyle();
   const $=id=>document.getElementById(id);
   const num=v=>Number.isFinite(Number(v))?Number(v):0;
@@ -100,7 +100,7 @@
     const finance=$('financeDecision');if(finance){const forecast=finance.querySelector(':scope > .forecast');if(forecast)forecast.hidden=true}
     const nextCard=$('nextMonthKpis')?.closest('.card');if(nextCard)nextCard.hidden=true;
   }
-  document.addEventListener('click',e=>{const day=e.target.closest('#calendarGrid .day[data-day]');if(day){e.preventDefault();e.stopPropagation();return openDay(day.dataset.day)}const jump=e.target.closest('[data-day-date]');if(jump){const date=jump.dataset.dayDate,index=Number(jump.dataset.dayClass);document.querySelector('.nav [data-page="calendar"]')?.click();setTimeout(()=>openDay(date,Number.isFinite(index)?index:null),80);return}const go=e.target.closest('[data-ia-page]');if(go){const target=document.querySelector(`.nav [data-page="${go.dataset.iaPage}"]`)||document.querySelector(`.mobile-nav [data-page="${go.dataset.iaPage}"]`);target?.click()}},true);
+  document.addEventListener('click',e=>{const day=e.target.closest('#calendarGrid .day[data-day]');if(day)return openDay(day.dataset.day);const jump=e.target.closest('[data-day-date]');if(jump){const date=jump.dataset.dayDate,index=Number(jump.dataset.dayClass);document.querySelector('.nav [data-page="calendar"]')?.click();try{cursor=date.slice(0,7)+'-01';selected=date;renderCalendar()}catch(err){}setTimeout(()=>openDay(date,Number.isFinite(index)?index:null),80);return}const go=e.target.closest('[data-ia-page]');if(go){const target=document.querySelector(`.nav [data-page="${go.dataset.iaPage}"]`)||document.querySelector(`.mobile-nav [data-page="${go.dataset.iaPage}"]`);target?.click()}},true);
   try{const base=renderCalendar;renderCalendar=function(...args){const out=base.apply(this,args);setTimeout(()=>{ensureCalendarTools();try{$('calendarMonthJump').value=String(cursor).slice(0,7)}catch(e){}},40);return out}}catch(e){}
   try{const base=renderAll;renderAll=function(...args){const out=base.apply(this,args);setTimeout(cleanRoleSurfaces,80);return out}}catch(e){}
   try{const base=connect;connect=async function(...args){const out=await base.apply(this,args);setTimeout(cleanRoleSurfaces,100);return out}}catch(e){}
