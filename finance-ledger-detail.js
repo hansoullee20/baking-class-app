@@ -10,79 +10,132 @@
   const recipeRows=()=>typeof recipes!=='undefined'&&Array.isArray(recipes)?recipes:[];
   const scheduleRows=()=>typeof schedule!=='undefined'&&Array.isArray(schedule?.rows)?schedule.rows:[];
   const historyRows=()=>typeof history!=='undefined'&&Array.isArray(history?.records)?history.records:[];
+  const financeCtx=source=>({recipes:recipeRows(),schedule:typeof schedule!=='undefined'?schedule:null,source});
   const timeOf=r=>/^\d{2}:\d{2}/.test(String(r?.time||''))?String(r.time).slice(0,5):(String(r?.session||'').includes('오후')?'14:00':String(r?.session||'').includes('기타')?'18:00':'10:00');
   const menuOf=r=>r?.menu||r?.recipeCandidate||r?.classTitle||'메뉴 미정';
-  const classStatus=r=>B.effectiveStatus?B.effectiveStatus(r):(r?.status||'예정');
-  const financeCtx=source=>({recipes:recipeRows(),schedule:typeof schedule!=='undefined'?schedule:null,source});
+  const statusOf=r=>B.effectiveStatus?B.effectiveStatus(r):(r?.status||'예정');
   const locationOf=r=>r?.venue||r?.location||schedule?.settings?.venue||schedule?.settings?.location||'달크닉 기준';
+  let menuMetric='total';
 
   function events(){
     const out=[];
-    historyRows().forEach((r,i)=>out.push({source:'history',id:r.class_id||`h${i}`,date:r.date,time:timeOf(r),menu:menuOf(r),status:classStatus(r),raw:r}));
-    scheduleRows().forEach((r,i)=>out.push({source:'schedule',id:r.class_id||r.id||`s${i}`,date:r.date,time:timeOf(r),menu:menuOf(r),status:classStatus(r),raw:r}));
+    historyRows().forEach((r,i)=>out.push({source:'history',id:r.class_id||`h${i}`,date:r.date,time:timeOf(r),menu:menuOf(r),status:statusOf(r),raw:r}));
+    scheduleRows().forEach((r,i)=>out.push({source:'schedule',id:r.class_id||r.id||`s${i}`,date:r.date,time:timeOf(r),menu:menuOf(r),status:statusOf(r),raw:r}));
     return (B.dedupeEvents?B.dedupeEvents(out):out).filter(e=>e.date&&e.status!=='취소').sort((a,b)=>a.date.localeCompare(b.date)||a.time.localeCompare(b.time));
   }
+
   function record(e){
     const f=B.classFinancials(e.raw,financeCtx(e.source));
-    const people=Math.max(0,num(e.raw?.people)),fee=num(e.raw?.fee),material=f.material==null?null:num(f.material),rent=num(f.rent),packing=num(f.packing),other=num(f.other),knownSpend=(material==null?0:material)+rent+packing+other;
-    const batch=Math.max(.01,num(f.batchCount)||1),recipe=f.recipe||null,recipeBatchCost=material==null?null:material/batch;
+    const people=Math.max(0,num(e.raw?.people)),fee=num(e.raw?.fee),revenue=num(f.revenue);
+    const material=f.material==null?null:num(f.material),rent=num(f.rent),packing=num(f.packing),other=num(f.other);
+    const batch=Math.max(.01,num(f.batchCount)||num(e.raw?.batchCount)||1),recipe=f.recipe||null,recipeBatchCost=material==null?null:material/batch;
+    const profit=f.profit==null?null:num(f.profit),margin=profit==null||revenue<=0?null:profit/revenue*100;
+    const perStudentProfit=profit==null||people<=0?null:profit/people,materialPerStudent=material==null||people<=0?null:material/people;
     const explicitRent=hasNum(e.raw?.rent),dow=B.dow?B.dow(e.date):'',weekdayRent=num(schedule?.settings?.weekdayRent)||81000,satRent=num(schedule?.settings?.satRent)||90000;
     const rentBasis=explicitRent?'수업에 저장된 대관료':dow==='토'?`토요일 기본 ${won(satRent)}`:`평일 기본 ${won(weekdayRent)}`;
-    const sourceLabel=e.source==='history'?'완료 기록':'일정';
     const costLabel=material==null?(recipe?`원가 ${f.costStatus||'미산정'}`:'레시피 미연결'):`${won(recipeBatchCost)} × ${batch}배합`;
-    const revenue=num(f.revenue),total=f.total==null?null:num(f.total),profit=f.profit==null?null:num(f.profit);
-    const revenuePerPerson=people?revenue/people:null,costPerPerson=people&&total!=null?total/people:null,profitPerPerson=people&&profit!=null?profit/people:null;
-    return{...e,f,people,fee,revenue,material,rent,packing,other,knownSpend,total,profit,margin:f.margin==null?null:num(f.margin),revenuePerPerson,costPerPerson,profitPerPerson,batch,recipe,recipeBatchCost,rentBasis,location:locationOf(e.raw),sourceLabel,costLabel,costComplete:f.total!=null};
+    return{...e,f,people,fee,revenue,material,rent,packing,other,profit,margin,perStudentProfit,materialPerStudent,batch,recipe,recipeBatchCost,rentBasis,location:locationOf(e.raw),costLabel,costable:profit!=null};
   }
+
   function range(){const t=todayISO(),a=$('periodStart')?.value||`${t.slice(0,7)}-01`,b=$('periodEnd')?.value||t;return[a,b]}
   function rangeRecords(){const[a,b]=range();return events().filter(e=>e.date>=a&&e.date<=b).map(record)}
+
+  function summarize(recs){
+    const s={revenue:0,people:0,count:recs.length,knownSpend:0,profit:0,costable:0,costableRevenue:0,costablePeople:0,costMaterial:0,costRent:0,costPacking:0,costOther:0};
+    recs.forEach(x=>{
+      s.revenue+=x.revenue;s.people+=x.people;s.knownSpend+=(x.material==null?0:x.material)+x.rent+x.packing+x.other;
+      if(x.costable){s.profit+=x.profit;s.costable++;s.costableRevenue+=x.revenue;s.costablePeople+=x.people;s.costMaterial+=x.material;s.costRent+=x.rent;s.costPacking+=x.packing;s.costOther+=x.other}
+    });
+    s.avgClassProfit=s.costable?s.profit/s.costable:null;
+    s.avgStudentProfit=s.costablePeople?s.profit/s.costablePeople:null;
+    s.margin=s.costableRevenue?s.profit/s.costableRevenue*100:null;
+    return s;
+  }
+
   function monthKeys(n=6){const[y,m]=todayISO().split('-').map(Number),out=[];for(let i=n-1;i>=0;i--){const d=new Date(Date.UTC(y,m-1-i,1));out.push(`${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2,'0')}`)}return out}
   function monthly(){
-    const keys=monthKeys(),map=Object.fromEntries(keys.map(k=>[k,{month:k,revenue:0,material:0,rent:0,packing:0,other:0,knownSpend:0,profit:0,count:0,people:0,costable:0,costablePeople:0,costableRevenue:0}]));
-    events().map(record).forEach(x=>{const k=x.date.slice(0,7),m=map[k];if(!m)return;m.count++;m.people+=x.people;m.revenue+=x.revenue;m.material+=x.material==null?0:x.material;m.rent+=x.rent;m.packing+=x.packing;m.other+=x.other;m.knownSpend+=x.knownSpend;if(x.profit!=null){m.profit+=x.profit;m.costable++;m.costablePeople+=x.people;m.costableRevenue+=x.revenue}});return keys.map(k=>map[k]);
+    const keys=monthKeys(),map=Object.fromEntries(keys.map(k=>[k,{month:k,revenue:0,profit:0,count:0,costable:0,costablePeople:0}]));
+    events().map(record).forEach(x=>{const m=map[x.date.slice(0,7)];if(!m)return;m.revenue+=x.revenue;m.count++;if(x.costable){m.profit+=x.profit;m.costable++;m.costablePeople+=x.people}});
+    return keys.map(k=>map[k]);
   }
-  function summarize(recs){
-    const s={revenue:0,material:0,rent:0,packing:0,other:0,knownSpend:0,profit:0,count:recs.length,people:0,costable:0,costablePeople:0,costableRevenue:0};
-    recs.forEach(x=>{s.people+=x.people;s.revenue+=x.revenue;s.material+=x.material==null?0:x.material;s.rent+=x.rent;s.packing+=x.packing;s.other+=x.other;s.knownSpend+=x.knownSpend;if(x.profit!=null){s.profit+=x.profit;s.costable++;s.costablePeople+=x.people;s.costableRevenue+=x.revenue}});
-    s.margin=s.costableRevenue?s.profit/s.costableRevenue*100:null;s.avgClassProfit=s.costable?s.profit/s.costable:null;s.avgPersonProfit=s.costablePeople?s.profit/s.costablePeople:null;return s;
-  }
+
   function menuSummary(recs){
     const map=new Map();
-    recs.forEach(x=>{if(!map.has(x.menu))map.set(x.menu,{menu:x.menu,count:0,people:0,revenue:0,material:0,rent:0,packing:0,other:0,knownSpend:0,profit:0,costable:0,costablePeople:0,costableRevenue:0,classes:[]});const m=map.get(x.menu);m.count++;m.people+=x.people;m.revenue+=x.revenue;m.material+=x.material==null?0:x.material;m.rent+=x.rent;m.packing+=x.packing;m.other+=x.other;m.knownSpend+=x.knownSpend;m.classes.push(x);if(x.profit!=null){m.profit+=x.profit;m.costable++;m.costablePeople+=x.people;m.costableRevenue+=x.revenue}});
-    return[...map.values()].map(x=>({...x,avgProfit:x.costable?x.profit/x.costable:null,profitPerPerson:x.costablePeople?x.profit/x.costablePeople:null,margin:x.costableRevenue?x.profit/x.costableRevenue*100:null})).sort((a,b)=>(b.profit||-Infinity)-(a.profit||-Infinity)||b.revenue-a.revenue);
+    recs.forEach(x=>{
+      if(!map.has(x.menu))map.set(x.menu,{menu:x.menu,count:0,people:0,revenue:0,profit:0,costable:0,costablePeople:0,costableRevenue:0,classes:[]});
+      const m=map.get(x.menu);m.count++;m.people+=x.people;m.revenue+=x.revenue;m.classes.push(x);
+      if(x.costable){m.profit+=x.profit;m.costable++;m.costablePeople+=x.people;m.costableRevenue+=x.revenue}
+    });
+    return[...map.values()].map(m=>({...m,avgClassProfit:m.costable?m.profit/m.costable:null,avgStudentProfit:m.costablePeople?m.profit/m.costablePeople:null,margin:m.costableRevenue?m.profit/m.costableRevenue*100:null}));
   }
-  function monthLabel(k){const[y,m]=k.split('-');return`${y}.${m}`}
-  function monthlyChart(rows){
-    const max=Math.max(1,...rows.flatMap(x=>[x.revenue,x.knownSpend,Math.abs(x.profit)]));
-    return `<div class="ledger-month-chart">${rows.map(x=>`<div class="ledger-month-col"><div class="ledger-bars"><i class="revenue" style="height:${Math.max(2,x.revenue/max*100)}%" title="${monthLabel(x.month)} 매출 ${won(x.revenue)}"></i><i class="spend" style="height:${Math.max(1,x.knownSpend/max*100)}%" title="${monthLabel(x.month)} 확인비용 ${won(x.knownSpend)}"></i><i class="profit ${x.profit<0?'negative':''}" style="height:${Math.max(1,Math.abs(x.profit)/max*100)}%" title="${monthLabel(x.month)} 계산가능 이익 ${won(x.profit)}"></i></div><b>${Number(x.month.slice(5))}월</b></div>`).join('')}</div><div class="ledger-legend"><span><i class="revenue"></i>매출</span><span><i class="spend"></i>확인비용</span><span><i class="profit"></i>계산가능 이익</span></div>`;
+
+  function metricValue(m){return menuMetric==='student'?m.avgStudentProfit:menuMetric==='class'?m.avgClassProfit:m.profit}
+  function metricLabel(){return menuMetric==='student'?'인당 평균이익':menuMetric==='class'?'회당 평균이익':'누적 총이익'}
+  function monthLabel(k){return`${Number(k.slice(5))}월`}
+
+  function kpis(s){
+    return `<div class="ledger-kpis"><div><span>총매출</span><b>${won(s.revenue)}</b><small>${s.count}회 · ${s.people}명</small></div><div><span>계산가능 총이익</span><b>${s.costable?won(s.profit):'계산 보류'}</b><small>원가 연결 ${s.costable}/${s.count}회</small></div><div><span>수업 1회당 평균이익</span><b>${s.avgClassProfit==null?'—':won(s.avgClassProfit)}</b><small>원가 연결 수업 기준</small></div><div><span>수강생 1명당 평균이익</span><b>${s.avgStudentProfit==null?'—':won(s.avgStudentProfit)}</b><small>${s.costablePeople}명 기준</small></div></div>`;
   }
-  function monthlyTable(rows){
-    return `<div class="ledger-table-wrap"><table class="ledger-table ledger-month-table"><thead><tr><th>월</th><th>수업</th><th>수강생</th><th>매출</th><th>재료비</th><th>대관비</th><th>포장·기타</th><th>확인비용</th><th>계산가능 이익</th><th>회당 이익</th><th>인당 이익</th><th>원가 연결</th></tr></thead><tbody>${rows.map(x=>{const avgClass=x.costable?x.profit/x.costable:null,avgPerson=x.costablePeople?x.profit/x.costablePeople:null;return`<tr><td><b>${monthLabel(x.month)}</b></td><td>${x.count}회</td><td>${x.people}명</td><td>${won(x.revenue)}</td><td>${won(x.material)}</td><td>${won(x.rent)}</td><td>${won(x.packing+x.other)}</td><td>${won(x.knownSpend)}</td><td class="${x.profit<0?'neg':''}">${x.costable?won(x.profit):'—'}</td><td>${avgClass==null?'—':won(avgClass)}</td><td>${avgPerson==null?'—':won(avgPerson)}</td><td>${x.costable}/${x.count}</td></tr>`}).join('')}</tbody></table></div>`;
+
+  function insight(s,menus){
+    const ranked=menus.filter(x=>x.avgStudentProfit!=null).sort((a,b)=>b.avgStudentProfit-a.avgStudentProfit),best=ranked[0];
+    const costs=[['재료비',s.costMaterial],['대관비',s.costRent],['포장·기타',s.costPacking+s.costOther]].sort((a,b)=>b[1]-a[1]),largest=costs[0];
+    if(!best&&!largest?.[1])return'';
+    return `<div class="ledger-insight">${best?`<span>인당 이익 최고 <b>${esc(best.menu)} ${won(best.avgStudentProfit)}</b></span>`:''}${largest?.[1]?`<span>가장 큰 비용 <b>${largest[0]} ${won(largest[1])}</b></span>`:''}<small>원가 연결 수업 기준</small></div>`;
   }
-  function costSummary(s){
-    const items=[['재료비',s.material],['대관비',s.rent],['포장비',s.packing],['기타비',s.other]],max=Math.max(1,...items.map(x=>x[1]));
-    return `<div class="ledger-cost-summary">${items.map(([label,v])=>`<div><header><span>${label}</span><b>${won(v)}</b></header><div><i style="width:${Math.max(v?2:0,v/max*100)}%"></i></div></div>`).join('')}</div>`;
+
+  function profitBridge(s){
+    if(!s.costable)return'<div class="ledger-empty">원가가 연결된 수업이 없어 손익 구조를 계산할 수 없습니다.</div>';
+    const costs=[['재료비',s.costMaterial],['대관비',s.costRent],['포장·기타',s.costPacking+s.costOther]],max=Math.max(1,s.costableRevenue,...costs.map(x=>x[1]),Math.abs(s.profit));
+    return `<div class="profit-bridge"><div class="bridge-row revenue"><span>원가 연결 매출</span><div><i style="width:${s.costableRevenue/max*100}%"></i></div><b>${won(s.costableRevenue)}</b></div>${costs.map(([label,v])=>`<div class="bridge-row cost"><span>− ${label}</span><div><i style="width:${v/max*100}%"></i></div><b>${won(v)}</b></div>`).join('')}<div class="bridge-row result"><span>= 남는 이익</span><div><i style="width:${Math.abs(s.profit)/max*100}%"></i></div><b>${won(s.profit)}</b></div></div><div class="ledger-caption">전체 매출 ${won(s.revenue)} 중 원가가 연결된 매출 ${won(s.costableRevenue)}로 계산합니다. 이익률 ${Math.round(s.margin||0)}%.</div>`;
   }
+
+  function monthlyPanel(rows){
+    const max=Math.max(1,...rows.flatMap(x=>[x.revenue,Math.abs(x.profit)]));
+    return `<div class="month-compact-chart">${rows.map(x=>`<div class="month-compact"><div class="month-bars"><i class="revenue" style="height:${Math.max(2,x.revenue/max*100)}%"></i><i class="profit ${x.profit<0?'negative':''}" style="height:${Math.max(2,Math.abs(x.profit)/max*100)}%"></i></div><b>${monthLabel(x.month)}</b><span>매출 ${won(x.revenue)}</span><span>이익 ${x.costable?won(x.profit):'—'}</span><small>원가 ${x.costable}/${x.count}</small></div>`).join('')}</div><div class="ledger-legend"><span><i class="revenue"></i>매출</span><span><i class="profit"></i>계산가능 이익</span></div>`;
+  }
+
+  function menuDetail(m){
+    const classes=m.classes.slice().sort((a,b)=>b.date.localeCompare(a.date)||b.time.localeCompare(a.time));
+    return `<div class="menu-detail-grid"><div><span>누적 총이익</span><b>${m.costable?won(m.profit):'—'}</b></div><div><span>회당 평균</span><b>${m.avgClassProfit==null?'—':won(m.avgClassProfit)}</b></div><div><span>인당 평균</span><b>${m.avgStudentProfit==null?'—':won(m.avgStudentProfit)}</b></div><div><span>이익률</span><b>${m.margin==null?'—':`${Math.round(m.margin)}%`}</b></div></div><div class="menu-class-lines">${classes.map(x=>`<div><time>${esc(x.date)} ${esc(x.time)}</time><span>${x.people}명 · 매출 ${won(x.revenue)}</span><span>재료 ${x.material==null?'—':won(x.material)} · 대관 ${won(x.rent)}</span><b>${x.profit==null?'이익 보류':`${won(x.profit)} · 인당 ${won(x.perStudentProfit)}`}</b></div>`).join('')}</div>`;
+  }
+
+  function menuRanking(menus){
+    const usable=menus.filter(x=>metricValue(x)!=null).sort((a,b)=>metricValue(b)-metricValue(a)).slice(0,6),max=Math.max(1,...usable.map(x=>Math.abs(metricValue(x))));
+    return `<div class="menu-metric-switch"><button data-menu-metric="total" class="${menuMetric==='total'?'active':''}">총이익</button><button data-menu-metric="class" class="${menuMetric==='class'?'active':''}">회당</button><button data-menu-metric="student" class="${menuMetric==='student'?'active':''}">인당</button></div>${usable.length?`<div class="menu-rank-list">${usable.map((m,i)=>{const v=metricValue(m);return`<details class="menu-rank-item"><summary><em>${i+1}</em><div class="menu-rank-name"><b>${esc(m.menu)}</b><small>${m.count}회 · ${m.people}명 · 원가 ${m.costable}/${m.count}</small></div><div class="menu-rank-bar"><i class="${v<0?'negative':''}" style="width:${Math.max(2,Math.abs(v)/max*100)}%"></i></div><strong>${won(v)}</strong></summary><div class="menu-rank-body">${menuDetail(m)}</div></details>`}).join('')}</div>`:'<div class="ledger-empty">비교 가능한 메뉴 이익 데이터가 없습니다.</div>'}<div class="ledger-caption">현재 순위 기준: ${metricLabel()}. 메뉴를 누르면 날짜별 손익을 확인할 수 있습니다.</div>`;
+  }
+
   function classBreakdown(recs){
     if(!recs.length)return'<div class="ledger-empty">선택 기간에 수업이 없습니다.</div>';
-    return `<div class="ledger-class-list">${recs.slice().sort((a,b)=>b.date.localeCompare(a.date)||b.time.localeCompare(a.time)).map(x=>`<details class="ledger-class"><summary><div><time>${esc(x.date)} ${esc(x.time)}</time><b>${esc(x.menu)}</b><small>${x.people}명 × ${won(x.fee)} · ${esc(x.sourceLabel)}</small></div><div><span>매출 ${won(x.revenue)}</span><strong>${x.profit==null?'이익 계산 보류':`이익 ${won(x.profit)} · 인당 ${won(x.profitPerPerson)}`}</strong></div></summary><div class="ledger-class-body"><div class="ledger-formula"><div><span>매출</span><b>${won(x.revenue)}</b><small>${x.people}명 × ${won(x.fee)}${hasNum(x.raw?.revenue)?' · 저장 매출값 우선':''}${x.revenuePerPerson==null?'':` · 인당 ${won(x.revenuePerPerson)}`}</small></div><em>−</em><div><span>재료비</span><b>${x.material==null?'—':won(x.material)}</b><small>${x.recipe?`${esc(x.recipe.name)} · ${esc(x.costLabel)}${x.people&&x.material!=null?` · 인당 ${won(x.material/x.people)}`:''}`:'레시피 미연결'}</small></div><em>−</em><div><span>대관비</span><b>${won(x.rent)}</b><small>${esc(x.date)} ${B.dow?B.dow(x.date):''} · ${esc(x.location)} · ${esc(x.rentBasis)}${x.people?` · 인당 ${won(x.rent/x.people)}`:''}</small></div><em>−</em><div><span>포장·기타</span><b>${won(x.packing+x.other)}</b><small>포장 ${won(x.packing)} · 기타 ${won(x.other)}${x.people?` · 인당 ${won((x.packing+x.other)/x.people)}`:''}</small></div><em>=</em><div class="result"><span>${x.f.profitLabel||'이익'}</span><b>${x.profit==null?'계산 보류':won(x.profit)}</b><small>${x.profit==null?'재료 원가 연결 필요':`인당 ${won(x.profitPerPerson)} · 이익률 ${Math.round(x.margin||0)}%`}</small></div></div>${x.material==null?`<div class="ledger-warning">${x.recipe?`${esc(x.recipe.name)}의 원가 상태가 ${esc(x.f.costStatus||'미산정')}라서 이 수업의 총비용·이익은 확정하지 않습니다.`:'레시피가 연결되지 않아 재료비와 이익을 계산하지 않습니다.'}</div>`:''}</div></details>`).join('')}</div>`;
+    return `<div class="class-detail-list">${recs.slice().sort((a,b)=>b.date.localeCompare(a.date)||b.time.localeCompare(a.time)).map(x=>`<details class="class-detail-item"><summary><div><time>${esc(x.date)} ${esc(x.time)}</time><b>${esc(x.menu)}</b><small>${x.people}명 · 매출 ${won(x.revenue)}</small></div><strong>${x.profit==null?'이익 계산 보류':`${won(x.profit)} · 인당 ${won(x.perStudentProfit)}`}</strong></summary><div class="class-formula"><div><span>매출</span><b>${won(x.revenue)}</b><small>${x.people}명 × ${won(x.fee)}</small></div><em>−</em><div><span>재료비</span><b>${x.material==null?'—':won(x.material)}</b><small>${x.recipe?`${esc(x.recipe.name)} · ${esc(x.costLabel)}${x.materialPerStudent==null?'':` · 인당 ${won(x.materialPerStudent)}`}`:'레시피 미연결'}</small></div><em>−</em><div><span>대관비</span><b>${won(x.rent)}</b><small>${esc(x.date)} ${B.dow?B.dow(x.date):''} · ${esc(x.location)} · ${esc(x.rentBasis)}</small></div><em>−</em><div><span>포장·기타</span><b>${won(x.packing+x.other)}</b><small>포장 ${won(x.packing)} · 기타 ${won(x.other)}</small></div><em>=</em><div class="result"><span>이익</span><b>${x.profit==null?'계산 보류':won(x.profit)}</b><small>${x.profit==null?'원가 연결 필요':`인당 ${won(x.perStudentProfit)} · 이익률 ${Math.round(x.margin||0)}%`}</small></div></div></details>`).join('')}</div>`;
   }
-  function menuBreakdown(items){
-    if(!items.length)return'<div class="ledger-empty">선택 기간에 메뉴 데이터가 없습니다.</div>';
-    return `<div class="ledger-menu-list">${items.map((m,i)=>`<details class="ledger-menu"><summary><span class="rank">${i+1}</span><div><b>${esc(m.menu)}</b><small>${m.count}회 · ${m.people}명 · 원가 연결 ${m.costable}/${m.count}회</small></div><div><span>누적 매출 ${won(m.revenue)}</span><strong>${m.costable?`누적 이익 ${won(m.profit)}`:'이익 계산 보류'}</strong><small>${m.avgProfit==null?'':`회당 ${won(m.avgProfit)} · 인당 ${won(m.profitPerPerson)} · 이익률 ${Math.round(m.margin||0)}%`}</small></div></summary><div class="ledger-menu-body"><div class="ledger-menu-numbers"><div><span>누적 매출</span><b>${won(m.revenue)}</b></div><div><span>계산가능 총이익</span><b>${m.costable?won(m.profit):'—'}</b></div><div><span>메뉴 1회당 평균이익</span><b>${m.avgProfit==null?'—':won(m.avgProfit)}</b></div><div><span>수강생 1명당 평균이익</span><b>${m.profitPerPerson==null?'—':won(m.profitPerPerson)}</b></div><div><span>이익률</span><b>${m.margin==null?'—':`${Math.round(m.margin)}%`}</b></div><div><span>재료비 확인분</span><b>${won(m.material)}</b></div><div><span>대관비</span><b>${won(m.rent)}</b></div><div><span>포장·기타</span><b>${won(m.packing+m.other)}</b></div></div><div class="ledger-menu-classes">${m.classes.slice().sort((a,b)=>b.date.localeCompare(a.date)).map(x=>`<div><time>${esc(x.date)} ${esc(x.time)}</time><span>${x.people}명 · 매출 ${won(x.revenue)}</span><span>재료 ${x.material==null?'—':won(x.material)} · 대관 ${won(x.rent)}</span><b>${x.profit==null?'이익 보류':`${won(x.profit)} · 인당 ${won(x.profitPerPerson)}`}</b></div>`).join('')}</div></div></details>`).join('')}</div>`;
-  }
+
   function ensureHost(){
     const page=$('finance'),fields=page?.querySelector('.period-fields');if(!page||!fields)return null;
     let host=$('financeLedgerDetail');if(!host){host=document.createElement('div');host.id='financeLedgerDetail';host.className='finance-ledger-detail';fields.insertAdjacentElement('afterend',host)}
-    const old=$('financeVisual');if(old)old.hidden=true;return host;
+    const old=$('financeVisual');if(old)old.hidden=true;
+    if($('financeKpis'))$('financeKpis').hidden=true;
+    const next=$('nextMonthKpis')?.closest('.card');if(next)next.hidden=true;
+    [...page.querySelectorAll(':scope > .card')].forEach(card=>{const h=card.querySelector(':scope > h3');if(h&&['메뉴별 집계','수업별 내역'].includes(h.textContent.trim()))card.hidden=true});
+    const ing=$('ingredientGrid')?.closest('details');if(ing)ing.hidden=true;const audit=$('dataAudit')?.closest('details');if(audit){audit.open=false;audit.classList.add('finance-secondary-details')}
+    return host;
   }
+
+  function labelSurface(){
+    const page=$('finance'),head=page?.querySelector('.section-head');if(head){head.querySelector('h2')?.replaceChildren(document.createTextNode('재정 · 수익'));head.querySelector('p')?.replaceChildren(document.createTextNode('얼마 벌고, 얼마 남고, 어떤 메뉴가 좋은지 먼저 봅니다.'))}
+  }
+
   function render(){
-    const host=ensureHost();if(!host)return;const recs=rangeRecords(),s=summarize(recs),months=monthly(),menus=menuSummary(recs);
-    host.innerHTML=`<div class="ledger-kpis"><div><span>선택 기간 매출</span><b>${won(s.revenue)}</b><small>${s.count}회 · ${s.people}명</small></div><div><span>계산가능 총이익</span><b>${s.costable?won(s.profit):'계산 보류'}</b><small>원가 연결 ${s.costable}/${s.count}회</small></div><div><span>수업 1회당 평균이익</span><b>${s.avgClassProfit==null?'—':won(s.avgClassProfit)}</b><small>원가 연결 수업만 평균</small></div><div><span>수강생 1명당 평균이익</span><b>${s.avgPersonProfit==null?'—':won(s.avgPersonProfit)}</b><small>원가 연결 수업 ${s.costablePeople}명 기준</small></div></div><section class="ledger-card"><div class="ledger-head"><div><h3>월별 돈의 흐름</h3><p>그래프는 흐름을 보고, 바로 아래 표에서 월별 정확한 원 단위 금액과 회당·인당 이익을 확인합니다.</p></div></div>${monthlyChart(months)}${monthlyTable(months)}</section><div class="ledger-grid"><section class="ledger-card"><div class="ledger-head"><div><h3>비용이 어디에 쓰였나</h3><p>선택 기간 전체 운영비 브레이크다운입니다.</p></div></div>${costSummary(s)}</section><section class="ledger-card"><div class="ledger-head"><div><h3>수업별 손익 브레이크다운</h3><p>수업 한 번에서 얼마가 남고, 수강생 한 명당 얼마가 남았는지 같이 봅니다.</p></div></div>${classBreakdown(recs)}</section></div><section class="ledger-card"><div class="ledger-head"><div><h3>메뉴별 수익성 브레이크다운</h3><p>메뉴의 누적 기여도와 함께 1회당·1인당 수익성을 분리해 비교합니다.</p></div></div>${menuBreakdown(menus)}</section><div class="ledger-note">핵심 판단 기준은 총이익, 수업 1회당 이익, 수강생 1명당 이익을 서로 분리해서 보는 것입니다. 재료 원가가 연결되지 않은 수업은 대관비 등 확인 가능한 비용은 보여주되 총비용과 이익은 임의로 완성하지 않습니다.</div>`;
+    const host=ensureHost();if(!host)return;labelSurface();const recs=rangeRecords(),s=summarize(recs),months=monthly(),menus=menuSummary(recs);
+    host.innerHTML=`${kpis(s)}${insight(s,menus)}<div class="finance-core-grid"><section class="ledger-card"><div class="ledger-head"><div><h3>이번 기간 손익</h3><p>매출에서 어떤 비용이 빠져 얼마가 남는지.</p></div></div>${profitBridge(s)}</section><section class="ledger-card"><div class="ledger-head"><div><h3>6개월 흐름</h3><p>막대는 방향, 아래 숫자는 정확한 금액입니다.</p></div></div>${monthlyPanel(months)}</section></div><section class="ledger-card"><div class="ledger-head"><div><h3>메뉴 수익성</h3><p>같은 목록에서 총이익·회당·인당 기준만 바꿔 비교합니다.</p></div></div>${menuRanking(menus)}</section><details class="ledger-detail-shell"><summary><span>수업별 손익 상세</span><small>매출 − 재료비 − 대관비 − 기타 = 이익</small></summary><div>${classBreakdown(recs)}</div></details><div class="ledger-note">원가가 없는 수업은 가짜 이익을 만들지 않습니다. 재료비는 레시피 원가 × 실제 배합수이며, 인당 재료비와 인당 이익은 그 수업의 실제 수강생 수로 나눠 표시합니다.</div>`;
   }
-  try{const base=renderFinance;renderFinance=function(...args){const out=base.apply(this,args);setTimeout(render,20);return out}}catch(e){}
-  try{const base=renderAll;renderAll=function(...args){const out=base.apply(this,args);setTimeout(render,130);return out}}catch(e){}
-  document.addEventListener('click',e=>{if(e.target.closest('#finance [data-period],#finance #applyPeriod'))setTimeout(render,80)},true);
+
+  document.addEventListener('click',e=>{
+    const metric=e.target.closest('[data-menu-metric]');if(metric){menuMetric=metric.dataset.menuMetric;render();return}
+    if(e.target.closest('#finance [data-period],#finance #applyPeriod'))setTimeout(render,80);
+  },true);
   document.addEventListener('change',e=>{if(e.target.closest('#finance #periodStart,#finance #periodEnd'))setTimeout(render,40)},true);
+  try{const base=renderFinance;renderFinance=function(...args){const out=base.apply(this,args);setTimeout(render,25);return out}}catch(e){}
+  try{const base=renderAll;renderAll=function(...args){const out=base.apply(this,args);setTimeout(render,140);return out}}catch(e){}
   setTimeout(render,1000);
 })();
