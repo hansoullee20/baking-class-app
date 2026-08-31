@@ -38,10 +38,13 @@
   function summarize(recs){
     const s={revenue:0,people:0,count:recs.length,profit:0,costable:0,costableRevenue:0,costablePeople:0,costMaterial:0,costRent:0,costPacking:0,costOther:0};
     recs.forEach(x=>{s.revenue+=x.revenue;s.people+=x.people;if(x.costable){s.profit+=x.profit;s.costable++;s.costableRevenue+=x.revenue;s.costablePeople+=x.people;s.costMaterial+=x.material;s.costRent+=x.rent;s.costPacking+=x.packing;s.costOther+=x.other}});
-    s.avgClassProfit=s.costable?s.profit/s.costable:null;s.avgStudentProfit=s.costablePeople?s.profit/s.costablePeople:null;s.margin=s.costableRevenue?s.profit/s.costableRevenue*100:null;return s;
+    s.avgClassProfit=s.costable?s.profit/s.costable:null;s.avgStudentProfit=s.costablePeople?s.profit/s.costablePeople:null;s.margin=s.costableRevenue?s.profit/s.costableRevenue*100:null;s.costTotal=s.costMaterial+s.costRent+s.costPacking+s.costOther;return s;
   }
   function monthKeys(n=6){const[y,m]=todayISO().split('-').map(Number),out=[];for(let i=n-1;i>=0;i--){const d=new Date(Date.UTC(y,m-1-i,1));out.push(`${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2,'0')}`)}return out}
-  function monthly(){const keys=monthKeys(),map=Object.fromEntries(keys.map(k=>[k,{month:k,revenue:0,profit:0,count:0,costable:0}]));events().map(record).forEach(x=>{const m=map[x.date.slice(0,7)];if(!m)return;m.revenue+=x.revenue;m.count++;if(x.costable){m.profit+=x.profit;m.costable++}});return keys.map(k=>map[k])}
+  function monthly(){
+    const keys=monthKeys(),map=Object.fromEntries(keys.map(k=>[k,{month:k,revenue:0,costableRevenue:0,cost:0,profit:0,count:0,costable:0}]));
+    events().map(record).forEach(x=>{const m=map[x.date.slice(0,7)];if(!m)return;m.revenue+=x.revenue;m.count++;if(x.costable){m.costableRevenue+=x.revenue;m.cost+=(x.material||0)+x.rent+x.packing+x.other;m.profit+=x.profit;m.costable++}});return keys.map(k=>map[k]);
+  }
   function menuSummary(recs){
     const map=new Map();recs.forEach(x=>{if(!map.has(x.menu))map.set(x.menu,{menu:x.menu,count:0,people:0,revenue:0,profit:0,costable:0,costablePeople:0,costableRevenue:0,classes:[]});const m=map.get(x.menu);m.count++;m.people+=x.people;m.revenue+=x.revenue;m.classes.push(x);if(x.costable){m.profit+=x.profit;m.costable++;m.costablePeople+=x.people;m.costableRevenue+=x.revenue}});
     return[...map.values()].map(m=>({...m,avgClassProfit:m.costable?m.profit/m.costable:null,avgStudentProfit:m.costablePeople?m.profit/m.costablePeople:null,margin:m.costableRevenue?m.profit/m.costableRevenue*100:null}));
@@ -49,13 +52,22 @@
   function metricValue(m){return menuMetric==='student'?m.avgStudentProfit:menuMetric==='class'?m.avgClassProfit:m.profit}
   function metricLabel(){return menuMetric==='student'?'인당 평균이익':menuMetric==='class'?'회당 평균이익':'누적 총이익'}
   function monthLabel(k){return`${Number(k.slice(5))}월`}
-  function kpis(s){return `<div class="ledger-kpis"><div><span>총매출</span><b>${won(s.revenue)}</b><small>${s.count}회 · ${s.people}명</small></div><div><span>계산가능 총이익</span><b>${s.costable?won(s.profit):'계산 보류'}</b><small>원가 연결 ${s.costable}/${s.count}회</small></div><div><span>수업 1회당 평균이익</span><b>${s.avgClassProfit==null?'—':won(s.avgClassProfit)}</b><small>원가 연결 수업 기준</small></div><div><span>수강생 1명당 평균이익</span><b>${s.avgStudentProfit==null?'—':won(s.avgStudentProfit)}</b><small>${s.costablePeople}명 기준</small></div></div>`}
-  function expensePanel(s){
-    if(!s.costable)return'<div class="ledger-empty">원가가 연결된 수업이 없어 비용 구조를 계산할 수 없습니다.</div>';
-    const rows=[['재료비',s.costMaterial],['대관비',s.costRent],['포장·기타',s.costPacking+s.costOther]],total=rows.reduce((a,x)=>a+x[1],0),max=Math.max(1,...rows.map(x=>x[1]));
-    return `<div class="profit-bridge expense-only">${rows.map(([label,v])=>`<div class="bridge-row cost"><span>${label}</span><div><i style="width:${v/max*100}%"></i></div><b>${won(v)}</b></div>`).join('')}</div><div class="ledger-caption">비용 합계 ${won(total)} · 원가 연결 ${s.costable}/${s.count}회 수업 기준</div>`;
+  function periodLabel(a,b){return a.slice(0,7)===b.slice(0,7)?`${Number(a.slice(5,7))}월`:`${a.replaceAll('-','.')}–${b.replaceAll('-','.')}`}
+
+  function moneyFlow(s,a,b){
+    if(!s.count)return'<section class="money-flow-card"><div class="ledger-empty">선택 기간에 수업이 없습니다.</div></section>';
+    const excluded=Math.max(0,s.revenue-s.costableRevenue),startLabel=s.costable===s.count?'총매출':'이익 계산 대상 매출',startValue=s.costable===s.count?s.revenue:s.costableRevenue;
+    const startNote=s.costable===s.count?`${s.count}회 · ${s.people}명`:`전체 매출 ${won(s.revenue)} · 원가 미연결 ${s.count-s.costable}회`;
+    const unit=s.costable?`<div class="money-unit-strip"><span>회당 남음 <b>${won(s.avgClassProfit)}</b></span><span>인당 남음 <b>${won(s.avgStudentProfit)}</b></span><span>이익률 <b>${Math.round(s.margin||0)}%</b></span><small>원가 연결 ${s.costable}/${s.count}회${excluded?` · ${won(excluded)} 매출은 이익 계산 제외`:''}</small></div>`:'';
+    return `<section class="money-flow-card"><div class="money-flow-head"><div><span>${esc(periodLabel(a,b))} MONEY FLOW</span><h3>돈이 들어와 어디로 빠지는지</h3></div></div>${s.costable?`<div class="money-flow-line"><div class="money-node start"><span>${startLabel}</span><b>${won(startValue)}</b><small>${startNote}</small></div><em>→</em><div class="money-node cost"><span>재료비</span><b>− ${won(s.costMaterial)}</b></div><em>→</em><div class="money-node cost"><span>대관비</span><b>− ${won(s.costRent)}</b></div><em>→</em><div class="money-node cost"><span>포장·기타</span><b>− ${won(s.costPacking+s.costOther)}</b></div><em>→</em><div class="money-node result"><span>남는 돈</span><b>${won(s.profit)}</b></div></div>${unit}`:`<div class="money-flow-unavailable"><b>총매출 ${won(s.revenue)}</b><span>아직 원가가 연결된 수업이 없어 남는 돈을 계산할 수 없습니다.</span></div>`}</section>`;
   }
-  function monthlyPanel(rows){const max=Math.max(1,...rows.flatMap(x=>[x.revenue,Math.abs(x.profit)]));return `<div class="month-compact-chart">${rows.map(x=>`<div class="month-compact"><div class="month-bars"><i class="revenue" style="height:${Math.max(2,x.revenue/max*100)}%"></i><i class="profit ${x.profit<0?'negative':''}" style="height:${Math.max(2,Math.abs(x.profit)/max*100)}%"></i></div><b>${monthLabel(x.month)}</b><span>매출 ${won(x.revenue)}</span><span>이익 ${x.costable?won(x.profit):'—'}</span><small>원가 ${x.costable}/${x.count}</small></div>`).join('')}</div><div class="ledger-legend"><span><i class="revenue"></i>매출</span><span><i class="profit"></i>계산가능 이익</span></div>`}
+
+  function monthlyFlowPanel(rows,selectedMonth){
+    const show=rows.filter(x=>x.month!==selectedMonth).slice(-5);
+    if(!show.length)return'<div class="ledger-empty">비교할 지난달 데이터가 없습니다.</div>';
+    return `<div class="month-flow-list">${show.map(x=>{const base=Math.max(1,x.costableRevenue),costPct=Math.max(0,Math.min(100,x.cost/base*100)),profitPct=x.profit>0?Math.max(0,Math.min(100,x.profit/base*100)):0;return`<div class="month-flow-row"><b>${monthLabel(x.month)}</b><div class="month-flow-track" title="계산대상 매출 ${won(x.costableRevenue)}"><i class="cost" style="width:${costPct}%"></i><i class="profit ${x.profit<0?'negative':''}" style="width:${profitPct}%"></i></div><div class="month-flow-values"><span>총매출 <strong>${won(x.revenue)}</strong></span><span>비용 <strong>${x.costable?won(x.cost):'—'}</strong></span><span>남음 <strong>${x.costable?won(x.profit):'—'}</strong></span></div><small>원가 ${x.costable}/${x.count}회</small></div>`}).join('')}</div><div class="ledger-caption">선택한 달은 위 돈 흐름에서 한 번만 보여주고, 여기에는 비교용 지난달만 표시합니다.</div>`;
+  }
+
   function menuDetail(m){const classes=m.classes.slice().sort((a,b)=>b.date.localeCompare(a.date)||b.time.localeCompare(a.time));return `<div class="ledger-caption">${m.margin==null?'이익률 계산 보류':`이익률 ${Math.round(m.margin)}%`} · 날짜별 근거</div><div class="menu-class-lines">${classes.map(x=>`<div><time>${esc(x.date)} ${esc(x.time)}</time><span>${x.people}명 · 매출 ${won(x.revenue)}</span><span>재료 ${x.material==null?'—':won(x.material)} · 대관 ${won(x.rent)}</span><b>${x.profit==null?'이익 보류':`${won(x.profit)} · 인당 ${won(x.perStudentProfit)}`}</b></div>`).join('')}</div>`}
   function menuRanking(menus){
     const usable=menus.filter(x=>metricValue(x)!=null).sort((a,b)=>metricValue(b)-metricValue(a)).slice(0,6),max=Math.max(1,...usable.map(x=>Math.abs(metricValue(x))));
@@ -67,13 +79,13 @@
   }
   function ensureHost(){
     const page=$('finance'),fields=page?.querySelector('.period-fields');if(!page||!fields)return null;let host=$('financeLedgerDetail');if(!host){host=document.createElement('div');host.id='financeLedgerDetail';host.className='finance-ledger-detail';fields.insertAdjacentElement('afterend',host)}
-    const old=$('financeVisual');if(old)old.hidden=true;if($('financeKpis'))$('financeKpis').hidden=true;const next=$('nextMonthKpis')?.closest('.card');if(next)next.hidden=true;
-    [...page.querySelectorAll(':scope > .card')].forEach(card=>{const h=card.querySelector(':scope > h3');if(h&&['메뉴별 집계','수업별 내역'].includes(h.textContent.trim()))card.hidden=true});const ing=$('ingredientGrid')?.closest('details');if(ing)ing.hidden=true;const audit=$('dataAudit')?.closest('details');if(audit){audit.open=false;audit.classList.add('finance-secondary-details')}return host;
+    const old=$('financeVisual');if(old){old.hidden=true;old.style.display='none'}if($('financeKpis')){$('financeKpis').hidden=true;$('financeKpis').style.display='none'}const next=$('nextMonthKpis')?.closest('.card');if(next){next.hidden=true;next.style.display='none'}
+    [...page.querySelectorAll(':scope > .card')].forEach(card=>{const h=card.querySelector(':scope > h3');if(h&&['메뉴별 집계','수업별 내역'].includes(h.textContent.trim())){card.hidden=true;card.style.display='none'}});const ing=$('ingredientGrid')?.closest('details');if(ing){ing.hidden=true;ing.style.display='none'}const audit=$('dataAudit')?.closest('details');if(audit){audit.hidden=true;audit.style.display='none'}return host;
   }
-  function labelSurface(){const head=$('finance')?.querySelector('.section-head');if(head){head.querySelector('h2')?.replaceChildren(document.createTextNode('재정 · 수익'));head.querySelector('p')?.replaceChildren(document.createTextNode('핵심 숫자는 한 번만, 근거는 필요할 때만 봅니다.'))}}
+  function labelSurface(){const head=$('finance')?.querySelector('.section-head');if(head){head.querySelector('h2')?.replaceChildren(document.createTextNode('재정 · 수익'));head.querySelector('p')?.replaceChildren(document.createTextNode('매출이 들어와 비용으로 빠지고 얼마가 남는지 한 방향으로 봅니다.'))}}
   function render(){
-    dedupeDashboard();const host=ensureHost();if(!host)return;labelSurface();const recs=rangeRecords(),s=summarize(recs),months=monthly(),menus=menuSummary(recs);
-    host.innerHTML=`${kpis(s)}<div class="finance-core-grid"><section class="ledger-card"><div class="ledger-head"><div><h3>비용 구조</h3><p>상단 숫자를 반복하지 않고 비용만 봅니다.</p></div></div>${expensePanel(s)}</section><section class="ledger-card"><div class="ledger-head"><div><h3>6개월 흐름</h3><p>월별 매출과 이익만 비교합니다.</p></div></div>${monthlyPanel(months)}</section></div><section class="ledger-card"><div class="ledger-head"><div><h3>메뉴 수익성</h3><p>총이익·회당·인당 중 한 기준만 선택합니다.</p></div></div>${menuRanking(menus)}</section><details class="ledger-detail-shell"><summary><span>수업별 손익 상세</span><small>필요할 때만 날짜별 계산 근거 보기</small></summary><div>${classBreakdown(recs)}</div></details><div class="ledger-note">재료비는 레시피 원가 × 실제 배합수입니다. 원가 미연결 수업의 이익은 계산하지 않습니다.</div>`;
+    dedupeDashboard();const host=ensureHost();if(!host)return;labelSurface();const recs=rangeRecords(),s=summarize(recs),months=monthly(),menus=menuSummary(recs),[a,b]=range(),selectedMonth=a.slice(0,7)===b.slice(0,7)?a.slice(0,7):'';
+    host.innerHTML=`${moneyFlow(s,a,b)}<div class="finance-core-grid"><section class="ledger-card"><div class="ledger-head"><div><h3>지난달과 비교</h3><p>각 달의 매출 → 비용 → 남는 돈을 정확한 금액으로 봅니다.</p></div></div>${monthlyFlowPanel(months,selectedMonth)}</section><section class="ledger-card"><div class="ledger-head"><div><h3>메뉴 수익성</h3><p>어떤 메뉴가 실제 수익원이 되는지 비교합니다.</p></div></div>${menuRanking(menus)}</section></div><details class="ledger-detail-shell"><summary><span>수업별 손익 근거</span><small>필요할 때만 날짜별 계산식 열기</small></summary><div>${classBreakdown(recs)}</div></details><div class="ledger-note">재료비는 레시피 원가 × 실제 배합수입니다. 원가가 없는 수업은 남는 돈을 임의로 만들지 않습니다.</div>`;
   }
   document.addEventListener('click',e=>{const metric=e.target.closest('[data-menu-metric]');if(metric){menuMetric=metric.dataset.menuMetric;render();return}if(e.target.closest('#finance [data-period],#finance #applyPeriod'))setTimeout(render,80)},true);
   document.addEventListener('change',e=>{if(e.target.closest('#finance #periodStart,#finance #periodEnd'))setTimeout(render,40)},true);
