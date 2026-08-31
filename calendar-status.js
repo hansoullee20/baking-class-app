@@ -63,7 +63,7 @@
         const state=seatStates(item);
         event.classList.add('calendar-status-event');
         event.dataset.statusState=state.key;
-        if(state.cancelled){event.title=`${menuOf(item.r)} · 취소 · 날짜를 클릭하면 상세`;return}
+        if(state.cancelled){event.title=`${menuOf(item.r)} · 취소 · 날짜를 클릭하면 관리`;return}
         const group=document.createElement('span');
         group.className='calendar-seat-dots';
         group.setAttribute('aria-label',state.label);
@@ -76,27 +76,13 @@
           group.appendChild(dot);
         });
         event.prepend(group);
-        event.title=`${menuOf(item.r)} · ${state.label} · 날짜를 클릭하면 상세`;
+        event.title=`${menuOf(item.r)} · ${state.label} · 날짜를 클릭하면 관리`;
       });
     });
   }
 
-  try{
-    const base=renderCalendar;
-    renderCalendar=function(...args){const out=base.apply(this,args);setTimeout(decorateCalendar,45);return out};
-  }catch(e){}
-  try{
-    const base=renderAll;
-    renderAll=function(...args){const out=base.apply(this,args);setTimeout(decorateCalendar,70);return out};
-  }catch(e){}
+  try{const base=renderCalendar;renderCalendar=function(...args){const out=base.apply(this,args);setTimeout(decorateCalendar,45);return out}}catch(e){}
+  try{const base=renderAll;renderAll=function(...args){const out=base.apply(this,args);setTimeout(decorateCalendar,70);return out}}catch(e){}
   document.addEventListener('click',e=>{if(e.target.closest('[data-page="calendar"],#prevMonth,#nextMonth,#todayMonth'))setTimeout(decorateCalendar,90)},true);
   setTimeout(decorateCalendar,650);
-})();
-
-(() => {
-  if(document.querySelector('script[data-information-architecture]'))return;
-  const script=document.createElement('script');
-  script.src='information-architecture.js?v=20260831-r1';
-  script.dataset.informationArchitecture='1';
-  document.body.appendChild(script);
 })();
