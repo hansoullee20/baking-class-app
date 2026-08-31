@@ -37,6 +37,7 @@ jobs:
           node --check information-architecture.js
           node --check workspace-refinement.js
           node --check recipe-ingredient-costs.js
+          node --check finance-ledger-detail.js
           node --check auth-persist.js
           node --check sunny-theme.js
           node --check class-ops-canonical.js
@@ -62,6 +63,8 @@ jobs:
           refine=Path('workspace-refinement.js').read_text(encoding='utf-8')
           refine_css=Path('workspace-refinement.css').read_text(encoding='utf-8')
           recipe_costs=Path('recipe-ingredient-costs.js').read_text(encoding='utf-8')
+          ledger=Path('finance-ledger-detail.js').read_text(encoding='utf-8')
+          ledger_css=Path('finance-ledger-detail.css').read_text(encoding='utf-8')
           deprecated=[
             'rent-rule.js','profit-fix.js','finance-breakdown.js','finance-breakdown.css',
             'finance-pro.js','finance-pro.css','recipe-costing-fix.js','recipe-costing.js','recipe-costing.css',
@@ -75,7 +78,7 @@ jobs:
               raise SystemExit('Deprecated modules are loaded: '+', '.join(loaded))
           if existing:
               raise SystemExit('Deprecated files reintroduced: '+', '.join(existing))
-          required=['business-engine.js','data-normalization.js','business-engine-adapter.js','operations-ui.js','management-planner.js','calendar-class-editor.js','calendar-status.js','information-architecture.js','workspace-refinement.js','recipe-ingredient-costs.js','class-ops-canonical.js','decision-ui.css','operations-ui.css','management-polish.css','calendar-class-editor.css','calendar-status.css','information-architecture.css','workspace-refinement.css','recipe-ingredient-costs.css']
+          required=['business-engine.js','data-normalization.js','business-engine-adapter.js','operations-ui.js','management-planner.js','calendar-class-editor.js','calendar-status.js','information-architecture.js','workspace-refinement.js','recipe-ingredient-costs.js','finance-ledger-detail.js','class-ops-canonical.js','decision-ui.css','operations-ui.css','management-polish.css','calendar-class-editor.css','calendar-status.css','information-architecture.css','workspace-refinement.css','recipe-ingredient-costs.css','finance-ledger-detail.css']
           missing=[x for x in required if x not in html or not Path(x).exists()]
           if missing:
               raise SystemExit('Required runtime asset missing from index: '+', '.join(missing))
@@ -93,11 +96,15 @@ jobs:
               raise SystemExit('Operating finance visual styles are incomplete')
           if 'usageCalc' not in recipe_costs or 'price_per_100g' not in recipe_costs or '재료별 계산 합계' not in recipe_costs:
               raise SystemExit('Recipe ingredient cost detail is incomplete')
+          if 'classBreakdown' not in ledger or 'monthlyTable' not in ledger or 'menuBreakdown' not in ledger or 'rentBasis' not in ledger:
+              raise SystemExit('Detailed class, monthly, rent, or menu finance breakdown is incomplete')
+          if '.ledger-month-table' not in ledger_css or '.ledger-formula' not in ledger_css or '.ledger-menu-classes' not in ledger_css:
+              raise SystemExit('Detailed finance ledger styles are incomplete')
           if '<button data-page="schedule">' in html or '<button data-page="planner">' in html:
               raise SystemExit('Duplicate planner/schedule navigation reintroduced')
           if Path('docs/index.html').exists():
               raise SystemExit('Obsolete duplicate docs/index.html must not be restored')
-          print('Role-owned tabs, payments, recipe categories, ingredient costing, and operating finance guard passed')
+          print('Role-owned tabs, recipe costing, and detailed operating finance ledger guard passed')
           PY
 
       - name: Setup Pages
