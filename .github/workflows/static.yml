@@ -55,6 +55,8 @@ jobs:
           from pathlib import Path
           html=Path('index.html').read_text(encoding='utf-8')
           status=Path('calendar-status.js').read_text(encoding='utf-8')
+          ia=Path('information-architecture.js').read_text(encoding='utf-8')
+          css=Path('information-architecture.css').read_text(encoding='utf-8')
           deprecated=[
             'rent-rule.js','profit-fix.js','finance-breakdown.js','finance-breakdown.css',
             'finance-pro.js','finance-pro.css','recipe-costing-fix.js','recipe-costing.js','recipe-costing.css',
@@ -68,23 +70,21 @@ jobs:
               raise SystemExit('Deprecated modules are loaded: '+', '.join(loaded))
           if existing:
               raise SystemExit('Deprecated files reintroduced: '+', '.join(existing))
-          required_html=['business-engine.js','data-normalization.js','business-engine-adapter.js','operations-ui.js','management-planner.js','calendar-class-editor.js','calendar-status.js','class-ops-canonical.js','decision-ui.css','operations-ui.css','management-polish.css','calendar-class-editor.css','calendar-status.css']
-          missing_html=[x for x in required_html if x not in html or not Path(x).exists()]
-          if missing_html:
-              raise SystemExit('Required runtime asset missing from index: '+', '.join(missing_html))
-          required_files=['information-architecture.js','information-architecture.css']
-          missing_files=[x for x in required_files if not Path(x).exists()]
-          if missing_files:
-              raise SystemExit('Role-separation asset missing: '+', '.join(missing_files))
-          if 'information-architecture.js' not in status:
-              raise SystemExit('Role-separation runtime is not loaded after calendar status')
-          if 'id="calendarClassDetail"' not in html:
-              raise SystemExit('Calendar attendee compatibility surface missing from index.html')
+          required=['business-engine.js','data-normalization.js','business-engine-adapter.js','operations-ui.js','management-planner.js','calendar-class-editor.js','calendar-status.js','information-architecture.js','class-ops-canonical.js','decision-ui.css','operations-ui.css','management-polish.css','calendar-class-editor.css','calendar-status.css','information-architecture.css']
+          missing=[x for x in required if x not in html or not Path(x).exists()]
+          if missing:
+              raise SystemExit('Required runtime asset missing from index: '+', '.join(missing))
+          if 'information-architecture.js' in status:
+              raise SystemExit('Calendar status must not dynamically load information architecture')
+          if 'dayOpsModal' not in ia or 'data-day-edit' not in ia or 'data-person="paymentStatus"' not in ia:
+              raise SystemExit('Unified calendar day manager is incomplete')
+          if '#calendar #calendarClassDetail' not in css or '#dashboard #operationsDashboard' not in css:
+              raise SystemExit('Duplicate legacy surfaces are not suppressed')
           if '<button data-page="schedule">' in html or '<button data-page="planner">' in html:
               raise SystemExit('Duplicate planner/schedule navigation reintroduced')
           if Path('docs/index.html').exists():
               raise SystemExit('Obsolete duplicate docs/index.html must not be restored')
-          print('Single-calendar role separation repository guard passed')
+          print('Role-owned tabs and single calendar manager guard passed')
           PY
 
       - name: Setup Pages
