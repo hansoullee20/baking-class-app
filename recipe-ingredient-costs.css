@@ -1,0 +1,16 @@
+/* Recipe ingredient amount + unit cost + usage cost */
+.ingredient-cost-table th:nth-child(2),.ingredient-cost-table td:nth-child(2),.ingredient-cost-table th:nth-child(3),.ingredient-cost-table td:nth-child(3),.ingredient-cost-table th:nth-child(4),.ingredient-cost-table td:nth-child(4){text-align:right;white-space:nowrap}
+.ingredient-cost-table td:first-child b{display:block;font-size:10px;color:var(--ink)}
+.ingredient-cost-table td:first-child small{display:block;margin-top:2px;font-size:7px;color:var(--muted)}
+.ingredient-use-cost{font-weight:850;color:var(--ink)}
+.ingredient-use-cost>span{color:var(--muted);font-weight:700}
+.ingredient-use-cost small{display:block;margin-top:2px;font-size:7px;font-weight:600;color:var(--muted)}
+.ingredient-price-status{display:inline-block;padding:2px 6px;border:1px solid var(--line);border-radius:999px;background:var(--cream2);font-size:7px;font-weight:850;color:var(--muted);white-space:nowrap}
+.ingredient-price-status.missing{color:var(--bad)}
+.ingredient-cost-summary{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:8px}
+.ingredient-cost-summary>div{border:1px solid var(--line);border-radius:10px;background:var(--cream2);padding:9px 10px}
+.ingredient-cost-summary span{display:block;font-size:7px;font-weight:850;color:var(--muted)}
+.ingredient-cost-summary b{display:block;margin-top:4px;font-size:13px;color:var(--ink)}
+.ingredient-cost-summary small{display:block;margin-top:3px;font-size:7px;color:var(--muted)}
+html[data-theme="dark"] .ingredient-price-status,html[data-theme="dark"] .ingredient-cost-summary>div{background:#182433;border-color:#344153}
+@media(max-width:700px){.ingredient-cost-table{min-width:700px}.ingredient-cost-summary{grid-template-columns:1fr}}
