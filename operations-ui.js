@@ -5,19 +5,19 @@
   const num=v=>Number.isFinite(Number(v))?Number(v):0;
   const won=v=>Number.isFinite(Number(v))?'₩'+Math.round(Number(v)).toLocaleString('ko-KR'):'—';
   const pct=v=>Number.isFinite(Number(v))?Math.round(Number(v))+'%':'—';
-  const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[m]));
+  const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
   const fmtLocal=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-  const todayISO=()=>fmtLocal(new Date());
+  const todayISO=()=>B.zonedDate?B.zonedDate(new Date()):fmtLocal(new Date());
   const monthStart=s=>String(s).slice(0,7)+'-01';
   const monthEnd=s=>{const [y,m]=String(s).slice(0,7).split('-').map(Number);return `${y}-${String(m).padStart(2,'0')}-${String(new Date(y,m,0).getDate()).padStart(2,'0')}`};
-  const nextMonth=s=>{const [y,m]=String(s).slice(0,7).split('-').map(Number);return monthStart(fmtLocal(new Date(y,m,1)))};
+  const nextMonth=s=>{let [y,m]=String(s).slice(0,7).split('-').map(Number);m+=1;if(m>12){y+=1;m=1}return `${y}-${String(m).padStart(2,'0')}-01`};
   const ctx=source=>({recipes:typeof recipes!=='undefined'?recipes:[],schedule:typeof schedule!=='undefined'?schedule:null,source});
 
   function events(){
     const out=[];
     try{
-      (history?.records||[]).forEach((r,i)=>out.push({source:'history',id:r.class_id||`h${i}`,date:r.date,time:r.time||'',status:r.status||'완료',menu:r.menu||r.recipeCandidate||r.classTitle||'메뉴 미정',people:num(r.people),capacity:num(r.capacity)||num(r.people),raw:r}));
-      (schedule?.rows||[]).forEach((r,i)=>out.push({source:'schedule',id:r.class_id||r.id||`s${i}`,date:r.date,time:r.time||r.session||'',status:r.status||'예정',menu:r.menu||r.classTitle||'메뉴 미정',people:num(r.people),capacity:num(r.capacity)||num(r.people),index:i,raw:r}));
+      (history?.records||[]).forEach((r,i)=>out.push({source:'history',id:r.class_id||`h${i}`,date:r.date,time:r.time||'',status:B.effectiveStatus?B.effectiveStatus(r):(r.status||'완료'),menu:r.menu||r.recipeCandidate||r.classTitle||'메뉴 미정',people:num(r.people),capacity:num(r.capacity)||num(r.people),raw:r}));
+      (schedule?.rows||[]).forEach((r,i)=>out.push({source:'schedule',id:r.class_id||r.id||`s${i}`,date:r.date,time:r.time||r.session||'',status:B.effectiveStatus?B.effectiveStatus(r):(r.status||'예정'),menu:r.menu||r.classTitle||'메뉴 미정',people:num(r.people),capacity:num(r.capacity)||num(r.people),index:i,raw:r}));
     }catch(e){}
     return B.dedupeEvents(out).filter(e=>e.date&&e.status!=='취소').sort((a,b)=>a.date.localeCompare(b.date)||String(a.time).localeCompare(String(b.time)));
   }
@@ -43,24 +43,31 @@
     return `<div class="cash-chart">${rows.map(x=>`<div class="cash-month"><div class="cash-bars"><i class="booked" style="height:${Math.max(2,x.revenue/max*100)}%" title="수업 매출 ${won(x.revenue)}"></i><i class="paid" style="height:${Math.max(0,x.collected/max*100)}%" title="입금 기록 ${won(x.collected)}"></i></div><b>${Number(x.k.slice(5))}월</b><small>${won(x.revenue)}</small></div>`).join('')}</div><div class="decision-legend"><span><i class="booked"></i>수업 매출</span><span><i class="paid"></i>입금 기록</span></div><p class="decision-note">참가자 입금 추적 도입 전 과거 수업은 입금 기록이 0으로 보일 수 있습니다.</p>`;
   }
 
-  function future(){const t=todayISO();return events().filter(e=>e.source==='schedule'&&e.date>=t)}
+  function future(){const t=todayISO();return events().filter(e=>e.source==='schedule'&&e.date>=t&&e.status!=='완료')}
   function actionQueue(){
-    const actions=[];future().forEach(e=>{const f=fin(e),p=pay(e),fill=e.capacity?e.people/e.capacity*100:100;if(!f.recipe)actions.push([1,e.date,`${e.menu} 레시피 연결`,`${won(f.revenue)} 예약매출의 원가·이익 계산 불가`]);else if(f.total==null)actions.push([2,e.date,`${e.menu} 원가 보완`,`${won(f.revenue)} 예약매출 · ${f.costStatus||'미산정'}`]);if(p.outstanding>0)actions.push([3,e.date,`${e.menu} 미수금 확인`,`${won(p.outstanding)} 미입금`]);if(fill<70)actions.push([4,e.date,`${e.menu} 모집 보강`,`충원 ${pct(fill)} · ${Math.max(0,e.capacity-e.people)}석 남음`])});
-    return actions.sort((a,b)=>a[0]-b[0]||a[1].localeCompare(b[1])).slice(0,6);
+    const actions=[];
+    future().forEach(e=>{
+      const f=fin(e),p=pay(e),fill=e.capacity?e.people/e.capacity*100:100,remaining=Math.max(0,e.capacity-e.people),fee=num(e.raw?.fee);
+      if(!f.recipe)actions.push({rank:1,date:e.date,title:`${e.menu} 레시피 연결`,detail:`${won(f.revenue)} 예약매출의 원가·이익 계산 불가`,impact:f.revenue,impactLabel:`${won(f.revenue)} 영향`});
+      else if(f.total==null)actions.push({rank:2,date:e.date,title:`${e.menu} 원가 보완`,detail:`${won(f.revenue)} 예약매출 · ${f.costStatus||'미산정'}`,impact:f.revenue,impactLabel:`${won(f.revenue)} 영향`});
+      if(p.outstanding>0)actions.push({rank:3,date:e.date,title:`${e.menu} 미수금 확인`,detail:`${won(p.outstanding)} 미입금`,impact:p.outstanding,impactLabel:won(p.outstanding)});
+      if(fill<70&&remaining>0)actions.push({rank:4,date:e.date,title:`${e.menu} 모집 보강`,detail:`충원 ${pct(fill)} · ${remaining}석 남음`,impact:remaining*fee,impactLabel:`+${won(remaining*fee)} 잠재`});
+    });
+    return actions.sort((a,b)=>a.rank-b.rank||b.impact-a.impact||a.date.localeCompare(b.date)).slice(0,6);
   }
 
   function renderDashboard(){
     const page=$('dashboard');if(!page)return;const t=todayISO(),s=summarize(range(monthStart(t),monthEnd(t))),nm=nextMonth(t),ns=summarize(range(nm,monthEnd(nm)).filter(e=>e.source==='schedule')),cf=confidence(s),actions=actionQueue(),up=future().slice(0,4);
     page.querySelector('.hero small')?.replaceChildren(document.createTextNode('SUNNY’S ATELIER · CONTROL CENTER'));page.querySelector('.hero h2')?.replaceChildren(document.createTextNode('지금 필요한 운영 판단'));page.querySelector('.hero p')?.replaceChildren(document.createTextNode('매출·입금·이익 신뢰도와 다음 조치를 먼저 확인합니다.'));
     let host=$('operationsDashboard');if(!host){host=document.createElement('div');host.id='operationsDashboard';host.className='decision-dashboard';page.querySelector('.hero')?.after(host)}
-    host.innerHTML=`<section class="decision-block"><div class="decision-head"><div><h3>이번 달 결정 요약</h3><p>완료 수업과 예약 수업을 현재 데이터 기준으로 합산합니다.</p></div><span class="confidence ${cf[1]}">원가 신뢰도 ${cf[0]} · 수업 ${pct(s.classCoverage)} / 매출 ${pct(s.revenueCoverage)}</span></div><div class="decision-stats">${stat('수업 매출',won(s.revenue),`${s.count}개 수업`)}${stat('입금 기록',won(s.collected),'참가자 결제 데이터','good')}${stat('미수금',won(s.outstanding),'추가 확인 필요',s.outstanding?'warn':'')}${stat('계산가능 비용',s.costable?won(s.cost):'계산 보류',`${s.costable}/${s.count} 수업`)}${stat('추정이익',s.costable?won(s.profit):'계산 보류',`매출 원가커버 ${pct(s.revenueCoverage)}`,s.coverage<70?'bad':'')}${stat('다음달 예약매출',won(ns.revenue),`${ns.count}개 예정 · 원가매출 ${pct(ns.revenueCoverage)}`)}</div></section><div class="decision-grid"><section class="decision-block"><div class="decision-head"><div><h3>다음 행동</h3><p>원가·입금·모집 상태에서 바로 처리할 항목</p></div></div><div class="action-list">${actions.length?actions.map(x=>`<div class="action-row"><time>${esc(x[1].slice(5).replace('-','.'))}</time><div><b>${esc(x[2])}</b><small>${esc(x[3])}</small></div></div>`).join(''):'<div class="decision-empty">우선 처리할 항목이 없습니다.</div>'}</div></section><section class="decision-block"><div class="decision-head"><div><h3>가까운 수업</h3><p>충원 · 입금 · 예상이익</p></div></div><div class="next-list">${up.length?up.map(e=>{const f=fin(e),p=pay(e),fill=e.capacity?e.people/e.capacity*100:0;return `<button class="next-decision-row" data-ops-index="${e.index}"><time>${esc(e.date.slice(5).replace('-','.'))} ${esc(e.time)}</time><b>${esc(e.menu)}</b><span>충원 ${pct(fill)} · 입금 ${pct(p.rate)} · ${f.profit==null?'이익 계산 보류':`${esc(f.profitLabel)} ${won(f.profit)}`}</span></button>`}).join(''):'<div class="decision-empty">예정 수업이 없습니다.</div>'}</div></section></div><section class="decision-block"><div class="decision-head"><div><h3>6개월 매출 · 입금 흐름</h3><p>매출 기준액과 실제 입금 기록을 분리합니다.</p></div></div>${cashChart()}</section>`;
+    host.innerHTML=`<section class="decision-block"><div class="decision-head"><div><h3>이번 달 결정 요약</h3><p>완료 수업과 예약 수업을 현재 데이터 기준으로 합산합니다.</p></div><span class="confidence ${cf[1]}">원가 신뢰도 ${cf[0]} · 수업 ${pct(s.classCoverage)} / 매출 ${pct(s.revenueCoverage)}</span></div><div class="decision-stats">${stat('수업 매출',won(s.revenue),`${s.count}개 수업`)}${stat('입금 기록',won(s.collected),'참가자 결제 데이터','good')}${stat('미수금',won(s.outstanding),'추가 확인 필요',s.outstanding?'warn':'')}${stat('계산가능 비용',s.costable?won(s.cost):'계산 보류',`${s.costable}/${s.count} 수업`)}${stat('추정이익',s.costable?won(s.profit):'계산 보류',`매출 원가커버 ${pct(s.revenueCoverage)}`,s.coverage<70?'bad':'')}${stat('다음달 예약매출',won(ns.revenue),`${ns.count}개 예정 · 원가매출 ${pct(ns.revenueCoverage)}`)}</div></section><div class="decision-grid"><section class="decision-block"><div class="decision-head"><div><h3>사업 영향도 순 다음 행동</h3><p>원가·입금·모집 문제를 금액 영향과 함께 봅니다.</p></div></div><div class="action-list">${actions.length?actions.map(x=>`<div class="action-row"><time>${esc(x.date.slice(5).replace('-','.'))}</time><div><b>${esc(x.title)}</b><small>${esc(x.detail)}</small></div><span class="action-impact">${esc(x.impactLabel)}</span></div>`).join(''):'<div class="decision-empty">우선 처리할 항목이 없습니다.</div>'}</div></section><section class="decision-block"><div class="decision-head"><div><h3>가까운 수업</h3><p>충원 · 입금 · 예상이익</p></div></div><div class="next-list">${up.length?up.map(e=>{const f=fin(e),p=pay(e),fill=e.capacity?e.people/e.capacity*100:0;return `<button class="next-decision-row" data-ops-index="${e.index}"><time>${esc(e.date.slice(5).replace('-','.'))} ${esc(e.time)}</time><b>${esc(e.menu)}</b><span>충원 ${pct(fill)} · 입금 ${pct(p.rate)} · ${f.profit==null?'이익 계산 보류':`${esc(f.profitLabel)} ${won(f.profit)}`}</span></button>`}).join(''):'<div class="decision-empty">예정 수업이 없습니다.</div>'}</div></section></div><section class="decision-block"><div class="decision-head"><div><h3>6개월 매출 · 입금 흐름</h3><p>매출 기준액과 실제 입금 기록을 분리합니다.</p></div></div>${cashChart()}</section>`;
     if($('kpis'))$('kpis').hidden=true;const grid=page.querySelector(':scope > .grid2');if(grid)grid.hidden=true;if($('dashboardAnalytics'))$('dashboardAnalytics').hidden=true;
   }
 
   function renderSchedule(){
     const page=$('schedule');if(!page)return;const rows=future(),totalPeople=rows.reduce((s,e)=>s+e.people,0),totalCap=rows.reduce((s,e)=>s+e.capacity,0),fill=totalCap?totalPeople/totalCap*100:0,seats=Math.max(0,totalCap-totalPeople),unlinked=rows.filter(e=>!fin(e).recipe).length,uncosted=rows.filter(e=>fin(e).total==null).length,outstanding=rows.reduce((s,e)=>s+pay(e).outstanding,0);
     let host=$('scheduleDecision');if(!host){host=document.createElement('div');host.id='scheduleDecision';host.className='ops-summary-strip';page.querySelector('.section-head')?.after(host)}
-    host.innerHTML=`${stat('예정 수업',`${rows.length}회`,'취소 제외')}${stat('전체 충원율',pct(fill),`${totalPeople}/${totalCap}석`)}${stat('남은 좌석',`${seats}석`,'현재 모집 가능',seats?'warn':'')}${stat('미수금',won(outstanding),'참가자 결제 기준',outstanding?'warn':'')}${stat('레시피 미연결',`${unlinked}회`,'ID/별칭 연결 필요',unlinked?'bad':'')}${stat('이익 계산 보류',`${uncosted}회`,'원가 미완료 포함',uncosted?'warn':'')}`;
+    host.innerHTML=`${stat('예정 수업',`${rows.length}회`,'취소 제외 · 지난 날짜 자동 완료')}${stat('전체 충원율',pct(fill),`${totalPeople}/${totalCap}석`)}${stat('남은 좌석',`${seats}석`,'현재 모집 가능',seats?'warn':'')}${stat('미수금',won(outstanding),'참가자 결제 기준',outstanding?'warn':'')}${stat('레시피 미연결',`${unlinked}회`,'ID/별칭 연결 필요',unlinked?'bad':'')}${stat('이익 계산 보류',`${uncosted}회`,'원가 미완료 포함',uncosted?'warn':'')}`;
     if($('scheduleAnalytics'))$('scheduleAnalytics').hidden=true;
   }
 
