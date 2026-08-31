@@ -1,0 +1,21 @@
+/* Strict no-repeat layer: one visible owner per piece of information. */
+#dashboard .lean-signal-grid{display:none!important}
+#dashboard .lean-dashboard{gap:8px}
+#dashboard .lean-dashboard-grid{grid-template-columns:1.05fr .95fr}
+
+.expense-focus-list{display:grid;gap:10px}
+.expense-focus-row{display:grid;grid-template-columns:78px minmax(0,1fr) 92px 36px;gap:8px;align-items:center}
+.expense-focus-row>span{font-size:9px;font-weight:850;color:var(--ink)}
+.expense-focus-row>div{height:9px;border-radius:999px;background:var(--cream2);overflow:hidden}
+.expense-focus-row i{display:block;height:100%;border-radius:999px;background:var(--slate)}
+.expense-focus-row>b{text-align:right;font-size:9px;color:var(--ink);font-variant-numeric:tabular-nums}
+.expense-focus-row>small{text-align:right;font-size:8px;color:var(--muted)}
+.menu-detail-note{padding:4px 0 8px;font-size:8px;color:var(--muted)}
+.ledger-insight,.profit-bridge{display:none!important}
+
+#recipes .ingredient-cost-summary{grid-template-columns:1fr!important}
+
+@media(max-width:700px){
+  #dashboard .lean-dashboard-grid{grid-template-columns:1fr}
+  .expense-focus-row{grid-template-columns:68px minmax(0,1fr) 80px 32px}
+}
