@@ -74,7 +74,11 @@ assert(ledger.includes('function classBreakdown')&&ledger.includes('수업별 �
 assert(ledger.includes('rentBasis')&&ledger.includes('locationOf'),'class breakdown must explain rent date/location/basis');
 assert(ledger.includes('function monthlyTable')&&ledger.includes('원가 연결'),'monthly finance must show exact monthly KRW totals and cost coverage');
 assert(ledger.includes('function menuBreakdown')&&ledger.includes('메뉴별 수익성 브레이크다운'),'finance ledger must show menu-level profitability with underlying class dates');
-assert(ledger.includes('회당 평균이익')&&ledger.includes('이익률'),'menu profitability must include per-class average and margin');
+assert(ledger.includes('profitPerPerson')&&ledger.includes('costablePeople'),'finance ledger must keep per-student profitability on the same costable subset as class profit');
+assert(ledger.includes('avgClassProfit')&&ledger.includes('avgPersonProfit'),'finance summary must separate per-class and per-student average profit');
+assert(ledger.includes('수업 1회당 평균이익')&&ledger.includes('수강생 1명당 평균이익'),'top finance KPIs must surface unit economics at a glance');
+assert(ledger.includes('메뉴 1회당 평균이익')&&ledger.includes('수강생 1명당 평균이익'),'menu profitability must distinguish total contribution from per-class and per-student economics');
+assert(ledger.includes('회당 이익')&&ledger.includes('인당 이익'),'monthly exact table must include class and student unit profit');
 assert(ledgerCss.includes('.ledger-month-table')&&ledgerCss.includes('.ledger-formula')&&ledgerCss.includes('.ledger-menu-classes'),'detailed finance ledger styles must remain available');
 
 assert(html.includes('id="calendarClassDetail"'),'calendar compatibility host must exist for legacy runtime');
