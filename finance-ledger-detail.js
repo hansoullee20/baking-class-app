@@ -65,7 +65,7 @@
     const cur=currentMonth(),set=new Set(events().map(e=>e.date.slice(0,7)).filter(k=>k<cur));
     return[...set].sort((a,b)=>b.localeCompare(a));
   }
-  function monthName(k){const[y,m]=String(k).split('-');return`${Number(m)}월`}
+  function monthName(k){const parts=String(k).split('-');return`${Number(parts[1])}월`}
   function completeRate(s){return s.count?Math.round(s.costable/s.count*100):0}
   function segmentPct(v,base){return base>0?Math.max(0,Math.min(100,v/base*100)):0}
   function flowBar(s){
@@ -91,10 +91,9 @@
     return`<div class="month-selector" aria-label="과거 월 선택">${months.map((m,i)=>`<button type="button" data-compare-month="${m}" class="${m===compareMonth?'active':''}"><b>${monthName(m)}</b><small>${i===0?'지난달':'이전'}</small></button>`).join('')}</div>`;
   }
   function comparePanel(currentForecast,months){
-    if(!months.length)return`<section class="month-compare-card"><div class="ledger-head"><div><h3>월 비교</h3><p>지난달부터 과거순으로 확인합니다.</p></div></div><div class="month-compare-empty">비교할 과거 월 데이터가 없습니다.</div></section>`;
+    if(!months.length)return'<section class="month-compare-card"><div class="ledger-head"><div><h3>월 비교</h3><p>지난달부터 과거순으로 확인합니다.</p></div></div><div class="month-compare-empty">비교할 과거 월 데이터가 없습니다.</div></section>';
     if(!compareMonth||!months.includes(compareMonth))compareMonth=months[0];
-    const past=summarize(monthRecords(compareMonth));
-    const cur=currentForecast;
+    const past=summarize(monthRecords(compareMonth)),cur=currentForecast;
     const curCost=cur.costable?cur.cost:null,pastCost=past.costable?past.cost:null,curProfit=cur.costable?cur.profit:null,pastProfit=past.costable?past.profit:null;
     return`<section class="month-compare-card"><div class="ledger-head"><div><h3>월 비교</h3><p>지난달부터 오래된 달 순서입니다. 누르면 바로 비교값이 바뀝니다.</p></div></div>${monthSelector(months)}<div class="compare-surface"><div class="compare-title"><div><span>이번 달 예상</span><b>${monthName(currentMonth())}</b></div><em>vs</em><div><span>비교 월</span><b>${monthName(compareMonth)}</b></div></div><div class="compare-metrics"><div><span>매출</span><b>${won(cur.revenue)}</b><i>${changeText(cur.revenue,past.revenue)}</i><strong>${won(past.revenue)}</strong></div><div><span>총비용</span><b>${curCost==null?'—':won(curCost)}</b><i>${curCost==null||pastCost==null?'비교 불가':changeText(curCost,pastCost)}</i><strong>${pastCost==null?'—':won(pastCost)}</strong></div><div><span>남는 금액</span><b>${curProfit==null?'—':won(curProfit)}</b><i class="${curProfit!=null&&pastProfit!=null&&curProfit-pastProfit<0?'down':''}">${curProfit==null||pastProfit==null?'비교 불가':changeText(curProfit,pastProfit)}</i><strong>${pastProfit==null?'—':won(pastProfit)}</strong></div><div><span>이익률</span><b>${pct(cur.margin)}</b><i>${cur.margin==null||past.margin==null?'비교 불가':changeText(cur.margin,past.margin,true)}</i><strong>${pct(past.margin)}</strong></div></div><div class="compare-flow-bars"><div><span>${monthName(currentMonth())} 예상</span>${flowBar(cur)}</div><div><span>${monthName(compareMonth)}</span>${flowBar(past)}</div></div></div></section>`;
   }
@@ -108,7 +107,15 @@
     const rows=menuSummary(recs).filter(m=>Number.isFinite(Number(menuValue(m)))).sort((a,b)=>menuValue(b)-menuValue(a)).slice(0,5);
     const max=Math.max(1,...rows.map(m=>Math.abs(menuValue(m))));
     const caption=menuMetric==='profit'?'예상 총이익':menuMetric==='class'?'회당 예상이익':'예상 마진';
-    return`<section class="month-menu-card"><div class="ledger-head"><div><h3>이번 달 메뉴 수익성</h3><p>이번 달 예약까지 포함한 예상 기준입니다.</p></div><div class="menu-switch"><button data-fin-menu="profit" class="${menuMetric==='profit'?'active':''}">총이익</button><button data-fin-menu="class" class="${menuMetric==='class'?'active':''}">회당</button><button data-fin-menu="margin" class="${menuMetric==='margin'?'active':''}">마진</button></div></div>${rows.length?`<div class="month-menu-list">${rows.map((m,i)=>{const v=menuValue(m),value=menuMetric==='margin'?pct(v):won(v);return`<div class="month-menu-row"><em>${i+1}</em><div><b>${esc(m.menu)}</b><small>${m.count}회 · ${m.people}명 · 원가 ${m.costable}/${m.count}</small></div><div class="month-menu-track"><i class="${v<0?'negative':''}" style="width:${Math.max(3,Math.abs(v)/max*100)}%"></i></div><strong>${value}</strong></div>`}).join('')}</div>`:'<div class="month-compare-empty">이번 달에 비교 가능한 메뉴 원가가 없습니다.</div>`}<div class="ledger-caption">현재 기준: ${caption}.</div></section>`;
+    let body='<div class="month-compare-empty">이번 달에 비교 가능한 메뉴 원가가 없습니다.</div>';
+    if(rows.length){
+      const items=rows.map((m,i)=>{
+        const v=menuValue(m),value=menuMetric==='margin'?pct(v):won(v),width=Math.max(3,Math.abs(v)/max*100);
+        return'<div class="month-menu-row"><em>'+(i+1)+'</em><div><b>'+esc(m.menu)+'</b><small>'+m.count+'회 · '+m.people+'명 · 원가 '+m.costable+'/'+m.count+'</small></div><div class="month-menu-track"><i class="'+(v<0?'negative':'')+'" style="width:'+width+'%"></i></div><strong>'+value+'</strong></div>';
+      }).join('');
+      body='<div class="month-menu-list">'+items+'</div>';
+    }
+    return'<section class="month-menu-card"><div class="ledger-head"><div><h3>이번 달 메뉴 수익성</h3><p>이번 달 예약까지 포함한 예상 기준입니다.</p></div><div class="menu-switch"><button data-fin-menu="profit" class="'+(menuMetric==='profit'?'active':'')+'">총이익</button><button data-fin-menu="class" class="'+(menuMetric==='class'?'active':'')+'">회당</button><button data-fin-menu="margin" class="'+(menuMetric==='margin'?'active':'')+'">마진</button></div></div>'+body+'<div class="ledger-caption">현재 기준: '+caption+'.</div></section>';
   }
   function classDetails(recs){
     const rows=recs.slice().sort((a,b)=>a.date.localeCompare(b.date)||a.time.localeCompare(b.time));
@@ -132,8 +139,7 @@
   }
   function render(){
     const host=ensureHost();if(!host)return;
-    const month=currentMonth(),all=monthRecords(month),actual=all.filter(occurred),current=summarize(actual),forecast=summarize(all),months=previousMonths();
-    const now=seoulNow();
+    const month=currentMonth(),all=monthRecords(month),actual=all.filter(occurred),current=summarize(actual),forecast=summarize(all),months=previousMonths(),now=seoulNow();
     host.innerHTML=`<div class="finance-focus-intro"><div><span>${monthName(month)} OPERATING FLOW</span><h2>이번 달 돈의 흐름</h2><p>왼쪽은 지금까지 완료된 수업, 오른쪽은 현재 예약을 모두 진행했을 때의 월말 예상입니다.</p></div><div class="finance-asof"><b>${now.date.replaceAll('-','.')} ${now.time}</b><span>Asia/Seoul 기준</span></div></div><div class="finance-focus-grid">${flowCard('current','현재까지',`${monthName(month)} · 완료된 수업 기준`,current)}${flowCard('forecast','이번 달 예상',`${monthName(month)} · 현재 예약 포함`,forecast)}</div>${comparePanel(forecast,months)}${menuPanel(all)}${classDetails(all)}<div class="finance-method-note">재료비는 현재 레시피 원가와 배합 규칙, 대관비는 수업별 저장/운영 규칙을 사용합니다. 원가가 연결되지 않은 수업은 남는 금액에 억지로 포함하지 않습니다.</div>`;
   }
   document.addEventListener('click',e=>{
