@@ -11,6 +11,8 @@ const refine=fs.readFileSync('workspace-refinement.js','utf8');
 const refineCss=fs.readFileSync('workspace-refinement.css','utf8');
 const recipeCosts=fs.readFileSync('recipe-ingredient-costs.js','utf8');
 const recipeCostsCss=fs.readFileSync('recipe-ingredient-costs.css','utf8');
+const ledger=fs.readFileSync('finance-ledger-detail.js','utf8');
+const ledgerCss=fs.readFileSync('finance-ledger-detail.css','utf8');
 const html=fs.readFileSync('index.html','utf8');
 
 assert(!ui.includes('toISOString()'),'operations UI must not use UTC ISO conversion for local month boundaries');
@@ -67,6 +69,14 @@ assert(recipeCosts.includes("'전란':'계란'")&&recipeCosts.includes("'녹인�
 assert(recipeCosts.includes("note:'단가 미연결'")||recipeCosts.includes("'단가 미연결'"),'unmatched ingredient prices must remain explicit rather than guessed');
 assert(recipeCostsCss.includes('.ingredient-cost-table')&&recipeCostsCss.includes('.ingredient-cost-summary'),'ingredient cost detail styles must remain available');
 
+assert(ledger.includes('B.classFinancials'),'detailed finance ledger must use canonical class financials');
+assert(ledger.includes('function classBreakdown')&&ledger.includes('수업별 손익 브레이크다운'),'finance ledger must show per-class revenue/material/rent/other/profit breakdown');
+assert(ledger.includes('rentBasis')&&ledger.includes('locationOf'),'class breakdown must explain rent date/location/basis');
+assert(ledger.includes('function monthlyTable')&&ledger.includes('원가 연결'),'monthly finance must show exact monthly KRW totals and cost coverage');
+assert(ledger.includes('function menuBreakdown')&&ledger.includes('메뉴별 수익성 브레이크다운'),'finance ledger must show menu-level profitability with underlying class dates');
+assert(ledger.includes('회당 평균이익')&&ledger.includes('이익률'),'menu profitability must include per-class average and margin');
+assert(ledgerCss.includes('.ledger-month-table')&&ledgerCss.includes('.ledger-formula')&&ledgerCss.includes('.ledger-menu-classes'),'detailed finance ledger styles must remain available');
+
 assert(html.includes('id="calendarClassDetail"'),'calendar compatibility host must exist for legacy runtime');
 assert(!html.includes('<button data-page="schedule">'),'schedule management must not remain a visible navigation destination');
 assert(!html.includes('<button data-page="planner">'),'standalone month planner must not remain a visible navigation destination');
@@ -77,9 +87,11 @@ assert(html.includes('workspace-refinement.js'),'recipe/payment/finance refineme
 assert(html.includes('workspace-refinement.css'),'recipe/payment/finance refinement styles must be loaded explicitly');
 assert(html.includes('recipe-ingredient-costs.js'),'recipe ingredient cost runtime must be loaded explicitly');
 assert(html.includes('recipe-ingredient-costs.css'),'recipe ingredient cost styles must be loaded explicitly');
+assert(html.includes('finance-ledger-detail.js'),'detailed finance ledger runtime must be loaded explicitly');
+assert(html.includes('finance-ledger-detail.css'),'detailed finance ledger styles must be loaded explicitly');
 assert(html.includes('재정 · 수익'),'finance tab must be labeled as operating finance');
 
-const order=['app.js','business-engine.js','data-normalization.js','class-ops-canonical.js','business-engine-adapter.js','operations-ui.js','management-planner.js','calendar-class-editor.js','calendar-status.js','information-architecture.js','workspace-refinement.js','recipe-ingredient-costs.js'].map(x=>html.indexOf(x));
+const order=['app.js','business-engine.js','data-normalization.js','class-ops-canonical.js','business-engine-adapter.js','operations-ui.js','management-planner.js','calendar-class-editor.js','calendar-status.js','information-architecture.js','workspace-refinement.js','recipe-ingredient-costs.js','finance-ledger-detail.js'].map(x=>html.indexOf(x));
 assert(order.every(x=>x>=0),'all canonical runtime modules must be loaded');
 for(let i=1;i<order.length;i++)assert(order[i]>order[i-1],`runtime script order invalid at position ${i}`);
 
