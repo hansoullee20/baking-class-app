@@ -31,6 +31,7 @@ jobs:
           node --check data-normalization.js
           node --check business-engine-adapter.js
           node --check operations-ui.js
+          node --check management-planner.js
           node --check auth-persist.js
           node --check sunny-theme.js
           node --check class-ops-canonical.js
@@ -63,13 +64,15 @@ jobs:
               raise SystemExit('Deprecated modules are loaded: '+', '.join(loaded))
           if existing:
               raise SystemExit('Deprecated files reintroduced: '+', '.join(existing))
-          required=['business-engine.js','data-normalization.js','business-engine-adapter.js','operations-ui.js','class-ops-canonical.js','decision-ui.css','operations-ui.css']
+          required=['business-engine.js','data-normalization.js','business-engine-adapter.js','operations-ui.js','management-planner.js','class-ops-canonical.js','decision-ui.css','operations-ui.css','management-polish.css']
           missing=[x for x in required if x not in html or not Path(x).exists()]
           if missing:
               raise SystemExit('Required runtime asset missing: '+', '.join(missing))
+          if 'id="planner"' not in html or 'id="calendarClassDetail"' not in html:
+              raise SystemExit('Planner or calendar attendee surface missing from index.html')
           if Path('docs/index.html').exists():
               raise SystemExit('Obsolete duplicate docs/index.html must not be restored')
-          print('Release 6 repository guard passed')
+          print('Management planning repository guard passed')
           PY
 
       - name: Setup Pages
