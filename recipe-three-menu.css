@@ -1,18 +1,21 @@
 #recipes .recipe-tools .seg[data-filter]{display:none!important}
-#recipes #recipeCategoryBar{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:10px 0 13px;padding:0;background:transparent;border:0}
-#recipes #recipeCategoryBar .recipe-three-tab{appearance:none;border:1px solid var(--line);background:var(--paper);border-radius:12px;min-height:58px;padding:9px 12px;display:flex;align-items:center;justify-content:space-between;gap:10px;cursor:pointer;text-align:left;transition:border-color .16s ease,background .16s ease,transform .16s ease}
-#recipes #recipeCategoryBar .recipe-three-tab:hover{border-color:color-mix(in srgb,var(--terra) 45%,var(--line));transform:translateY(-1px)}
-#recipes #recipeCategoryBar .recipe-three-tab>span{display:grid;gap:2px}
+#recipes #recipeCategoryBar{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;margin:10px 0 13px;padding:0;background:var(--paper);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+#recipes #recipeCategoryBar .recipe-three-tab{appearance:none;border:0;border-right:1px solid var(--line);background:transparent;border-radius:0;min-height:58px;padding:9px 12px;display:flex;align-items:center;justify-content:center;gap:10px;cursor:pointer;text-align:center;transition:background .16s ease,box-shadow .16s ease}
+#recipes #recipeCategoryBar .recipe-three-tab:last-child{border-right:0}
+#recipes #recipeCategoryBar .recipe-three-tab:hover{background:rgba(23,55,94,.025)}
+#recipes #recipeCategoryBar .recipe-three-tab>span{display:grid;gap:2px;justify-items:center}
 #recipes #recipeCategoryBar .recipe-three-tab b{font:700 16px/1.05 Georgia,"Times New Roman",serif;color:var(--ink)}
 #recipes #recipeCategoryBar .recipe-three-tab small{font-size:7px;color:var(--muted)}
-#recipes #recipeCategoryBar .recipe-three-tab em{font-style:normal;min-width:28px;height:28px;padding:0 7px;border-radius:999px;display:grid;place-items:center;background:var(--cream2);font-size:8px;font-weight:900;color:var(--ink)}
-#recipes #recipeCategoryBar .recipe-three-tab.active{border-color:var(--terra);background:rgba(201,121,85,.07);box-shadow:inset 0 2px 0 rgba(201,121,85,.18)}
+#recipes #recipeCategoryBar .recipe-three-tab em{font-style:normal;min-width:26px;height:24px;padding:0 6px;border-radius:999px;display:grid;place-items:center;background:var(--cream2);font-size:8px;font-weight:900;color:var(--ink)}
+#recipes #recipeCategoryBar .recipe-three-tab.active{background:rgba(201,121,85,.08);box-shadow:inset 0 -3px 0 var(--terra)}
 #recipes #recipeCategoryBar .recipe-three-tab.active b{color:var(--terra2)}
 #recipes #recipeCategoryBar .recipe-three-tab.active em{background:var(--terra);color:var(--paper)}
 #recipes .recipe-cat-badge{display:none!important}
 #recipes .recipe-tools{margin-bottom:0}
-html[data-theme="dark"] #recipes #recipeCategoryBar .recipe-three-tab{background:#121d2b;border-color:#344153}
-html[data-theme="dark"] #recipes #recipeCategoryBar .recipe-three-tab.active{background:#231b18;border-color:#9b664d}
+html[data-theme="dark"] #recipes #recipeCategoryBar{background:#121d2b;border-color:#344153}
+html[data-theme="dark"] #recipes #recipeCategoryBar .recipe-three-tab{border-color:#344153}
+html[data-theme="dark"] #recipes #recipeCategoryBar .recipe-three-tab:hover{background:#162231}
+html[data-theme="dark"] #recipes #recipeCategoryBar .recipe-three-tab.active{background:#231b18;box-shadow:inset 0 -3px 0 #a9684d}
 html[data-theme="dark"] #recipes #recipeCategoryBar .recipe-three-tab em{background:#182433}
 html[data-theme="dark"] #recipes #recipeCategoryBar .recipe-three-tab.active em{background:#a9684d;color:#fff4eb}
-@media(max-width:600px){#recipes #recipeCategoryBar{gap:6px}#recipes #recipeCategoryBar .recipe-three-tab{min-height:51px;padding:8px 9px}#recipes #recipeCategoryBar .recipe-three-tab b{font-size:13px}#recipes #recipeCategoryBar .recipe-three-tab small{display:none}#recipes #recipeCategoryBar .recipe-three-tab em{min-width:24px;height:24px;padding:0 5px}}
+@media(max-width:600px){#recipes #recipeCategoryBar .recipe-three-tab{min-height:49px;padding:8px 5px;gap:5px}#recipes #recipeCategoryBar .recipe-three-tab b{font-size:13px}#recipes #recipeCategoryBar .recipe-three-tab small{display:none}#recipes #recipeCategoryBar .recipe-three-tab em{min-width:22px;height:22px;padding:0 5px}}
