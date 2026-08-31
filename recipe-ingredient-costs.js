@@ -1,6 +1,6 @@
 (() => {
   const $=id=>document.getElementById(id);
-  const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[m]));
+  const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
   const won=v=>Number.isFinite(Number(v))?'₩'+Math.round(Number(v)).toLocaleString('ko-KR'):'—';
   const won2=v=>Number.isFinite(Number(v))?'₩'+Number(v).toLocaleString('ko-KR',{maximumFractionDigits:2}):'—';
   const normalize=s=>String(s||'').toLowerCase().replace(/\([^)]*\)/g,'').replace(/[\s·_\-]/g,'').replace(/[^0-9a-z가-힣]/g,'');
