@@ -1,6 +1,6 @@
 (() => {
   const $=id=>document.getElementById(id);
-  const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[m]));
   const won=v=>Number.isFinite(Number(v))?'₩'+Math.round(Number(v)).toLocaleString('ko-KR'):'—';
   const won2=v=>Number.isFinite(Number(v))?'₩'+Number(v).toLocaleString('ko-KR',{maximumFractionDigits:2}):'—';
   const normalize=s=>String(s||'').toLowerCase().replace(/\([^)]*\)/g,'').replace(/[\s·_\-]/g,'').replace(/[^0-9a-z가-힣]/g,'');
@@ -51,7 +51,7 @@
     table.classList.add('ingredient-cost-table');table.dataset.recipeCostDetail='1';
     table.innerHTML=`<thead><tr><th>재료</th><th>사용량</th><th>기준 단가</th><th>들어간 금액</th><th>단가 상태</th></tr></thead><tbody>${rows.map(({item,master,calc})=>`<tr><td><b>${esc(item.name)}</b>${item.group?`<small>${esc(item.group)}</small>`:''}</td><td>${esc(calc.used||`${item.amount??'—'} ${item.unit||''}`)}</td><td>${esc(unitPrice(master))}</td><td class="ingredient-use-cost">${calc.cost==null?'<span>—</span>':`<strong>${won(calc.cost)}</strong>`}${calc.formula?`<small>${esc(calc.formula)}</small>`:calc.note?`<small>${esc(calc.note)}</small>`:''}</td><td>${master?`<span class="ingredient-price-status">${esc(master.status||'확인 필요')}</span>`:`<span class="ingredient-price-status missing">미연결</span>`}</td></tr>`).join('')}</tbody>`;
     const wrap=table.closest('.tablewrap')||table.parentElement;let summary=wrap?.parentElement?.querySelector(':scope > .ingredient-cost-summary');if(!summary&&wrap){summary=document.createElement('div');summary.className='ingredient-cost-summary';wrap.insertAdjacentElement('afterend',summary)}
-    if(summary)summary.innerHTML=`<div><span>이번 배합 실사용 재료비</span><b>${linked.length?won(sum):'—'}</b><small>${linked.length}/${rows.length}개 재료 계산 가능 · 각 재료의 실제 용량 × 현재 단가 합계</small></div>`;
+    if(summary)summary.innerHTML=`<div><span>재료별 계산 합계</span><b>${linked.length?won(sum):'—'}</b><small>${linked.length}/${rows.length}개 재료 계산 가능 · 각 재료의 실제 용량 × 현재 단가 합계 · 카드 상단의 완성 배합원가와 비교</small></div>`;
   }
   function enhanceRecipeIngredientCosts(){const list=recipeRows();document.querySelectorAll('#recipeList>details.recipe').forEach(card=>{const name=card.querySelector('.rname')?.textContent?.trim(),recipe=list.find(r=>r.name===name);if(!recipe)return;const table=card.querySelector('.recipe-body .recipe-grid > div:first-child table');if(table)renderTable(recipe,table)})}
   const observer=new MutationObserver(()=>setTimeout(enhanceRecipeIngredientCosts,0));
