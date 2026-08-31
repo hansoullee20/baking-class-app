@@ -15,6 +15,7 @@
 <link rel="stylesheet" href="operations-ui.css?v=20260831-r4">
 <link rel="stylesheet" href="management-polish.css?v=20260831-r1">
 <link rel="stylesheet" href="calendar-class-editor.css?v=20260831-r1">
+<link rel="stylesheet" href="calendar-status.css?v=20260831-r1">
 </head><body>
 <div class="shell"><aside class="side"><div class="brand"><small>BAKING CLASS OPS</small>BLEU Dashboard</div><div class="nav"><button class="active" data-page="dashboard">대시보드</button><button data-page="calendar">달력 · 운영</button><button data-page="recipes">레시피</button><button data-page="finance">원가 · 수익</button></div><div class="side-note">Private GitHub data · canonical rules · normalized IDs · one calculation engine</div></aside>
 <main class="main"><div class="top"><div><h1>베이킹 운영 관리</h1><p>수업 일정 · 레시피 · 원가 · 수익을 통합 관리</p></div><div class="connect"><div class="tokenbox"><input id="token" type="password" placeholder="GitHub 연결 키" autocomplete="off"></div><button id="connectBtn" class="btn">연결</button><button id="saveBtn" class="btn secondary" disabled>저장</button><button id="clearBtn" class="btn ghost">키 변경</button></div></div><div class="status"><span id="connection" class="pill">연결 안 됨</span><span id="dirty" class="pill">변경 없음</span><span id="sync" class="pill">동기화 대기</span></div><div id="error" class="error"></div>
@@ -36,4 +37,5 @@
 <script src="operations-ui.js?v=20260831-r8"></script>
 <script src="management-planner.js?v=20260831-r2"></script>
 <script src="calendar-class-editor.js?v=20260831-r1"></script>
+<script src="calendar-status.js?v=20260831-r1"></script>
 </body></html>
