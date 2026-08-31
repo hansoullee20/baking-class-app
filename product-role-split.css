@@ -1,6 +1,8 @@
 /* Single-owner product IA: Dashboard=actions, Calendar=operations, Recipes=recipe data, Finance=money */
 #operationsDashboard{display:none!important}
 #calendarPlanHost,.calendar-plan-actions,#calendarClassDetail,.calendar-legacy-detail{display:none!important}
+#calendar.plan-mode #calendarPlanHost{display:grid!important}
+#calendar.plan-mode .calendar-plan-actions{display:flex!important}
 #recipeDecision{display:none!important}
 #financeDecision>.forecast{display:none!important}
 #calendar .calendar-layout{display:block!important}
