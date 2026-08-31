@@ -1,0 +1,15 @@
+/* Calendar scan-state dots: open -> full -> paid */
+.calendar-status-legend{display:flex;justify-content:flex-end;align-items:center;gap:12px;margin:-2px 0 8px;padding:0 2px;color:var(--muted);font-size:8px;font-weight:800}
+.calendar-status-legend span{display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
+.calendar-class-dot{display:inline-block;width:9px;height:9px;min-width:9px;border-radius:50%;box-sizing:border-box;vertical-align:middle;flex:0 0 9px}
+.calendar-class-dot.open{background:transparent;border:1.5px solid #a9978c}
+.calendar-class-dot.full{background:#d65353;border:1.5px solid #d65353;box-shadow:0 0 0 1px rgba(214,83,83,.08)}
+.calendar-class-dot.paid{background:#5f9870;border:1.5px solid #5f9870;box-shadow:0 0 0 1px rgba(95,152,112,.08)}
+.calendar-class-dot.cancelled{background:transparent;border:1.5px solid #b9afa8;position:relative}
+.calendar-status-event{position:relative;padding-left:20px!important;cursor:pointer}
+.calendar-status-event>.calendar-class-dot{position:absolute;left:7px;top:7px}
+#calendar .event.calendar-status-event b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html[data-theme="dark"] .calendar-class-dot.open{border-color:#9f968f}
+html[data-theme="dark"] .calendar-class-dot.full{background:#e16a6a;border-color:#e16a6a}
+html[data-theme="dark"] .calendar-class-dot.paid{background:#7db18d;border-color:#7db18d}
+@media(max-width:640px){.calendar-status-legend{justify-content:flex-start;gap:8px;flex-wrap:wrap}.calendar-status-event{padding-left:16px!important}.calendar-status-event>.calendar-class-dot{left:5px;top:6px}.calendar-class-dot{width:8px;height:8px;min-width:8px;flex-basis:8px}}
