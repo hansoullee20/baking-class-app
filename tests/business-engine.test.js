@@ -2,6 +2,7 @@ const assert=require('assert');
 const B=require('../business-engine.js');
 
 B.setRules({
+  timezone:'Asia/Seoul',
   rental:{defaultByDay:{saturday:90000,other:81000},manualClassValueHasPriority:true,hourlyHeadcountAutoModelEnabled:false},
   batching:{defaultBatchCount:1,autoScaleByStudentCount:false},
   recipeMatching:{aliases:{'꾸덕브라우니':'브라우니','밤에끌레어':'밤 에끌레어'}},
@@ -33,6 +34,12 @@ assert.equal(B.costState(overlayRecipe).source,'overlay','overlay source must re
 assert.equal(B.costState(overlayRecipe).confidence,'estimated','overlay conditional cost must remain estimated');
 assert(!JSON.stringify(overlayRecipe).includes('__costOverlay'),'effective overlay must never persist through JSON serialization');
 assert.equal(JSON.parse(JSON.stringify(overlayRecipe)).cost,null,'source recipe cost must remain null when serialized');
+
+assert.equal(B.effectiveStatus({date:'2026-08-30',status:'확정'},new Date('2026-08-31T09:00:00+09:00')),'완료','past non-cancelled class must become completed');
+assert.equal(B.effectiveStatus({date:'2026-08-30',status:'예정'},new Date('2026-08-31T09:00:00+09:00')),'완료','past planned class must become completed');
+assert.equal(B.effectiveStatus({date:'2026-08-30',status:'취소'},new Date('2026-08-31T09:00:00+09:00')),'취소','cancelled class must stay cancelled');
+assert.equal(B.effectiveStatus({date:'2026-08-31',status:'확정'},new Date('2026-08-31T21:00:00+09:00')),'확정','same-day class stays current until the date has passed');
+assert.equal(B.effectiveStatus({date:'2026-09-01',status:'예정'},new Date('2026-08-31T09:00:00+09:00')),'예정','future class must preserve stored status');
 
 const partialRoster=B.payment({people:4,fee:60000,participants:[{amountDue:60000,amountPaid:60000,paymentStatus:'입금완료'}]});
 assert.equal(partialRoster.expected,240000,'missing roster rows must still contribute class fee to expected payment');
