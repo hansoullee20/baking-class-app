@@ -5,6 +5,7 @@ const ops=fs.readFileSync('class-ops-canonical.js','utf8');
 const planner=fs.readFileSync('management-planner.js','utf8');
 const editor=fs.readFileSync('calendar-class-editor.js','utf8');
 const status=fs.readFileSync('calendar-status.js','utf8');
+const ia=fs.readFileSync('information-architecture.js','utf8');
 const html=fs.readFileSync('index.html','utf8');
 
 assert(!ui.includes('toISOString()'),'operations UI must not use UTC ISO conversion for local month boundaries');
@@ -27,7 +28,15 @@ assert(status.includes('function seatStates'),'calendar status module must calcu
 assert(status.includes("state:'open'")&&status.includes("state:'full'")&&status.includes("state:'paid'"),'calendar seat indicators must preserve empty/booked/paid states');
 assert(status.includes('for(let i=0;i<capacity;i++)'),'calendar must render seat state from class capacity');
 assert(status.includes('calendar-seat-dots'),'calendar events must render a seat-dot group');
-assert(html.includes('id="calendarClassDetail"'),'calendar attendee/payment detail panel must exist');
+assert(status.includes('information-architecture.js'),'calendar status runtime must load the role-separation layer last');
+assert(ia.includes('renderLeanDashboard'),'dashboard must be action-oriented instead of repeating finance summaries');
+assert(ia.includes('calendarMonthJump'),'single calendar must support direct navigation across past and future months');
+assert(ia.includes('dayOpsModal'),'calendar date click must open the unified day management modal');
+assert(ia.includes('data-ops-index'),'day modal must hand scheduled classes to canonical class operations');
+assert(ia.includes("mark('schedule')"),'calendar date modal must persist newly created classes through normal schedule persistence');
+assert(ia.includes('recipeDecision.hidden=true'),'recipe tab must suppress duplicate dashboard-like summary cards');
+assert(ia.includes('forecast.hidden=true'),'finance must suppress fixed next-month duplicate forecast when period controls already own that view');
+assert(html.includes('id="calendarClassDetail"'),'calendar attendee/payment detail panel compatibility host must exist');
 assert(!html.includes('<button data-page="schedule">'),'schedule management must not remain a visible navigation destination');
 assert(!html.includes('<button data-page="planner">'),'standalone month planner must not remain a visible navigation destination');
 assert(html.includes('calendar-class-editor.js'),'calendar class editor runtime must be loaded');
