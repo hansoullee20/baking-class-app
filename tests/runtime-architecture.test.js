@@ -70,17 +70,20 @@ assert(recipeCostsCss.includes('.ingredient-cost-table')&&recipeCostsCss.include
 assert(ledger.includes('B.classFinancials'),'finance must use canonical class financials');
 assert(ledger.includes('costablePeople'),'finance averages must use only students from costable classes');
 assert(ledger.includes('avgClassProfit')&&ledger.includes('avgStudentProfit'),'finance must separate per-class and per-student profit');
-assert(ledger.includes('수업 1회당 평균이익')&&ledger.includes('수강생 1명당 평균이익'),'top finance KPIs must expose the two operating unit metrics');
-assert(ledger.includes('function dedupeDashboard')&&ledger.includes("#dashboard .lean-signal-grid"),'dashboard duplicate signal cards must be removed after the action list renders');
-assert(ledger.includes('function expensePanel')&&!ledger.includes('function profitBridge'),'finance must show expense-only composition instead of repeating revenue/profit immediately below KPIs');
-assert(ledger.includes('상단 숫자를 반복하지 않고 비용만 봅니다.'),'finance cost block must explicitly own only expense information');
-assert(ledger.includes('function monthlyPanel'),'finance must show a compact monthly trend with exact values');
+assert(ledger.includes('function dedupeDashboard')&&ledger.includes("#dashboard .lean-signal-grid"),'dashboard duplicate signal cards must remain removed');
+assert(ledger.includes('function moneyFlow'),'finance must have one selected-period money-flow owner');
+assert(!ledger.includes('function kpis(')&&!ledger.includes('ledger-kpis'),'four-box finance KPI strip must not return');
+assert(ledger.includes('재료비')&&ledger.includes('대관비')&&ledger.includes('포장·기타')&&ledger.includes('남는 돈'),'money flow must expose revenue deductions and remainder');
+assert(ledger.includes('회당 남음')&&ledger.includes('인당 남음')&&ledger.includes('이익률'),'unit economics must be secondary to the money flow');
+assert(ledger.includes('function monthlyFlowPanel'),'finance must show exact month-by-month money flow comparisons');
+assert(ledger.includes('x.month!==selectedMonth'),'selected month must not repeat in the comparison section');
+assert(ledger.includes('총매출')&&ledger.includes('비용')&&ledger.includes('남음'),'monthly comparison must expose exact revenue, cost, and remainder');
 assert(ledger.includes('function menuRanking')&&ledger.includes('data-menu-metric'),'menu profitability must switch between total, per-class, and per-student metrics');
 assert(ledger.includes('function classBreakdown')&&ledger.includes('rentBasis')&&ledger.includes('locationOf'),'class detail must preserve revenue/material/rent/other/profit evidence');
 assert(ledger.includes('materialPerStudent')&&ledger.includes('perStudentProfit'),'class detail must expose per-student material and profit');
-assert(ledgerCss.includes('.ledger-kpis')&&ledgerCss.includes('.profit-bridge'),'finance KPI and reused expense-bar styles must remain available');
-assert(ledgerCss.includes('.month-compact-chart')&&ledgerCss.includes('.menu-rank-list'),'finance must keep the compact trend and menu ranking visuals');
-assert(ledgerCss.includes('.ledger-detail-shell'),'class-level detail must stay collapsed behind progressive disclosure');
+assert(ledgerCss.includes('.money-flow-line')&&ledgerCss.includes('.money-node.result'),'single-direction money flow styles must exist');
+assert(ledgerCss.includes('.month-flow-row')&&ledgerCss.includes('.month-flow-values'),'monthly exact-value flow styles must exist');
+assert(ledgerCss.includes('.menu-rank-list')&&ledgerCss.includes('.ledger-detail-shell'),'menu ranking and collapsed class evidence must remain');
 
 assert(html.includes('id="calendarClassDetail"'),'calendar compatibility host must remain for legacy runtime');
 assert(!html.includes('<button data-page="schedule">'),'schedule must not return as a visible nav destination');
