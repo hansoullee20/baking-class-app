@@ -32,6 +32,7 @@ jobs:
           node --check business-engine-adapter.js
           node --check operations-ui.js
           node --check management-planner.js
+          node --check calendar-class-editor.js
           node --check auth-persist.js
           node --check sunny-theme.js
           node --check class-ops-canonical.js
@@ -64,15 +65,17 @@ jobs:
               raise SystemExit('Deprecated modules are loaded: '+', '.join(loaded))
           if existing:
               raise SystemExit('Deprecated files reintroduced: '+', '.join(existing))
-          required=['business-engine.js','data-normalization.js','business-engine-adapter.js','operations-ui.js','management-planner.js','class-ops-canonical.js','decision-ui.css','operations-ui.css','management-polish.css']
+          required=['business-engine.js','data-normalization.js','business-engine-adapter.js','operations-ui.js','management-planner.js','calendar-class-editor.js','class-ops-canonical.js','decision-ui.css','operations-ui.css','management-polish.css','calendar-class-editor.css']
           missing=[x for x in required if x not in html or not Path(x).exists()]
           if missing:
               raise SystemExit('Required runtime asset missing: '+', '.join(missing))
-          if 'id="planner"' not in html or 'id="calendarClassDetail"' not in html:
-              raise SystemExit('Planner or calendar attendee surface missing from index.html')
+          if 'id="calendarClassDetail"' not in html:
+              raise SystemExit('Calendar attendee surface missing from index.html')
+          if '<button data-page="schedule">' in html or '<button data-page="planner">' in html:
+              raise SystemExit('Duplicate planner/schedule navigation reintroduced')
           if Path('docs/index.html').exists():
               raise SystemExit('Obsolete duplicate docs/index.html must not be restored')
-          print('Management planning repository guard passed')
+          print('Unified calendar operations repository guard passed')
           PY
 
       - name: Setup Pages
