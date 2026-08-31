@@ -5,7 +5,8 @@
   const num=v=>Number.isFinite(Number(v))?Number(v):0;
   const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
   const validCategories=['빵류','디저트류','케이크류'];
-  let activeRecipeCategory='all';
+  const categoryLabels={'빵류':'빵','디저트류':'디저트','케이크류':'케이크'};
+  let activeRecipeCategory='빵류';
   let popupEnhancing=false;
 
   function recipeRows(){return typeof recipes!=='undefined'&&Array.isArray(recipes)?recipes:[]}
@@ -29,7 +30,7 @@
     const body=card.querySelector('.recipe-body');if(!body)return;
     let host=body.querySelector('.recipe-management');
     if(!host){host=document.createElement('div');host.className='recipe-management';body.prepend(host)}
-    host.innerHTML=`<div><span>분류</span><b>${esc(cat)}</b></div><label>분류 변경<select class="recipe-category-select" data-recipe-name="${esc(r.name)}">${validCategories.map(x=>`<option ${x===cat?'selected':''}>${x}</option>`).join('')}</select></label>`;
+    host.innerHTML=`<div><span>분류</span><b>${esc(categoryLabels[cat]||cat)}</b></div><label>분류 변경<select class="recipe-category-select" data-recipe-name="${esc(r.name)}">${validCategories.map(x=>`<option value="${x}" ${x===cat?'selected':''}>${categoryLabels[x]}</option>`).join('')}</select></label>`;
 
     const grid=body.querySelector('.recipe-grid');if(!grid||grid.dataset.minimalized==='1')return;
     const processPanel=grid.children[1];
@@ -47,12 +48,13 @@
 
   function refreshRecipeCategories(){
     ensureRecipeCategoryBar();
-    const list=recipeRows(),counts={all:list.length,'빵류':0,'디저트류':0,'케이크류':0};list.forEach(r=>counts[recipeCategory(r)]++);
-    const bar=$('recipeCategoryBar');if(bar)bar.innerHTML=[['all','전체'],...validCategories.map(x=>[x,x])].map(([k,label])=>`<button type="button" class="recipe-cat-btn ${activeRecipeCategory===k?'active':''}" data-recipe-category="${k}"><b>${label}</b><span>${counts[k]||0}</span></button>`).join('');
+    const list=recipeRows(),counts={'빵류':0,'디저트류':0,'케이크류':0};list.forEach(r=>counts[recipeCategory(r)]++);
+    if(!validCategories.includes(activeRecipeCategory))activeRecipeCategory='빵류';
+    const bar=$('recipeCategoryBar');if(bar)bar.innerHTML=validCategories.map(k=>`<button type="button" class="recipe-cat-btn ${activeRecipeCategory===k?'active':''}" data-recipe-category="${k}"><b>${categoryLabels[k]}</b><span>${counts[k]||0}</span></button>`).join('');
     document.querySelectorAll('#recipeList>details.recipe').forEach(card=>{
       const name=card.querySelector('.rname')?.textContent?.trim()||'',r=list.find(x=>x.name===name),cat=recipeCategory(r||{name});
-      card.dataset.recipeCategory=cat;card.hidden=activeRecipeCategory!=='all'&&activeRecipeCategory!==cat;
-      const sub=card.querySelector('.rsub');if(sub){sub.querySelectorAll('.recipe-cat-badge').forEach(x=>x.remove());sub.insertAdjacentHTML('afterbegin',`<span class="recipe-cat-badge">${esc(cat)}</span>`)}
+      card.dataset.recipeCategory=cat;card.hidden=activeRecipeCategory!==cat;
+      const sub=card.querySelector('.rsub');if(sub){sub.querySelectorAll('.recipe-cat-badge').forEach(x=>x.remove());sub.insertAdjacentHTML('afterbegin',`<span class="recipe-cat-badge">${esc(categoryLabels[cat]||cat)}</span>`)}
       card.querySelectorAll('summary .recipe-category-select').forEach(x=>x.remove());
       if(r)ensureRecipeManagement(card,r,cat);
     });
