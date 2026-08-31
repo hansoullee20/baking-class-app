@@ -1,26 +1,14 @@
 /* Role separation: Dashboard=actions, Calendar=time+operations, Recipes=recipe master, Finance=money */
-#dashboard #operationsDashboard,
-#dashboard > .kpis,
-#dashboard > .grid2{display:none!important}
+#dashboard #operationsDashboard,#dashboard>.kpis,#dashboard>.grid2,#dashboard #dashboardAnalytics{display:none!important}
 #dashboard .hero{margin-bottom:12px}
 .lean-dashboard{display:grid;gap:12px}
 .lean-signal-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}
-.lean-signal{border:1px solid var(--line);background:var(--paper);border-radius:14px;padding:13px 14px;min-height:82px;display:flex;flex-direction:column;justify-content:space-between}
-.lean-signal span{font-size:9px;font-weight:850;color:var(--muted)}
-.lean-signal b{font-family:Georgia,"Times New Roman",serif;font-size:22px;line-height:1;color:var(--ink)}
-.lean-signal small{font-size:8px;color:var(--muted)}
-.lean-dashboard-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:12px}
-.lean-list{display:grid}
-.lean-action,.lean-upcoming{width:100%;display:grid;grid-template-columns:72px 1fr auto;gap:10px;align-items:center;border:0;border-top:1px solid var(--line);background:transparent;padding:11px 2px;text-align:left;color:var(--ink)}
-.lean-action:first-child,.lean-upcoming:first-child{border-top:0}
-.lean-action time,.lean-upcoming time{font-size:9px;font-weight:850;color:var(--muted)}
-.lean-action b,.lean-upcoming b{font-size:11px}
-.lean-action small,.lean-upcoming small{display:block;margin-top:3px;font-size:9px;color:var(--muted)}
-.lean-action em{font-style:normal;font-size:8px;font-weight:900;color:var(--terra2)}
-.lean-section-head{display:flex;justify-content:space-between;align-items:end;gap:10px;margin-bottom:4px}
-.lean-section-head h3{margin:0;font-family:Georgia,"Times New Roman",serif;font-size:17px;color:var(--ink)}
-.lean-section-head p{margin:3px 0 0;font-size:9px;color:var(--muted)}
-.lean-section-head button{border:0;background:transparent;color:var(--terra2);font-size:9px;font-weight:900}
+.lean-signal{border:1px solid var(--line);background:var(--paper);border-radius:14px;padding:13px 14px;min-height:82px;display:flex;flex-direction:column;justify-content:space-between;text-align:left;color:var(--ink);cursor:pointer}
+.lean-signal span{font-size:9px;font-weight:850;color:var(--muted)}.lean-signal b{font-family:Georgia,"Times New Roman",serif;font-size:22px;line-height:1;color:var(--ink)}.lean-signal small{font-size:8px;color:var(--muted)}
+.lean-dashboard-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:12px}.lean-list{display:grid}
+.lean-action,.lean-upcoming{width:100%;display:grid;grid-template-columns:72px 1fr auto;gap:10px;align-items:center;border:0;border-top:1px solid var(--line);background:transparent;padding:11px 2px;text-align:left;color:var(--ink);cursor:pointer}
+.lean-action:first-child,.lean-upcoming:first-child{border-top:0}.lean-action time,.lean-upcoming time{font-size:9px;font-weight:850;color:var(--muted)}.lean-action b,.lean-upcoming b{font-size:11px}.lean-action small,.lean-upcoming small{display:block;margin-top:3px;font-size:9px;color:var(--muted)}.lean-action em,.lean-upcoming em{font-style:normal;font-size:8px;font-weight:900;color:var(--terra2)}
+.lean-section-head{display:flex;justify-content:space-between;align-items:end;gap:10px;margin-bottom:4px}.lean-section-head h3{margin:0;font-family:Georgia,"Times New Roman",serif;font-size:17px;color:var(--ink)}.lean-section-head p{margin:3px 0 0;font-size:9px;color:var(--muted)}.lean-section-head button{border:0;background:transparent;color:var(--terra2);font-size:9px;font-weight:900}.focus-empty{padding:18px 4px;font-size:10px;color:var(--muted)}
 
 /* Calendar is the only time surface. Planning is optional, not permanently repeated. */
 #calendar .calendar-layout{grid-template-columns:1fr!important}
@@ -28,46 +16,26 @@
 #calendar #calendarPlanHost,#calendar #calendarPlanActions{display:none!important}
 #calendar.planning-open #calendarPlanHost{display:grid!important}
 #calendar.planning-open #calendarPlanActions{display:flex!important}
-.calendar-mode-tools{display:flex;gap:6px;align-items:center;margin-left:auto}
-.calendar-month-jump{width:122px;padding:7px 8px;font-size:10px}
-#calendarPlanToggle.active{background:var(--navy);border-color:var(--navy);color:#fff}
-#calendar .calendar-head{gap:8px}
-#calendar .calendar-head .month{min-width:110px;text-align:center}
-#calendar .day{cursor:pointer}
-#calendar .day:hover{border-color:#d8b8a4}
+.calendar-mode-tools{display:flex;gap:6px;align-items:center;margin-left:auto}.calendar-month-jump{width:122px;padding:7px 8px;font-size:10px}#calendarPlanToggle.active{background:var(--navy);border-color:var(--navy);color:#fff}
+#calendar .calendar-head{gap:8px}#calendar .calendar-head .month{min-width:110px;text-align:center}#calendar .day{cursor:pointer}#calendar .day:hover{border-color:#d8b8a4}
 
 /* Recipes should be recipe master, not another dashboard. */
 #recipes #recipeDecision{display:none!important}
 
-/* Finance owns money. Remove the second, fixed next-month forecast because period controls already cover it. */
-#finance #financeDecision > .forecast{display:none!important}
+/* Finance owns money. Remove fixed duplicate next-month forecast; period analysis already covers it. */
+#finance #financeDecision>.forecast{display:none!important}
 
-/* Day modal */
-.dayops-modal{position:fixed;inset:0;z-index:1400;display:none;align-items:center;justify-content:center;padding:18px}
-.dayops-modal.open{display:flex}
-.dayops-backdrop{position:absolute;inset:0;background:rgba(15,22,31,.46);backdrop-filter:blur(3px)}
-.dayops-dialog{position:relative;width:min(720px,96vw);max-height:88vh;overflow:auto;background:var(--paper);border:1px solid var(--line);border-radius:18px;box-shadow:0 24px 70px rgba(25,22,20,.22);padding:18px}
-.dayops-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;padding-bottom:12px;border-bottom:1px solid var(--line)}
-.dayops-head span{font-size:8px;font-weight:900;letter-spacing:.1em;color:var(--terra2)}
-.dayops-head h2{margin:3px 0 0;font-family:Georgia,"Times New Roman",serif;font-size:22px;color:var(--ink)}
-.dayops-close{width:30px;height:30px;border:1px solid var(--line);border-radius:50%;background:transparent;color:var(--ink);font-size:18px}
-.dayops-list{display:grid;gap:7px;margin-top:12px}
-.dayops-class{display:grid;grid-template-columns:84px minmax(0,1fr) auto;gap:10px;align-items:center;padding:11px 12px;border:1px solid var(--line);border-radius:12px;background:transparent;text-align:left;color:var(--ink)}
-.dayops-class time{font-size:9px;font-weight:850;color:var(--muted)}
-.dayops-class b{display:block;font-size:11px}
-.dayops-class small{display:block;margin-top:3px;font-size:8px;color:var(--muted)}
-.dayops-class i{font-style:normal;font-size:8px;font-weight:900;color:var(--terra2)}
-.dayops-history{opacity:.72}
-.dayops-add{margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
-.dayops-add-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:9px}
-.dayops-add-head h3{margin:0;font-size:12px;color:var(--ink)}
-.dayops-form{display:grid;grid-template-columns:1fr 1fr;gap:7px}
-.dayops-form label{font-size:8px;font-weight:850;color:var(--muted)}
-.dayops-form label.span2{grid-column:1/-1}
-.dayops-form input,.dayops-form select{margin-top:3px;padding:8px;font-size:10px}
-.dayops-form .btn{grid-column:1/-1;margin-top:2px}
-.dayops-empty{padding:22px 8px;text-align:center;color:var(--muted);font-size:10px}
-.dayops-foot{margin-top:10px;font-size:8px;color:var(--muted)}
-html[data-theme="dark"] .dayops-dialog{box-shadow:0 24px 70px rgba(0,0,0,.45)}
-@media(max-width:900px){.lean-signal-grid{grid-template-columns:1fr 1fr}.lean-dashboard-grid{grid-template-columns:1fr}.calendar-mode-tools{width:100%;justify-content:flex-end}.dayops-dialog{padding:14px}}
-@media(max-width:560px){.lean-signal-grid{grid-template-columns:1fr 1fr}.lean-action,.lean-upcoming{grid-template-columns:58px 1fr}.lean-action em,.lean-upcoming em{display:none}.dayops-class{grid-template-columns:64px 1fr}.dayops-class i{display:none}.dayops-form{grid-template-columns:1fr}.dayops-form label.span2{grid-column:auto}.dayops-form .btn{grid-column:auto}}
+/* One date click -> one Day Manager popup */
+.dayops-modal{position:fixed;inset:0;z-index:1600;display:none;align-items:center;justify-content:center;padding:18px}.dayops-modal.open{display:flex}.dayops-backdrop{position:absolute;inset:0;background:rgba(15,22,31,.48);backdrop-filter:blur(3px)}
+.dayops-dialog{position:relative;width:min(860px,96vw);max-height:90vh;overflow:auto;background:var(--paper);border:1px solid var(--line);border-radius:18px;box-shadow:0 24px 70px rgba(25,22,20,.22);padding:18px}.dayops-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;padding-bottom:12px;border-bottom:1px solid var(--line)}.dayops-head span{font-size:8px;font-weight:900;letter-spacing:.1em;color:var(--terra2)}.dayops-head h2{margin:3px 0 0;font-family:Georgia,"Times New Roman",serif;font-size:22px;color:var(--ink)}.dayops-close{width:30px;height:30px;border:1px solid var(--line);border-radius:50%;background:transparent;color:var(--ink);font-size:18px;cursor:pointer}
+.dayops-list{display:grid;gap:7px;margin-top:12px}.dayops-class{display:grid;grid-template-columns:84px minmax(0,1fr) auto;gap:10px;align-items:center;padding:11px 12px;border:1px solid var(--line);border-radius:12px;background:transparent;text-align:left;color:var(--ink);cursor:pointer}.dayops-class:hover{border-color:var(--terra2);background:rgba(201,121,85,.035)}.dayops-class time{font-size:9px;font-weight:850;color:var(--muted)}.dayops-class b{display:block;font-size:11px}.dayops-class small{display:block;margin-top:3px;font-size:8px;color:var(--muted)}.dayops-class i{font-style:normal;font-size:8px;font-weight:900;color:var(--terra2)}.dayops-history{opacity:.78}
+.dayops-add{margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}.dayops-add-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:9px}.dayops-add-head h3{margin:0;font-size:12px;color:var(--ink)}.dayops-add-head small{font-size:8px;color:var(--muted)}.dayops-form{display:grid;grid-template-columns:1fr 1fr;gap:7px}.dayops-form label{font-size:8px;font-weight:850;color:var(--muted)}.dayops-form label.span2{grid-column:1/-1}.dayops-form input,.dayops-form select{margin-top:3px;padding:8px;font-size:10px}.dayops-form>.btn{grid-column:1/-1;margin-top:2px}.dayops-empty{padding:22px 8px;text-align:center;color:var(--muted);font-size:10px}.dayops-foot{margin-top:10px;font-size:8px;color:var(--muted)}
+.dayops-back{margin:12px 0 4px;border:0;background:transparent;color:var(--terra2);font-size:9px;font-weight:900;cursor:pointer;padding:0}.dayops-editor,.dayops-record{margin-top:8px}.dayops-editor-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;padding-bottom:10px}.dayops-editor-head span,.dayops-record>span{font-size:8px;font-weight:900;letter-spacing:.08em;color:var(--terra2)}.dayops-editor-head h3,.dayops-record h3{margin:3px 0 0;font-family:Georgia,"Times New Roman",serif;font-size:19px;color:var(--ink)}.dayops-editor-head small,.dayops-record p{display:block;margin:3px 0 0;font-size:9px;color:var(--muted)}.dayops-delete-class{border:0;background:transparent;color:var(--bad);font-size:8px;font-weight:900;cursor:pointer}
+.dayops-core-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;padding:11px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}.dayops-core-grid label{font-size:8px;font-weight:850;color:var(--muted)}.dayops-core-grid label.span2{grid-column:span 2}.dayops-core-grid input,.dayops-core-grid select{margin-top:3px;padding:8px;font-size:10px}
+.dayops-payment{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin:10px 0}.dayops-payment>div{border:1px solid var(--line);border-radius:10px;padding:9px}.dayops-payment span{display:block;font-size:8px;color:var(--muted)}.dayops-payment b{display:block;margin-top:4px;font-size:13px;color:var(--ink)}
+.dayops-roster-head{display:flex;justify-content:space-between;align-items:end;gap:12px;margin:13px 0 7px}.dayops-roster-head h4{margin:0;font-size:12px;color:var(--ink)}.dayops-roster-head small{display:block;margin-top:3px;font-size:8px;color:var(--muted)}.dayops-roster-head>div:last-child{display:flex;gap:5px}.dayops-roster{display:grid;gap:6px}.dayops-person{display:grid;grid-template-columns:24px minmax(120px,1.3fr) 105px 100px 100px 112px auto;gap:6px;align-items:end;padding:8px;border:1px solid var(--line);border-radius:11px}.dayops-person-index{align-self:center;text-align:center;font-size:9px;font-weight:900;color:var(--muted)}.dayops-person label{font-size:7px;font-weight:850;color:var(--muted)}.dayops-person input,.dayops-person select{margin-top:3px;padding:7px;font-size:9px}.dayops-person-delete{align-self:center;border:0;background:transparent;color:var(--bad);font-size:8px;font-weight:900;cursor:pointer}
+.dayops-record{padding:12px 0}.dayops-record>small{display:block;margin-top:10px;font-size:8px;color:var(--muted)}
+html[data-theme="dark"] .dayops-dialog{box-shadow:0 24px 70px rgba(0,0,0,.45)}html[data-theme="dark"] .dayops-class:hover{background:rgba(255,255,255,.02)}
+@media(max-width:1000px){.lean-signal-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.lean-dashboard-grid{grid-template-columns:1fr}.dayops-person{grid-template-columns:24px 1fr 1fr}.dayops-person label:nth-of-type(3),.dayops-person label:nth-of-type(4),.dayops-person label:nth-of-type(5){grid-column:span 1}.dayops-person-delete{grid-column:3}}
+@media(max-width:900px){.calendar-mode-tools{width:100%;justify-content:flex-end}.dayops-dialog{padding:14px}.dayops-core-grid{grid-template-columns:1fr 1fr}.dayops-core-grid label.span2{grid-column:1/-1}}
+@media(max-width:560px){.lean-signal-grid{grid-template-columns:1fr 1fr}.lean-action,.lean-upcoming{grid-template-columns:58px 1fr}.lean-action em,.lean-upcoming em{display:none}.dayops-class{grid-template-columns:64px 1fr}.dayops-class i{display:none}.dayops-form{grid-template-columns:1fr}.dayops-form label.span2,.dayops-form>.btn{grid-column:auto}.dayops-payment{grid-template-columns:1fr 1fr}.dayops-core-grid{grid-template-columns:1fr}.dayops-core-grid label.span2{grid-column:auto}.dayops-roster-head{align-items:flex-start;flex-direction:column}.dayops-person{grid-template-columns:24px 1fr}.dayops-person label,.dayops-person label:nth-of-type(3),.dayops-person label:nth-of-type(4),.dayops-person label:nth-of-type(5){grid-column:2}.dayops-person-delete{grid-column:2;justify-self:end}}
