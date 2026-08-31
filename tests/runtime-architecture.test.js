@@ -60,7 +60,9 @@ assert(refineCss.includes('.recipe-category-bar')&&refineCss.includes('.recipe-p
 assert(recipeCosts.includes('function masterRows'),'recipe ingredient detail must use the shared ingredient price master');
 assert(recipeCosts.includes('function usageCalc'),'recipe ingredient detail must calculate cost from recipe amount');
 assert(recipeCosts.includes('price_per_100g'),'recipe ingredient detail must use normalized per-100g pricing');
-assert(recipeCosts.includes('재료별 계산 합계')&&recipeCosts.includes('저장된 레시피 원가'),'recipe detail must show calculated and stored recipe costs');
+assert(recipeCosts.includes('재료별 계산 합계'),'recipe detail must show the ingredient-calculated total');
+assert(!recipeCosts.includes('저장된 레시피 원가'),'stored recipe total must not be repeated inside the expanded ingredient detail');
+assert(recipeCosts.includes('카드 상단'),'expanded recipe cost detail must point to the single visible owner of total recipe cost');
 assert(recipeCosts.includes("'전란':'계란'")&&recipeCosts.includes("'녹인버터':'버터'"),'recipe costing must normalize common aliases');
 assert(recipeCosts.includes('단가 미연결'),'unmatched ingredient prices must stay explicit');
 assert(recipeCostsCss.includes('.ingredient-cost-table')&&recipeCostsCss.includes('.ingredient-cost-summary'),'ingredient cost detail styles must remain available');
@@ -69,13 +71,15 @@ assert(ledger.includes('B.classFinancials'),'finance must use canonical class fi
 assert(ledger.includes('costablePeople'),'finance averages must use only students from costable classes');
 assert(ledger.includes('avgClassProfit')&&ledger.includes('avgStudentProfit'),'finance must separate per-class and per-student profit');
 assert(ledger.includes('수업 1회당 평균이익')&&ledger.includes('수강생 1명당 평균이익'),'top finance KPIs must expose the two operating unit metrics');
-assert(ledger.includes('function profitBridge'),'finance must show the selected-period additive profit breakdown');
+assert(ledger.includes('function dedupeDashboard')&&ledger.includes("#dashboard .lean-signal-grid"),'dashboard duplicate signal cards must be removed after the action list renders');
+assert(ledger.includes('function expensePanel')&&!ledger.includes('function profitBridge'),'finance must show expense-only composition instead of repeating revenue/profit immediately below KPIs');
+assert(ledger.includes('상단 숫자를 반복하지 않고 비용만 봅니다.'),'finance cost block must explicitly own only expense information');
 assert(ledger.includes('function monthlyPanel'),'finance must show a compact monthly trend with exact values');
 assert(ledger.includes('function menuRanking')&&ledger.includes('data-menu-metric'),'menu profitability must switch between total, per-class, and per-student metrics');
 assert(ledger.includes('function classBreakdown')&&ledger.includes('rentBasis')&&ledger.includes('locationOf'),'class detail must preserve revenue/material/rent/other/profit evidence');
 assert(ledger.includes('materialPerStudent')&&ledger.includes('perStudentProfit'),'class detail must expose per-student material and profit');
-assert(ledgerCss.includes('.ledger-kpis')&&ledgerCss.includes('.profit-bridge'),'finance KPI and profit bridge styles must remain available');
-assert(ledgerCss.includes('.month-compact-chart')&&ledgerCss.includes('.menu-rank-list'),'finance must keep only the compact trend and menu ranking visuals');
+assert(ledgerCss.includes('.ledger-kpis')&&ledgerCss.includes('.profit-bridge'),'finance KPI and reused expense-bar styles must remain available');
+assert(ledgerCss.includes('.month-compact-chart')&&ledgerCss.includes('.menu-rank-list'),'finance must keep the compact trend and menu ranking visuals');
 assert(ledgerCss.includes('.ledger-detail-shell'),'class-level detail must stay collapsed behind progressive disclosure');
 
 assert(html.includes('id="calendarClassDetail"'),'calendar compatibility host must remain for legacy runtime');
