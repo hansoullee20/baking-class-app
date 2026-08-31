@@ -105,7 +105,8 @@
   }
   function menuValue(m){return menuMetric==='margin'?m.margin:menuMetric==='class'?m.avg:m.profit}
   function menuPanel(recs){
-    const rows=menuSummary(recs).filter(m=>Number.isFinite(Number(menuValue(m)))).sort((a,b)=>menuValue(b)-menuValue(a)).slice(0,5),max=Math.max(1,...rows.map(m=>Math.abs(menuValue(m)));
+    const rows=menuSummary(recs).filter(m=>Number.isFinite(Number(menuValue(m)))).sort((a,b)=>menuValue(b)-menuValue(a)).slice(0,5);
+    const max=Math.max(1,...rows.map(m=>Math.abs(menuValue(m))));
     const caption=menuMetric==='profit'?'예상 총이익':menuMetric==='class'?'회당 예상이익':'예상 마진';
     return`<section class="month-menu-card"><div class="ledger-head"><div><h3>이번 달 메뉴 수익성</h3><p>이번 달 예약까지 포함한 예상 기준입니다.</p></div><div class="menu-switch"><button data-fin-menu="profit" class="${menuMetric==='profit'?'active':''}">총이익</button><button data-fin-menu="class" class="${menuMetric==='class'?'active':''}">회당</button><button data-fin-menu="margin" class="${menuMetric==='margin'?'active':''}">마진</button></div></div>${rows.length?`<div class="month-menu-list">${rows.map((m,i)=>{const v=menuValue(m),value=menuMetric==='margin'?pct(v):won(v);return`<div class="month-menu-row"><em>${i+1}</em><div><b>${esc(m.menu)}</b><small>${m.count}회 · ${m.people}명 · 원가 ${m.costable}/${m.count}</small></div><div class="month-menu-track"><i class="${v<0?'negative':''}" style="width:${Math.max(3,Math.abs(v)/max*100)}%"></i></div><strong>${value}</strong></div>`}).join('')}</div>`:'<div class="month-compare-empty">이번 달에 비교 가능한 메뉴 원가가 없습니다.</div>`}<div class="ledger-caption">현재 기준: ${caption}.</div></section>`;
   }
