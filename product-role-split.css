@@ -1,0 +1,86 @@
+/* Single-owner product IA: Dashboard=actions, Calendar=operations, Recipes=recipe data, Finance=money */
+#operationsDashboard{display:none!important}
+#calendarPlanHost,.calendar-plan-actions,#calendarClassDetail,.calendar-legacy-detail{display:none!important}
+#recipeDecision{display:none!important}
+#financeDecision>.forecast{display:none!important}
+#calendar .calendar-layout{display:block!important}
+#calendar .calendar-layout>.card:first-child{width:100%;max-width:none}
+#calendar .calendar-head{gap:10px;flex-wrap:wrap}
+.calendar-month-jump{appearance:none;border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:9px;padding:6px 8px;font:700 10px/1.2 inherit}
+
+.lean-dashboard{display:grid;gap:12px;margin-top:12px}
+.lean-signals{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}
+.lean-signal{border:1px solid var(--line);background:var(--paper);border-radius:14px;padding:14px;text-align:left;color:var(--ink);cursor:pointer;min-height:96px}
+.lean-signal span{display:block;font-size:9px;font-weight:850;color:var(--muted)}
+.lean-signal b{display:block;margin-top:7px;font:700 25px/1 Georgia,"Times New Roman",serif;letter-spacing:-.03em}
+.lean-signal small{display:block;margin-top:7px;font-size:9px;line-height:1.4;color:var(--muted)}
+.lean-signal.attention b{color:var(--terra2)}
+.lean-signal.bad b{color:var(--bad)}
+.lean-dashboard-grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:12px}
+.lean-panel{border:1px solid var(--line);background:var(--paper);border-radius:16px;padding:15px}
+.lean-panel-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;margin-bottom:8px}
+.lean-panel-head h3{margin:0;font:700 17px/1.15 Georgia,"Times New Roman",serif;color:var(--ink)}
+.lean-panel-head p{margin:4px 0 0;font-size:9px;color:var(--muted)}
+.lean-action,.lean-next{width:100%;display:grid;grid-template-columns:70px 1fr auto;gap:10px;align-items:center;border:0;border-top:1px solid var(--line);background:transparent;padding:10px 2px;text-align:left;color:var(--ink);cursor:pointer}
+.lean-action:first-child,.lean-next:first-child{border-top:0}
+.lean-action time,.lean-next time{font-size:9px;font-weight:850;color:var(--terra2)}
+.lean-action b,.lean-next b{font-size:11px;line-height:1.3}
+.lean-action small,.lean-next small{display:block;margin-top:2px;font-size:8px;color:var(--muted)}
+.lean-action em{font-style:normal;font-size:8px;color:var(--muted)}
+.lean-empty{padding:22px 8px;text-align:center;color:var(--muted);font-size:10px}
+
+.day-manager{position:fixed;inset:0;z-index:1400;display:none;align-items:center;justify-content:center;padding:22px}
+.day-manager.open{display:flex}
+.day-manager-backdrop{position:absolute;inset:0;background:rgba(12,20,32,.55);backdrop-filter:blur(3px)}
+.day-manager-dialog{position:relative;width:min(1080px,96vw);max-height:92vh;overflow:hidden;background:var(--paper);border:1px solid var(--line);border-radius:20px;box-shadow:0 28px 80px rgba(10,20,35,.28);display:grid;grid-template-rows:auto minmax(0,1fr)}
+.day-manager-head{display:flex;justify-content:space-between;gap:16px;align-items:center;padding:16px 18px;border-bottom:1px solid var(--line)}
+.day-manager-head span{display:block;font-size:8px;font-weight:900;letter-spacing:.1em;color:var(--terra2)}
+.day-manager-head h2{margin:3px 0 0;font:700 22px/1.05 Georgia,"Times New Roman",serif;color:var(--ink)}
+.day-manager-close{border:0;background:transparent;font-size:25px;line-height:1;color:var(--muted);cursor:pointer}
+.day-manager-body{display:grid;grid-template-columns:230px minmax(0,1fr);min-height:0}
+.day-manager-list{border-right:1px solid var(--line);padding:12px;overflow:auto;background:var(--cream2)}
+.day-manager-list-head{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px}
+.day-manager-list-head b{font-size:10px;color:var(--ink)}
+.day-manager-item{width:100%;border:1px solid transparent;background:transparent;border-radius:10px;padding:9px;text-align:left;color:var(--ink);cursor:pointer;margin-bottom:5px}
+.day-manager-item:hover,.day-manager-item.active{background:var(--paper);border-color:var(--line)}
+.day-manager-item b{display:block;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.day-manager-item small{display:block;margin-top:3px;font-size:8px;color:var(--muted)}
+.day-manager-item.draft b{color:#4b6884}
+.day-manager-item.history{opacity:.75}
+.day-manager-main{padding:16px 18px 22px;overflow:auto}
+.day-section{padding:0 0 16px;margin-bottom:16px;border-bottom:1px solid var(--line)}
+.day-section:last-child{border-bottom:0;margin-bottom:0}
+.day-section-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;margin-bottom:10px}
+.day-section-head h3{margin:0;font:700 16px/1.15 Georgia,"Times New Roman",serif;color:var(--ink)}
+.day-section-head p{margin:4px 0 0;font-size:8px;color:var(--muted)}
+.day-form{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.day-form label{font-size:8px;font-weight:850;color:var(--muted)}
+.day-form label.span2{grid-column:span 2}
+.day-form label.span4{grid-column:1/-1}
+.day-form input,.day-form select,.day-form textarea{width:100%;margin-top:4px;border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:9px;padding:8px;font-size:10px}
+.day-form textarea{min-height:62px;resize:vertical}
+.day-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
+.day-danger{margin-left:auto;border-color:rgba(200,80,80,.3)!important;color:var(--bad)!important}
+.day-pay-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:10px}
+.day-pay-summary>div{border:1px solid var(--line);border-radius:10px;padding:9px;background:var(--cream2)}
+.day-pay-summary span{display:block;font-size:8px;color:var(--muted)}
+.day-pay-summary b{display:block;margin-top:4px;font-size:13px;color:var(--ink)}
+.day-roster{display:grid;gap:7px}
+.day-person{display:grid;grid-template-columns:1.2fr .8fr .8fr .8fr .8fr auto;gap:6px;align-items:end;border-top:1px solid var(--line);padding-top:7px}
+.day-person:first-child{border-top:0}
+.day-person label{font-size:7px;color:var(--muted)}
+.day-person input,.day-person select{width:100%;margin-top:3px;border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:8px;padding:7px;font-size:9px}
+.day-person button{border:0;background:transparent;color:var(--bad);font-size:8px;cursor:pointer;padding:7px 2px}
+.day-readonly{display:grid;gap:7px}
+.day-readonly-row{display:grid;grid-template-columns:110px 1fr;gap:10px;padding:7px 0;border-top:1px solid var(--line);font-size:9px}
+.day-readonly-row:first-child{border-top:0}.day-readonly-row span{color:var(--muted)}.day-readonly-row b{color:var(--ink)}
+.day-manager-empty{padding:28px 8px;text-align:center;color:var(--muted);font-size:10px}
+
+html[data-theme="dark"] .day-manager-dialog,html[data-theme="dark"] .lean-panel,html[data-theme="dark"] .lean-signal{background:#121d2b;border-color:#344153}
+html[data-theme="dark"] .day-manager-list{background:#101925;border-right-color:#344153}
+html[data-theme="dark"] .day-manager-item:hover,html[data-theme="dark"] .day-manager-item.active{background:#182433;border-color:#344153}
+html[data-theme="dark"] .day-pay-summary>div{background:#182433;border-color:#344153}
+html[data-theme="dark"] .calendar-month-jump{background:#121d2b;border-color:#344153;color:#f4eadf}
+
+@media(max-width:900px){.lean-signals{grid-template-columns:1fr 1fr}.lean-dashboard-grid{grid-template-columns:1fr}.day-manager{padding:8px}.day-manager-dialog{width:100%;max-height:96vh}.day-manager-body{grid-template-columns:1fr}.day-manager-list{border-right:0;border-bottom:1px solid var(--line);display:flex;gap:5px;overflow:auto;padding:8px}.day-manager-list-head{display:none}.day-manager-item{min-width:145px;margin:0}.day-form{grid-template-columns:1fr 1fr}.day-person{grid-template-columns:1fr 1fr}.day-person button{grid-column:1/-1;text-align:right}}
+@media(max-width:560px){.lean-signals{grid-template-columns:1fr 1fr}.lean-action,.lean-next{grid-template-columns:54px 1fr}.lean-action em{display:none}.day-form{grid-template-columns:1fr}.day-form label.span2,.day-form label.span4{grid-column:auto}.day-pay-summary{grid-template-columns:1fr 1fr 1fr}.day-manager-head{padding:13px 14px}.day-manager-main{padding:13px}.day-manager-dialog{border-radius:14px}}
