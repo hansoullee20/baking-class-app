@@ -1,0 +1,55 @@
+/* Calendar payment quick-check */
+.dayops-person{grid-template-columns:24px minmax(150px,1.35fr) 110px 96px 96px 112px auto!important}
+.dayops-person>label:has([data-person="paymentStatus"]){display:none!important}
+.quick-paid-check{display:flex!important;align-items:center;gap:7px;align-self:center;padding:7px 9px;border:1px solid var(--line);border-radius:9px;background:var(--cream2);font-size:9px!important;font-weight:850!important;color:var(--ink)!important;cursor:pointer}
+.quick-paid-check input{width:15px!important;height:15px!important;margin:0!important;accent-color:var(--ok)}
+.quick-paid-check span{white-space:nowrap}
+.dayops-roster-head [data-fill-people]{display:none!important}
+
+/* Recipe category management */
+.recipe-tools .seg[data-filter]{display:none!important}
+.recipe-category-bar{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin:8px 0 12px}
+.recipe-cat-btn{border:1px solid var(--line);background:var(--paper);border-radius:12px;padding:10px 12px;display:flex;align-items:center;justify-content:space-between;gap:10px;color:var(--ink);cursor:pointer;text-align:left}
+.recipe-cat-btn b{font-size:11px}.recipe-cat-btn span{font-size:9px;color:var(--muted)}
+.recipe-cat-btn.active{border-color:var(--navy);box-shadow:inset 0 0 0 1px var(--navy);background:rgba(23,55,94,.035)}
+.recipe-cat-badge{display:inline-block;margin-right:6px;padding:2px 6px;border-radius:999px;background:var(--cream2);border:1px solid var(--line);font-size:8px;font-weight:850;color:var(--muted)}
+.recipe-category-select{min-width:94px;border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:8px;padding:6px 7px;font-size:9px;font-weight:800}
+
+/* Finance visualization */
+#finance #financeDecision,#finance #financeKpis{display:none!important}
+.finance-visual{display:grid;gap:10px;margin-top:10px}
+.finance-visual-top{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.finance-visual-top>div{border:1px solid var(--line);background:var(--paper);border-radius:14px;padding:13px 14px}
+.finance-visual-top span{display:block;font-size:8px;font-weight:850;color:var(--muted)}
+.finance-visual-top b{display:block;margin-top:6px;font:700 21px/1 Georgia,"Times New Roman",serif;color:var(--ink);letter-spacing:-.03em}
+.finance-visual-top small{display:block;margin-top:6px;font-size:8px;color:var(--muted)}
+.finance-visual-grid{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(260px,.65fr);gap:10px}
+.finance-viz-card{border:1px solid var(--line);background:var(--paper);border-radius:16px;padding:14px;min-width:0}
+.finance-viz-card.wide{min-height:260px}.finance-viz-card:last-child{grid-column:1/-1}
+.finance-viz-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;margin-bottom:12px}
+.finance-viz-head h3{margin:0;font:700 16px/1.15 Georgia,"Times New Roman",serif;color:var(--ink)}
+.finance-viz-head p{margin:4px 0 0;font-size:8px;color:var(--muted)}
+.finance-month-chart{height:190px;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;align-items:end;padding:12px 4px 2px;border-bottom:1px solid var(--line)}
+.finance-month{height:100%;display:grid;grid-template-rows:minmax(0,1fr) auto auto;gap:4px;align-items:end;text-align:center}
+.finance-month-bars{height:100%;display:flex;gap:4px;align-items:end;justify-content:center}
+.finance-month-bars i{display:block;width:min(22px,36%);min-height:2px;border-radius:5px 5px 2px 2px;background:var(--slate)}
+.finance-month-bars i.collected{background:var(--terra)}
+.finance-month>b{font-size:8px;color:var(--ink)}.finance-month>small{font-size:7px;color:var(--muted)}
+.finance-viz-legend{display:flex;gap:14px;justify-content:flex-end;margin-top:8px;font-size:8px;color:var(--muted)}
+.finance-viz-legend span{display:flex;gap:5px;align-items:center}.finance-viz-legend i{width:8px;height:8px;border-radius:2px;background:var(--slate)}.finance-viz-legend i.collected{background:var(--terra)}
+.finance-collection{min-height:190px;display:flex;align-items:center;justify-content:center;gap:22px;flex-wrap:wrap}
+.finance-ring{--paid:0;position:relative;width:132px;height:132px;border-radius:50%;background:conic-gradient(var(--ok) calc(var(--paid)*1%),var(--cream2) 0);display:flex;flex-direction:column;align-items:center;justify-content:center}
+.finance-ring:after{content:"";position:absolute;inset:15px;border-radius:50%;background:var(--paper);border:1px solid var(--line)}
+.finance-ring b,.finance-ring span{position:relative;z-index:1}.finance-ring b{font:700 24px/1 Georgia,"Times New Roman",serif;color:var(--ink)}.finance-ring span{margin-top:5px;font-size:8px;color:var(--muted)}
+.finance-collection-copy{display:grid;gap:10px}.finance-collection-copy div{min-width:110px}.finance-collection-copy span{display:block;font-size:8px;color:var(--muted)}.finance-collection-copy b{display:block;margin-top:3px;font-size:12px;color:var(--ink)}
+.finance-profit-bars{display:grid;gap:9px}.finance-profit-row{display:grid;grid-template-columns:minmax(120px,190px) minmax(0,1fr) 100px;gap:10px;align-items:center}.finance-profit-row>span{font-size:9px;font-weight:800;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.finance-profit-row>div{height:10px;background:var(--cream2);border-radius:999px;overflow:hidden}.finance-profit-row i{display:block;height:100%;border-radius:999px;background:var(--navy)}.finance-profit-row i.negative{background:var(--bad)}.finance-profit-row>b{text-align:right;font-size:9px;color:var(--ink)}
+.finance-viz-empty{padding:34px 8px;text-align:center;font-size:9px;color:var(--muted)}
+#finance details:has(#ingredientGrid){display:none!important}
+
+html[data-theme="dark"] .recipe-cat-btn,html[data-theme="dark"] .finance-visual-top>div,html[data-theme="dark"] .finance-viz-card{background:#121d2b;border-color:#344153}
+html[data-theme="dark"] .quick-paid-check,html[data-theme="dark"] .recipe-cat-badge,html[data-theme="dark"] .finance-profit-row>div{background:#182433;border-color:#344153}
+html[data-theme="dark"] .finance-ring:after{background:#121d2b;border-color:#344153}
+html[data-theme="dark"] .recipe-category-select{background:#121d2b;border-color:#344153;color:#f4eadf}
+
+@media(max-width:900px){.finance-visual-grid{grid-template-columns:1fr}.finance-viz-card:last-child{grid-column:auto}.dayops-person{grid-template-columns:24px 1fr 110px!important}.dayops-person>label:has([data-person="amountDue"]),.dayops-person>label:has([data-person="amountPaid"]),.dayops-person>label:has([data-person="paidAt"]){grid-column:2/-1}.recipe-category-bar{grid-template-columns:1fr 1fr}}
+@media(max-width:560px){.finance-visual-top{grid-template-columns:1fr}.finance-month-chart{gap:5px;height:160px}.finance-profit-row{grid-template-columns:100px minmax(0,1fr) 78px}.recipe-category-bar{grid-template-columns:1fr 1fr}.dayops-person{grid-template-columns:24px 1fr!important}.quick-paid-check{grid-column:2}.dayops-person>label{grid-column:2!important}}
