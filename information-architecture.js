@@ -1,6 +1,8 @@
 (() => {
   const B=window.BakingBusiness;
   if(!B)return;
+  function ensureStyle(){if(document.querySelector('link[data-information-architecture]'))return;const link=document.createElement('link');link.rel='stylesheet';link.href='information-architecture.css?v=20260831-r1';link.dataset.informationArchitecture='1';document.head.appendChild(link)}
+  ensureStyle();
   const $=id=>document.getElementById(id);
   const num=v=>Number.isFinite(Number(v))?Number(v):0;
   const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
