@@ -21,9 +21,12 @@ assert(planner.includes('localStorage'),'draft planning must remain separate fro
 assert(planner.includes("mark('schedule')"),'explicit draft apply must use normal schedule persistence flow');
 assert(editor.includes("mark('schedule')"),'calendar class editor must use normal schedule persistence flow');
 assert(editor.includes('schedule.rows.splice'),'calendar class editor must support class deletion');
-assert(status.includes('B.payment'),'calendar status dots must use canonical payment state');
-assert(status.includes('missingRosterCount'),'paid indicator must not ignore missing attendee rows');
-assert(status.includes("key:'open'")&&status.includes("key:'full'")&&status.includes("key:'paid'"),'calendar status module must preserve open/full/paid states');
+assert(status.includes('B.payment'),'calendar seat indicators must use canonical payment state');
+assert(status.includes('missingRosterCount'),'paid seat state must not ignore missing attendee rows');
+assert(status.includes('function seatStates'),'calendar status module must calculate one state per recruiting seat');
+assert(status.includes("state:'open'")&&status.includes("state:'full'")&&status.includes("state:'paid'"),'calendar seat indicators must preserve empty/booked/paid states');
+assert(status.includes('for(let i=0;i<capacity;i++)'),'calendar must render seat state from class capacity');
+assert(status.includes('calendar-seat-dots'),'calendar events must render a seat-dot group');
 assert(html.includes('id="calendarClassDetail"'),'calendar attendee/payment detail panel must exist');
 assert(!html.includes('<button data-page="schedule">'),'schedule management must not remain a visible navigation destination');
 assert(!html.includes('<button data-page="planner">'),'standalone month planner must not remain a visible navigation destination');
