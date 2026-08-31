@@ -60,6 +60,7 @@ jobs:
           ia=Path('information-architecture.js').read_text(encoding='utf-8')
           css=Path('information-architecture.css').read_text(encoding='utf-8')
           refine=Path('workspace-refinement.js').read_text(encoding='utf-8')
+          refine_css=Path('workspace-refinement.css').read_text(encoding='utf-8')
           recipe_costs=Path('recipe-ingredient-costs.js').read_text(encoding='utf-8')
           deprecated=[
             'rent-rule.js','profit-fix.js','finance-breakdown.js','finance-breakdown.css',
@@ -84,15 +85,19 @@ jobs:
               raise SystemExit('Unified calendar day manager is incomplete')
           if '#calendar #calendarClassDetail' not in css or '#dashboard #operationsDashboard' not in css:
               raise SystemExit('Duplicate legacy surfaces are not suppressed')
-          if "validCategories=['빵류','디저트류','케이크류']" not in refine or 'data-quick-paid' not in refine or 'renderMonthlyBars' not in refine:
-              raise SystemExit('Workspace refinement for categories, payments, and finance charts is incomplete')
+          if "validCategories=['빵류','디저트류','케이크류']" not in refine or 'data-quick-paid' not in refine:
+              raise SystemExit('Workspace refinement for recipe categories and participant payments is incomplete')
+          if 'pastPaymentException' not in refine or 'renderOperatingFlow' not in refine or 'renderCostBreakdown' not in refine or 'renderProfitBars' not in refine:
+              raise SystemExit('Operating finance flow, expense mix, menu profit, or past-payment rule is incomplete')
+          if '.finance-operating-chart' not in refine_css or '.finance-cost-bars' not in refine_css or '.finance-profit-bars' not in refine_css:
+              raise SystemExit('Operating finance visual styles are incomplete')
           if 'usageCalc' not in recipe_costs or 'price_per_100g' not in recipe_costs or '재료별 계산 합계' not in recipe_costs:
               raise SystemExit('Recipe ingredient cost detail is incomplete')
           if '<button data-page="schedule">' in html or '<button data-page="planner">' in html:
               raise SystemExit('Duplicate planner/schedule navigation reintroduced')
           if Path('docs/index.html').exists():
               raise SystemExit('Obsolete duplicate docs/index.html must not be restored')
-          print('Role-owned tabs, payments, recipe categories, ingredient costing, and finance visual guard passed')
+          print('Role-owned tabs, payments, recipe categories, ingredient costing, and operating finance guard passed')
           PY
 
       - name: Setup Pages
