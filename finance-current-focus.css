@@ -1,0 +1,29 @@
+#finance .finance-current-workspace{width:100%;box-sizing:border-box;gap:12px}
+#finance .finance-current-workspace>*{width:100%;box-sizing:border-box;margin:0}
+#finance .finance-focus-intro{min-height:122px;padding:18px 20px;align-items:center;border-width:1px;position:relative;overflow:hidden}
+#finance .finance-focus-intro:before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--terra)}
+#finance .finance-month-focus{display:grid;gap:5px;min-width:0}
+#finance .finance-month-focus>span{font-size:8px!important;letter-spacing:.13em!important;color:var(--terra2)!important;font-weight:900!important}
+#finance .finance-month-focus h2{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0!important;line-height:1!important}
+#finance .finance-month-focus h2 strong{font:700 30px/1 Georgia,"Times New Roman",serif;color:var(--ink);letter-spacing:-.035em}
+#finance .finance-month-focus h2 em{font-style:normal;font-size:9px;font-weight:900;letter-spacing:.02em;color:var(--paper);background:var(--terra);border-radius:999px;padding:6px 9px}
+#finance .finance-month-focus p{margin:2px 0 0!important;font-size:8px!important;line-height:1.5;color:var(--muted)}
+#finance .finance-focus-grid{grid-template-columns:repeat(2,minmax(0,1fr));align-items:stretch;gap:12px}
+#finance .focus-flow-card{height:100%;min-height:288px;padding:16px;grid-template-rows:auto auto auto auto 1fr}
+#finance .focus-flow-card.current,#finance .focus-flow-card.forecast{border-radius:14px}
+#finance .focus-flow-card.current{box-shadow:inset 0 2px 0 rgba(23,55,94,.16)}
+#finance .focus-flow-card.forecast{box-shadow:inset 0 2px 0 rgba(201,121,85,.22)}
+#finance .month-compare-card,#finance .month-menu-card,#finance .finance-detail-shell{padding:16px;border-radius:14px}
+#finance .finance-detail-shell{padding:0;overflow:hidden}
+#finance .ledger-head{min-height:44px;margin-bottom:11px}
+#finance .ledger-head h3{font-size:17px}
+#finance .month-selector{gap:7px;padding-bottom:10px}
+#finance .month-selector button{min-width:86px;min-height:48px;padding:8px 10px}
+#finance .month-selector button b{font-size:9px;white-space:nowrap}
+#finance .compare-metrics{grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+#finance .compare-metrics>div{min-height:66px}
+#finance .month-menu-row{min-height:48px}
+html[data-theme="dark"] #finance .finance-month-focus h2 em{color:#fff4eb;background:#a9684d}
+@media(max-width:980px){#finance .finance-focus-grid{grid-template-columns:1fr}#finance .focus-flow-card{min-height:0}#finance .finance-focus-intro{min-height:112px}}
+@media(max-width:680px){#finance .finance-focus-intro{padding:15px;align-items:flex-start}#finance .finance-month-focus h2 strong{font-size:26px}#finance .compare-metrics{grid-template-columns:1fr 1fr}#finance .month-compare-card,#finance .month-menu-card{padding:13px}}
+@media(max-width:430px){#finance .finance-month-focus h2{gap:7px}#finance .finance-month-focus h2 strong{font-size:23px}#finance .finance-month-focus h2 em{font-size:8px;padding:5px 7px}#finance .compare-metrics{grid-template-columns:1fr}}
