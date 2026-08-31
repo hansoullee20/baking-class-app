@@ -1,0 +1,125 @@
+/* Current-month visual hierarchy for finance workspace */
+.finance-current-workspace .finance-focus-intro{
+  position:relative;
+  overflow:hidden;
+  border-color:color-mix(in srgb,var(--terra) 58%,var(--line));
+  background:linear-gradient(135deg,color-mix(in srgb,var(--terra) 8%,var(--paper)) 0%,var(--paper) 48%,color-mix(in srgb,var(--navy) 4%,var(--paper)) 100%);
+  box-shadow:0 10px 28px rgba(45,35,28,.055);
+  padding:18px 20px;
+}
+.finance-current-workspace .finance-focus-intro::after{
+  content:'이번 달';
+  position:absolute;
+  top:14px;
+  right:16px;
+  padding:6px 10px;
+  border-radius:999px;
+  background:var(--terra);
+  color:#fff;
+  font-size:8px;
+  line-height:1;
+  font-weight:900;
+  letter-spacing:.04em;
+  box-shadow:0 4px 12px rgba(91,54,37,.16);
+}
+.finance-current-workspace .finance-focus-intro>div:first-child>span{
+  display:inline-flex;
+  align-items:center;
+  min-height:32px;
+  margin:0 0 7px;
+  padding:5px 10px 4px;
+  border:1px solid color-mix(in srgb,var(--terra) 45%,var(--line));
+  border-radius:10px;
+  background:color-mix(in srgb,var(--terra) 9%,var(--paper));
+  color:var(--terra2);
+  font:800 19px/1 Georgia,"Times New Roman",serif;
+  letter-spacing:-.025em;
+}
+.finance-current-workspace .finance-focus-intro h2{
+  font-size:25px;
+  letter-spacing:-.025em;
+}
+.finance-current-workspace .finance-asof{padding-right:76px}
+
+/* Keep the two primary month cards visually balanced. */
+.finance-current-workspace .finance-focus-grid{align-items:stretch}
+.finance-current-workspace .focus-flow-card{
+  height:100%;
+  min-height:300px;
+  border-color:color-mix(in srgb,var(--line) 88%,var(--ink));
+}
+.finance-current-workspace .focus-flow-card.current{
+  border-top:3px solid var(--navy);
+}
+.finance-current-workspace .focus-flow-card.forecast{
+  border-top:3px solid var(--terra);
+  box-shadow:none;
+}
+.finance-current-workspace .focus-flow-head>div>span{
+  display:inline-flex;
+  width:max-content;
+  max-width:100%;
+  margin-bottom:7px;
+  padding:4px 7px;
+  border-radius:999px;
+  background:var(--cream2);
+  font-size:8px;
+  font-weight:900;
+  color:var(--ink);
+}
+.finance-current-workspace .focus-flow-card.current .focus-flow-head>div>span{
+  color:var(--navy);
+  background:color-mix(in srgb,var(--navy) 8%,var(--paper));
+}
+.finance-current-workspace .focus-flow-card.forecast .focus-flow-head>div>span{
+  color:var(--terra2);
+  background:color-mix(in srgb,var(--terra) 10%,var(--paper));
+}
+
+/* In month comparisons, keep the current month as the visual anchor. */
+.finance-current-workspace .compare-title>div:first-child{
+  padding:8px 10px;
+  border:1px solid color-mix(in srgb,var(--terra) 36%,var(--line));
+  border-radius:10px;
+  background:color-mix(in srgb,var(--terra) 7%,var(--paper));
+}
+.finance-current-workspace .compare-title>div:first-child span{
+  font-weight:900;
+  color:var(--terra2);
+}
+.finance-current-workspace .compare-title>div:first-child b{
+  font:800 18px/1 Georgia,"Times New Roman",serif;
+  color:var(--terra2);
+}
+.finance-current-workspace .compare-title>div:last-child{
+  opacity:.76;
+}
+.finance-current-workspace .month-selector button:not(.active){opacity:.68}
+.finance-current-workspace .month-selector button.active{opacity:1}
+
+html[data-theme="dark"] .finance-current-workspace .finance-focus-intro{
+  background:linear-gradient(135deg,#1d1a19 0%,#121d2b 52%,#14202e 100%);
+  border-color:#8c5f49;
+}
+html[data-theme="dark"] .finance-current-workspace .finance-focus-intro>div:first-child>span,
+html[data-theme="dark"] .finance-current-workspace .compare-title>div:first-child{
+  background:#231b18;
+  border-color:#704936;
+}
+html[data-theme="dark"] .finance-current-workspace .focus-flow-card.current .focus-flow-head>div>span{
+  background:#172638;
+  color:#dbe8f7;
+}
+html[data-theme="dark"] .finance-current-workspace .focus-flow-card.forecast .focus-flow-head>div>span{
+  background:#2a1d19;
+  color:#efb99d;
+}
+
+@media(max-width:680px){
+  .finance-current-workspace .finance-focus-intro{padding:16px 14px}
+  .finance-current-workspace .finance-focus-intro::after{top:12px;right:12px}
+  .finance-current-workspace .finance-focus-intro>div:first-child>span{font-size:17px;padding-right:9px}
+  .finance-current-workspace .finance-asof{padding-right:0}
+  .finance-current-workspace .focus-flow-card{min-height:auto}
+  .finance-current-workspace .compare-title>div:first-child b{font-size:16px}
+}
