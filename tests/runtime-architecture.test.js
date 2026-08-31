@@ -9,6 +9,8 @@ const ia=fs.readFileSync('information-architecture.js','utf8');
 const iaCss=fs.readFileSync('information-architecture.css','utf8');
 const refine=fs.readFileSync('workspace-refinement.js','utf8');
 const refineCss=fs.readFileSync('workspace-refinement.css','utf8');
+const recipeCosts=fs.readFileSync('recipe-ingredient-costs.js','utf8');
+const recipeCostsCss=fs.readFileSync('recipe-ingredient-costs.css','utf8');
 const html=fs.readFileSync('index.html','utf8');
 
 assert(!ui.includes('toISOString()'),'operations UI must not use UTC ISO conversion for local month boundaries');
@@ -53,6 +55,14 @@ assert(refine.includes('B.classFinancials'),'finance visualization must read can
 assert(refine.includes('renderMonthlyBars')&&refine.includes('renderProfitBars'),'finance must provide visual trend and menu-profit charts');
 assert(refineCss.includes('.finance-month-chart')&&refineCss.includes('.finance-ring')&&refineCss.includes('.finance-profit-bars'),'finance visual styles must remain available');
 
+assert(recipeCosts.includes('function masterRows'),'recipe ingredient detail must use the shared ingredient price master');
+assert(recipeCosts.includes('function usageCalc'),'recipe ingredient detail must calculate cost from recipe amount');
+assert(recipeCosts.includes('price_per_100g'),'recipe ingredient detail must use normalized per-100g pricing');
+assert(recipeCosts.includes('재료별 계산 합계')&&recipeCosts.includes('저장된 레시피 원가'),'recipe detail must show calculated ingredient sum and stored recipe cost separately');
+assert(recipeCosts.includes("'전란':'계란'")&&recipeCosts.includes("'녹인버터':'버터'"),'recipe costing must normalize common recipe ingredient aliases');
+assert(recipeCosts.includes("note:'단가 미연결'")||recipeCosts.includes("'단가 미연결'"),'unmatched ingredient prices must remain explicit rather than guessed');
+assert(recipeCostsCss.includes('.ingredient-cost-table')&&recipeCostsCss.includes('.ingredient-cost-summary'),'ingredient cost detail styles must remain available');
+
 assert(html.includes('id="calendarClassDetail"'),'calendar compatibility host must exist for legacy runtime');
 assert(!html.includes('<button data-page="schedule">'),'schedule management must not remain a visible navigation destination');
 assert(!html.includes('<button data-page="planner">'),'standalone month planner must not remain a visible navigation destination');
@@ -61,8 +71,10 @@ assert(html.includes('information-architecture.js'),'role-separation runtime mus
 assert(html.includes('information-architecture.css'),'role-separation styling must be loaded explicitly');
 assert(html.includes('workspace-refinement.js'),'recipe/payment/finance refinement runtime must be loaded explicitly');
 assert(html.includes('workspace-refinement.css'),'recipe/payment/finance refinement styles must be loaded explicitly');
+assert(html.includes('recipe-ingredient-costs.js'),'recipe ingredient cost runtime must be loaded explicitly');
+assert(html.includes('recipe-ingredient-costs.css'),'recipe ingredient cost styles must be loaded explicitly');
 
-const order=['app.js','business-engine.js','data-normalization.js','class-ops-canonical.js','business-engine-adapter.js','operations-ui.js','management-planner.js','calendar-class-editor.js','calendar-status.js','information-architecture.js','workspace-refinement.js'].map(x=>html.indexOf(x));
+const order=['app.js','business-engine.js','data-normalization.js','class-ops-canonical.js','business-engine-adapter.js','operations-ui.js','management-planner.js','calendar-class-editor.js','calendar-status.js','information-architecture.js','workspace-refinement.js','recipe-ingredient-costs.js'].map(x=>html.indexOf(x));
 assert(order.every(x=>x>=0),'all canonical runtime modules must be loaded');
 for(let i=1;i<order.length;i++)assert(order[i]>order[i-1],`runtime script order invalid at position ${i}`);
 
