@@ -8,7 +8,7 @@
   const DEFAULT_RULES={
     version:1,timezone:'Asia/Seoul',currency:'KRW',
     rental:{mode:'stored_or_default',manualClassValueHasPriority:true,defaultByDay:{saturday:90000,other:81000},hourlyHeadcountAutoModelEnabled:false},
-    batching:{mode:'manual_class_multiplier',defaultBatchCount:1,autoScaleByStudentCount:false},
+    batching:{mode:'recipe_per_student_or_manual',defaultBatchCount:1,autoScaleByStudentCount:true,perStudentByRecipe:{},extraBatchByRecipe:{}},
     recipeMatching:{aliases:{'꾸덕브라우니':'브라우니','크랙소금빵':'소금빵','크랙소금빵 원데이':'소금빵','무화과깜빠뉴':'무화과깜파뉴','밤에끌레어':'밤 에끌레어','판나코타':'판나코타 (panna cotta)'}},
     costing:{costStatuses:{'확정':{usableForEstimate:true,confidence:'confirmed'},'조건부':{usableForEstimate:true,confidence:'estimated'},'부분원가':{usableForEstimate:false,confidence:'incomplete'},'미산정':{usableForEstimate:false,confidence:'incomplete'}}},
     profit:{actualProfitOverride:true,historyMethod:'current_recipe_cost_estimate_unless_actual_profit_exists',historyEstimateLabel:'현재 원가 기준 추정이익',plannedEstimateLabel:'예상이익',actualLabel:'실제이익'}
@@ -88,10 +88,25 @@
     }
     return{usable,status,confidence:rule.confidence||'incomplete',amount,min,max,source:spec.source,overlay:spec.overlay};
   }
-  function batchCount(raw){
+  function batchPlan(raw,recipe){
     const def=num(rules?.batching?.defaultBatchCount)||1;
-    return hasNum(raw?.batchCount)&&Number(raw.batchCount)>0?Number(raw.batchCount):def;
+    const recipeName=canonicalRecipeName(recipe?.name||raw?.menu||raw?.recipeCandidate||raw?.classTitle||'');
+    const recipeRule=recipe?.class_batching||recipe?.classBatching||{};
+    const mapped=rules?.batching?.perStudentByRecipe?.[recipeName];
+    const perStudent=hasNum(recipeRule?.batchPerStudent)?Number(recipeRule.batchPerStudent):(hasNum(mapped)?Number(mapped):null);
+    const mappedExtra=rules?.batching?.extraBatchByRecipe?.[recipeName];
+    const extra=hasNum(raw?.extraBatchCount)?Number(raw.extraBatchCount):(hasNum(recipeRule?.extraBatchCount)?Number(recipeRule.extraBatchCount):(hasNum(mappedExtra)?Number(mappedExtra):0));
+    if(raw?.batchMode==='manual'&&hasNum(raw?.batchCount)&&Number(raw.batchCount)>0){
+      return{count:Number(raw.batchCount),mode:'manual_override',perStudent:null,extra:0,recipeName};
+    }
+    if(perStudent!=null&&perStudent>0){
+      const people=Math.max(0,num(raw?.people));
+      return{count:people*perStudent+Math.max(0,extra),mode:'per_student',perStudent,extra:Math.max(0,extra),recipeName};
+    }
+    const count=hasNum(raw?.batchCount)&&Number(raw.batchCount)>0?Number(raw.batchCount):def;
+    return{count,mode:'manual',perStudent:null,extra:0,recipeName};
   }
+  function batchCount(raw,recipe){return batchPlan(raw,recipe).count}
   function revenue(raw){
     if(raw?.status==='취소')return 0;
     if(hasNum(raw?.revenue))return Number(raw.revenue);
@@ -105,9 +120,9 @@
     return dow(raw?.date)==='토'?sat:other;
   }
   function materialCost(raw,recipe){
-    const cs=costState(recipe),b=batchCount(raw);
-    if(!cs.usable)return{amount:null,min:null,max:null,batchCount:b,costState:cs};
-    return{amount:cs.amount*b,min:cs.min*b,max:cs.max*b,batchCount:b,costState:cs};
+    const cs=costState(recipe),plan=batchPlan(raw,recipe),b=plan.count;
+    if(!cs.usable)return{amount:null,min:null,max:null,batchCount:b,batchMode:plan.mode,batchPerStudent:plan.perStudent,extraBatchCount:plan.extra,costState:cs};
+    return{amount:cs.amount*b,min:cs.min*b,max:cs.max*b,batchCount:b,batchMode:plan.mode,batchPerStudent:plan.perStudent,extraBatchCount:plan.extra,costState:cs};
   }
   function payment(raw){
     const list=Array.isArray(raw?.participants)?raw.participants:[],fee=num(raw?.fee),people=Math.max(0,num(raw?.people));
@@ -139,11 +154,11 @@
     if(actual!=null)label=rules?.profit?.actualLabel||'실제이익';
     else if(source==='history')label=rules?.profit?.historyEstimateLabel||'현재 원가 기준 추정이익';
     const confidence=actual!=null?'actual':mat.costState.confidence;
-    return{source,recipe,revenue:rev,material:mat.amount,materialMin:mat.min,materialMax:mat.max,batchCount:mat.batchCount,rent:r,packing,other,total,estimatedProfit:est,estimatedProfitMin:estMin,estimatedProfitMax:estMax,actualProfit:actual,profit,margin,roi,breakEven,costStatus:mat.costState.status,costSource:mat.costState.source,confidence,profitLabel:label};
+    return{source,recipe,revenue:rev,material:mat.amount,materialMin:mat.min,materialMax:mat.max,batchCount:mat.batchCount,batchMode:mat.batchMode,batchPerStudent:mat.batchPerStudent,extraBatchCount:mat.extraBatchCount,rent:r,packing,other,total,estimatedProfit:est,estimatedProfitMin:estMin,estimatedProfitMax:estMax,actualProfit:actual,profit,margin,roi,breakEven,costStatus:mat.costState.status,costSource:mat.costState.source,confidence,profitLabel:label};
   }
   function classKey(raw){return raw?.class_id||raw?.id||[raw?.date,raw?.time||raw?.session,canonicalRecipeName(raw?.menu||raw?.classTitle||'')].join('|')}
   function dedupeEvents(rows){
     const seen=new Set();return (rows||[]).filter(x=>{const k=classKey(x?.raw||x);if(seen.has(k))return false;seen.add(k);return true});
   }
-  return{version:'1.3.0',DEFAULT_RULES,setRules,getRules,dow,zonedDate,effectiveStatus,canonicalRecipeName,findRecipeByName,findRecipe,effectiveCostSpec,costState,batchCount,revenue,rent,materialCost,payment,classFinancials,classKey,dedupeEvents};
+  return{version:'1.4.0',DEFAULT_RULES,setRules,getRules,dow,zonedDate,effectiveStatus,canonicalRecipeName,findRecipeByName,findRecipe,effectiveCostSpec,costState,batchPlan,batchCount,revenue,rent,materialCost,payment,classFinancials,classKey,dedupeEvents};
 });
