@@ -33,6 +33,7 @@ jobs:
           node --check operations-ui.js
           node --check management-planner.js
           node --check calendar-class-editor.js
+          node --check calendar-status.js
           node --check auth-persist.js
           node --check sunny-theme.js
           node --check class-ops-canonical.js
@@ -65,7 +66,7 @@ jobs:
               raise SystemExit('Deprecated modules are loaded: '+', '.join(loaded))
           if existing:
               raise SystemExit('Deprecated files reintroduced: '+', '.join(existing))
-          required=['business-engine.js','data-normalization.js','business-engine-adapter.js','operations-ui.js','management-planner.js','calendar-class-editor.js','class-ops-canonical.js','decision-ui.css','operations-ui.css','management-polish.css','calendar-class-editor.css']
+          required=['business-engine.js','data-normalization.js','business-engine-adapter.js','operations-ui.js','management-planner.js','calendar-class-editor.js','calendar-status.js','class-ops-canonical.js','decision-ui.css','operations-ui.css','management-polish.css','calendar-class-editor.css','calendar-status.css']
           missing=[x for x in required if x not in html or not Path(x).exists()]
           if missing:
               raise SystemExit('Required runtime asset missing: '+', '.join(missing))
