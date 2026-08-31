@@ -32,6 +32,26 @@
     if(!y||!m||!d)return'';
     return ['일','월','화','수','목','금','토'][new Date(Date.UTC(y,m-1,d)).getUTCDay()];
   }
+  function zonedDate(now=new Date()){
+    const d=now instanceof Date?now:new Date(now);
+    const tz=rules?.timezone||'Asia/Seoul';
+    if(Number.isNaN(d.getTime()))return'';
+    try{
+      const p=new Intl.DateTimeFormat('en-CA',{timeZone:tz,year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(d);
+      const get=t=>p.find(x=>x.type===t)?.value||'';
+      return `${get('year')}-${get('month')}-${get('day')}`;
+    }catch(e){
+      return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    }
+  }
+  function effectiveStatus(raw,now=new Date()){
+    const status=String(raw?.status||'예정').trim()||'예정';
+    if(status==='취소')return'취소';
+    const date=String(raw?.date||'').trim();
+    if(!date)return status;
+    const current=zonedDate(now);
+    return current&&date<current?'완료':status;
+  }
   function aliases(){return rules?.recipeMatching?.aliases||{}}
   function canonicalRecipeName(name){
     const raw=String(name||'').trim();
@@ -125,5 +145,5 @@
   function dedupeEvents(rows){
     const seen=new Set();return (rows||[]).filter(x=>{const k=classKey(x?.raw||x);if(seen.has(k))return false;seen.add(k);return true});
   }
-  return{version:'1.2.0',DEFAULT_RULES,setRules,getRules,dow,canonicalRecipeName,findRecipeByName,findRecipe,effectiveCostSpec,costState,batchCount,revenue,rent,materialCost,payment,classFinancials,classKey,dedupeEvents};
+  return{version:'1.3.0',DEFAULT_RULES,setRules,getRules,dow,zonedDate,effectiveStatus,canonicalRecipeName,findRecipeByName,findRecipe,effectiveCostSpec,costState,batchCount,revenue,rent,materialCost,payment,classFinancials,classKey,dedupeEvents};
 });
