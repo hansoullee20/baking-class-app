@@ -1,0 +1,8 @@
+.cost-review-block{border-top:3px solid var(--warn,#d97706)}
+.cost-review-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:10px}
+.cost-review-item{width:100%;display:flex;align-items:center;justify-content:space-between;gap:14px;text-align:left;border:1px solid var(--line,#e5e7eb);border-radius:12px;background:var(--paper,#fff);color:inherit;padding:11px 12px;cursor:pointer;transition:border-color .15s ease,transform .15s ease,background .15s ease}
+.cost-review-item:hover,.cost-review-item:focus-visible{border-color:var(--warn,#d97706);background:color-mix(in srgb,var(--warn,#d97706) 7%,var(--paper,#fff));transform:translateY(-1px);outline:none}
+.cost-review-main{display:flex;min-width:0;flex-direction:column;gap:3px}.cost-review-main b{font-size:12px}.cost-review-main small{font-size:10px;line-height:1.35;color:var(--muted,#64748b)}
+.cost-review-meta{display:grid;justify-items:end;flex:0 0 auto;gap:1px}.cost-review-meta strong{font-size:12px}.cost-review-meta em{font-style:normal;font-size:9px;color:var(--warn,#d97706);font-weight:800}.cost-review-meta i{font-style:normal;font-size:9px;color:var(--blue,#2563eb);font-weight:800}
+.cost-review-inline{display:grid;gap:6px}.cost-review-inline-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:2px}.cost-review-inline-head span{font-size:10px;color:var(--muted,#64748b)}.cost-review-inline .cost-review-item.compact{padding:8px 9px}.cost-review-inline .cost-review-meta strong{font-size:11px}
+@media(max-width:760px){.cost-review-list{grid-template-columns:1fr}.cost-review-item{align-items:flex-start}.cost-review-inline-head{align-items:flex-start;flex-direction:column}}
