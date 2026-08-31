@@ -4,7 +4,7 @@ const B=require('../business-engine.js');
 B.setRules({
   timezone:'Asia/Seoul',
   rental:{defaultByDay:{saturday:90000,other:81000},manualClassValueHasPriority:true,hourlyHeadcountAutoModelEnabled:false},
-  batching:{defaultBatchCount:1,autoScaleByStudentCount:false},
+  batching:{mode:'recipe_per_student_or_manual',defaultBatchCount:1,autoScaleByStudentCount:true,perStudentByRecipe:{'소금빵':1},extraBatchByRecipe:{}},
   recipeMatching:{aliases:{'꾸덕브라우니':'브라우니','밤에끌레어':'밤 에끌레어'}},
   costing:{costStatuses:{'확정':{usableForEstimate:true,confidence:'confirmed'},'조건부':{usableForEstimate:true,confidence:'estimated'},'부분원가':{usableForEstimate:false,confidence:'incomplete'},'미산정':{usableForEstimate:false,confidence:'incomplete'}}}
 });
@@ -25,8 +25,10 @@ assert.equal(B.findRecipeByName('밤에끌레어',recipes).name,'밤 에끌레�
 assert.equal(B.rent({date:'2026-09-03'},schedule),81000,'weekday default rent must be 81,000');
 assert.equal(B.rent({date:'2026-09-05'},schedule),90000,'Saturday default rent must be 90,000');
 assert.equal(B.rent({date:'2026-09-03',rent:73000},schedule),73000,'stored class rent must override default');
-assert.equal(B.batchCount({people:8}),1,'batch count must not auto-scale with students');
-assert.equal(B.batchCount({people:8,batchCount:2.5}),2.5,'explicit batch count must be respected');
+assert.equal(B.batchCount({people:8}),1,'unconfirmed recipes/classes must keep manual/default batch behavior');
+assert.equal(B.batchCount({people:8,batchCount:2.5}),2.5,'explicit batch count must be respected when no per-student recipe rule exists');
+assert.equal(B.batchCount({people:4},{name:'소금빵'}),4,'confirmed salt-bread rule must scale to one batch per student');
+assert.equal(B.batchCount({people:4,batchCount:2,batchMode:'manual'},{name:'소금빵'}),2,'explicit manual override must beat recipe per-student scaling');
 assert.equal(B.costState(recipes[0]).confidence,'estimated','conditional cost must be labeled estimated');
 assert.equal(B.costState(recipes[3]).usable,false,'missing cost cannot be used for profit');
 assert.equal(B.costState(overlayRecipe).amount,6695,'effective overlay cost must be used');
@@ -72,8 +74,13 @@ assert.equal(cookie.profit,152305);
 assert.equal(cookie.costSource,'overlay');
 assert.equal(cookie.confidence,'estimated');
 
-const history=B.classFinancials({date:'2026-08-10',menu:'소금빵',people:4,fee:50000,rent:81000},{recipes,schedule,source:'history'});
-assert.equal(history.profitLabel,'현재 원가 기준 추정이익','historical modeled profit must be labeled as current-cost estimate');
+const salt=B.classFinancials({date:'2026-08-10',menu:'소금빵',people:4,fee:50000,batchCount:1,rent:81000},{recipes,schedule,source:'history'});
+assert.equal(salt.batchCount,4,'four salt-bread students must create four recipe batches');
+assert.equal(salt.batchMode,'per_student');
+assert.equal(salt.batchPerStudent,1);
+assert.equal(salt.material,15724,'salt-bread material must be 3,931 × 4 students');
+assert.equal(salt.profit,103276,'salt-bread profit must use scaled material cost');
+assert.equal(salt.profitLabel,'현재 원가 기준 추정이익','historical modeled profit must be labeled as current-cost estimate');
 
 const actual=B.classFinancials({date:'2026-08-10',menu:'소금빵',people:4,fee:50000,rent:81000,actualProfit:100000},{recipes,schedule,source:'history'});
 assert.equal(actual.profit,100000);
