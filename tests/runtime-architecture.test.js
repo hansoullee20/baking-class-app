@@ -50,10 +50,14 @@ assert(refine.includes("mark('recipes')"),'manual recipe category changes must p
 assert(refine.includes('data-quick-paid'),'calendar participant rows must expose a direct paid checkbox');
 assert(refine.includes("select.value=check.checked?'입금완료':'미입금'"),'paid checkbox must drive the canonical participant payment status');
 assert(refine.includes('fill.click()'),'participant rows must auto-fill to the booked student count');
-assert(refine.includes('B.payment'),'finance visualization must read canonical payment totals');
+assert(refine.includes('B.payment'),'finance may read canonical payment totals for current or explicitly unpaid classes');
 assert(refine.includes('B.classFinancials'),'finance visualization must read canonical revenue/profit calculations');
-assert(refine.includes('renderMonthlyBars')&&refine.includes('renderProfitBars'),'finance must provide visual trend and menu-profit charts');
-assert(refineCss.includes('.finance-month-chart')&&refineCss.includes('.finance-ring')&&refineCss.includes('.finance-profit-bars'),'finance visual styles must remain available');
+assert(refine.includes('pastPaymentException')&&refine.includes('past&&!pastPaymentException'),'past classes must default to paid unless an explicit payment exception exists');
+assert(refine.includes('collected:f.revenue,outstanding:0,assumed:true'),'past default-paid rule must use full class revenue without fabricating participant rows');
+assert(refine.includes('renderOperatingFlow')&&refine.includes('renderCostBreakdown')&&refine.includes('renderProfitBars'),'finance must focus on operating flow, expense mix, and menu profitability');
+assert(refine.includes('material=f.material==null?0:num(f.material)')&&refine.includes('rent=num(f.rent)'),'finance must separate operating expense components');
+assert(!refine.includes('finance-ring'),'payment-rate ring must not remain the primary finance visualization');
+assert(refineCss.includes('.finance-operating-chart')&&refineCss.includes('.finance-cost-bars')&&refineCss.includes('.finance-profit-bars'),'operating finance visual styles must remain available');
 
 assert(recipeCosts.includes('function masterRows'),'recipe ingredient detail must use the shared ingredient price master');
 assert(recipeCosts.includes('function usageCalc'),'recipe ingredient detail must calculate cost from recipe amount');
@@ -73,6 +77,7 @@ assert(html.includes('workspace-refinement.js'),'recipe/payment/finance refineme
 assert(html.includes('workspace-refinement.css'),'recipe/payment/finance refinement styles must be loaded explicitly');
 assert(html.includes('recipe-ingredient-costs.js'),'recipe ingredient cost runtime must be loaded explicitly');
 assert(html.includes('recipe-ingredient-costs.css'),'recipe ingredient cost styles must be loaded explicitly');
+assert(html.includes('재정 · 수익'),'finance tab must be labeled as operating finance');
 
 const order=['app.js','business-engine.js','data-normalization.js','class-ops-canonical.js','business-engine-adapter.js','operations-ui.js','management-planner.js','calendar-class-editor.js','calendar-status.js','information-architecture.js','workspace-refinement.js','recipe-ingredient-costs.js'].map(x=>html.indexOf(x));
 assert(order.every(x=>x>=0),'all canonical runtime modules must be loaded');
