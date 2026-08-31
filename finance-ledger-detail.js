@@ -41,9 +41,9 @@
   function rangeRecords(){const[a,b]=range();return events().filter(e=>e.date>=a&&e.date<=b).map(record)}
 
   function summarize(recs){
-    const s={revenue:0,people:0,count:recs.length,knownSpend:0,profit:0,costable:0,costableRevenue:0,costablePeople:0,costMaterial:0,costRent:0,costPacking:0,costOther:0};
+    const s={revenue:0,people:0,count:recs.length,profit:0,costable:0,costableRevenue:0,costablePeople:0,costMaterial:0,costRent:0,costPacking:0,costOther:0};
     recs.forEach(x=>{
-      s.revenue+=x.revenue;s.people+=x.people;s.knownSpend+=(x.material==null?0:x.material)+x.rent+x.packing+x.other;
+      s.revenue+=x.revenue;s.people+=x.people;
       if(x.costable){s.profit+=x.profit;s.costable++;s.costableRevenue+=x.revenue;s.costablePeople+=x.people;s.costMaterial+=x.material;s.costRent+=x.rent;s.costPacking+=x.packing;s.costOther+=x.other}
     });
     s.avgClassProfit=s.costable?s.profit/s.costable:null;
@@ -54,8 +54,8 @@
 
   function monthKeys(n=6){const[y,m]=todayISO().split('-').map(Number),out=[];for(let i=n-1;i>=0;i--){const d=new Date(Date.UTC(y,m-1-i,1));out.push(`${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2,'0')}`)}return out}
   function monthly(){
-    const keys=monthKeys(),map=Object.fromEntries(keys.map(k=>[k,{month:k,revenue:0,profit:0,count:0,costable:0,costablePeople:0}]));
-    events().map(record).forEach(x=>{const m=map[x.date.slice(0,7)];if(!m)return;m.revenue+=x.revenue;m.count++;if(x.costable){m.profit+=x.profit;m.costable++;m.costablePeople+=x.people}});
+    const keys=monthKeys(),map=Object.fromEntries(keys.map(k=>[k,{month:k,revenue:0,profit:0,count:0,costable:0}]));
+    events().map(record).forEach(x=>{const m=map[x.date.slice(0,7)];if(!m)return;m.revenue+=x.revenue;m.count++;if(x.costable){m.profit+=x.profit;m.costable++}});
     return keys.map(k=>map[k]);
   }
 
@@ -77,17 +77,10 @@
     return `<div class="ledger-kpis"><div><span>총매출</span><b>${won(s.revenue)}</b><small>${s.count}회 · ${s.people}명</small></div><div><span>계산가능 총이익</span><b>${s.costable?won(s.profit):'계산 보류'}</b><small>원가 연결 ${s.costable}/${s.count}회</small></div><div><span>수업 1회당 평균이익</span><b>${s.avgClassProfit==null?'—':won(s.avgClassProfit)}</b><small>원가 연결 수업 기준</small></div><div><span>수강생 1명당 평균이익</span><b>${s.avgStudentProfit==null?'—':won(s.avgStudentProfit)}</b><small>${s.costablePeople}명 기준</small></div></div>`;
   }
 
-  function insight(s,menus){
-    const ranked=menus.filter(x=>x.avgStudentProfit!=null).sort((a,b)=>b.avgStudentProfit-a.avgStudentProfit),best=ranked[0];
-    const costs=[['재료비',s.costMaterial],['대관비',s.costRent],['포장·기타',s.costPacking+s.costOther]].sort((a,b)=>b[1]-a[1]),largest=costs[0];
-    if(!best&&!largest?.[1])return'';
-    return `<div class="ledger-insight">${best?`<span>인당 이익 최고 <b>${esc(best.menu)} ${won(best.avgStudentProfit)}</b></span>`:''}${largest?.[1]?`<span>가장 큰 비용 <b>${largest[0]} ${won(largest[1])}</b></span>`:''}<small>원가 연결 수업 기준</small></div>`;
-  }
-
-  function profitBridge(s){
-    if(!s.costable)return'<div class="ledger-empty">원가가 연결된 수업이 없어 손익 구조를 계산할 수 없습니다.</div>';
-    const costs=[['재료비',s.costMaterial],['대관비',s.costRent],['포장·기타',s.costPacking+s.costOther]],max=Math.max(1,s.costableRevenue,...costs.map(x=>x[1]),Math.abs(s.profit));
-    return `<div class="profit-bridge"><div class="bridge-row revenue"><span>원가 연결 매출</span><div><i style="width:${s.costableRevenue/max*100}%"></i></div><b>${won(s.costableRevenue)}</b></div>${costs.map(([label,v])=>`<div class="bridge-row cost"><span>− ${label}</span><div><i style="width:${v/max*100}%"></i></div><b>${won(v)}</b></div>`).join('')}<div class="bridge-row result"><span>= 남는 이익</span><div><i style="width:${Math.abs(s.profit)/max*100}%"></i></div><b>${won(s.profit)}</b></div></div><div class="ledger-caption">전체 매출 ${won(s.revenue)} 중 원가가 연결된 매출 ${won(s.costableRevenue)}로 계산합니다. 이익률 ${Math.round(s.margin||0)}%.</div>`;
+  function expensePanel(s){
+    if(!s.costable)return'<div class="ledger-empty">원가가 연결된 수업이 없어 비용 구조를 계산할 수 없습니다.</div>';
+    const rows=[['재료비',s.costMaterial],['대관비',s.costRent],['포장·기타',s.costPacking+s.costOther]],total=rows.reduce((a,x)=>a+x[1],0),max=Math.max(1,...rows.map(x=>x[1]));
+    return `<div class="expense-focus-list">${rows.map(([label,v])=>`<div class="expense-focus-row"><span>${label}</span><div><i style="width:${v/max*100}%"></i></div><b>${won(v)}</b><small>${total?Math.round(v/total*100):0}%</small></div>`).join('')}</div><div class="ledger-caption">원가가 연결된 ${s.costable}/${s.count}회 수업의 비용만 합산합니다.</div>`;
   }
 
   function monthlyPanel(rows){
@@ -97,17 +90,17 @@
 
   function menuDetail(m){
     const classes=m.classes.slice().sort((a,b)=>b.date.localeCompare(a.date)||b.time.localeCompare(a.time));
-    return `<div class="menu-detail-grid"><div><span>누적 총이익</span><b>${m.costable?won(m.profit):'—'}</b></div><div><span>회당 평균</span><b>${m.avgClassProfit==null?'—':won(m.avgClassProfit)}</b></div><div><span>인당 평균</span><b>${m.avgStudentProfit==null?'—':won(m.avgStudentProfit)}</b></div><div><span>이익률</span><b>${m.margin==null?'—':`${Math.round(m.margin)}%`}</b></div></div><div class="menu-class-lines">${classes.map(x=>`<div><time>${esc(x.date)} ${esc(x.time)}</time><span>${x.people}명 · 매출 ${won(x.revenue)}</span><span>재료 ${x.material==null?'—':won(x.material)} · 대관 ${won(x.rent)}</span><b>${x.profit==null?'이익 보류':`${won(x.profit)} · 인당 ${won(x.perStudentProfit)}`}</b></div>`).join('')}</div>`;
+    return `<div class="menu-detail-note">${m.margin==null?'이익률 계산 보류':`이익률 ${Math.round(m.margin)}%`} · 날짜별 근거</div><div class="menu-class-lines">${classes.map(x=>`<div><time>${esc(x.date)} ${esc(x.time)}</time><span>${x.people}명 · 매출 ${won(x.revenue)}</span><span>재료 ${x.material==null?'—':won(x.material)} · 대관 ${won(x.rent)}</span><b>${x.profit==null?'이익 보류':`${won(x.profit)} · 인당 ${won(x.perStudentProfit)}`}</b></div>`).join('')}</div>`;
   }
 
   function menuRanking(menus){
     const usable=menus.filter(x=>metricValue(x)!=null).sort((a,b)=>metricValue(b)-metricValue(a)).slice(0,6),max=Math.max(1,...usable.map(x=>Math.abs(metricValue(x))));
-    return `<div class="menu-metric-switch"><button data-menu-metric="total" class="${menuMetric==='total'?'active':''}">총이익</button><button data-menu-metric="class" class="${menuMetric==='class'?'active':''}">회당</button><button data-menu-metric="student" class="${menuMetric==='student'?'active':''}">인당</button></div>${usable.length?`<div class="menu-rank-list">${usable.map((m,i)=>{const v=metricValue(m);return`<details class="menu-rank-item"><summary><em>${i+1}</em><div class="menu-rank-name"><b>${esc(m.menu)}</b><small>${m.count}회 · ${m.people}명 · 원가 ${m.costable}/${m.count}</small></div><div class="menu-rank-bar"><i class="${v<0?'negative':''}" style="width:${Math.max(2,Math.abs(v)/max*100)}%"></i></div><strong>${won(v)}</strong></summary><div class="menu-rank-body">${menuDetail(m)}</div></details>`}).join('')}</div>`:'<div class="ledger-empty">비교 가능한 메뉴 이익 데이터가 없습니다.</div>'}<div class="ledger-caption">현재 순위 기준: ${metricLabel()}. 메뉴를 누르면 날짜별 손익을 확인할 수 있습니다.</div>`;
+    return `<div class="menu-metric-switch"><button data-menu-metric="total" class="${menuMetric==='total'?'active':''}">총이익</button><button data-menu-metric="class" class="${menuMetric==='class'?'active':''}">회당</button><button data-menu-metric="student" class="${menuMetric==='student'?'active':''}">인당</button></div>${usable.length?`<div class="menu-rank-list">${usable.map((m,i)=>{const v=metricValue(m);return`<details class="menu-rank-item"><summary><em>${i+1}</em><div class="menu-rank-name"><b>${esc(m.menu)}</b><small>${m.count}회 · ${m.people}명 · 원가 ${m.costable}/${m.count}</small></div><div class="menu-rank-bar"><i class="${v<0?'negative':''}" style="width:${Math.max(2,Math.abs(v)/max*100)}%"></i></div><strong>${won(v)}</strong></summary><div class="menu-rank-body">${menuDetail(m)}</div></details>`}).join('')}</div>`:'<div class="ledger-empty">비교 가능한 메뉴 이익 데이터가 없습니다.</div>'}<div class="ledger-caption">현재 순위 기준: ${metricLabel()}. 다른 기준은 위 버튼으로 바꿉니다.</div>`;
   }
 
   function classBreakdown(recs){
     if(!recs.length)return'<div class="ledger-empty">선택 기간에 수업이 없습니다.</div>';
-    return `<div class="class-detail-list">${recs.slice().sort((a,b)=>b.date.localeCompare(a.date)||b.time.localeCompare(a.time)).map(x=>`<details class="class-detail-item"><summary><div><time>${esc(x.date)} ${esc(x.time)}</time><b>${esc(x.menu)}</b><small>${x.people}명 · 매출 ${won(x.revenue)}</small></div><strong>${x.profit==null?'이익 계산 보류':`${won(x.profit)} · 인당 ${won(x.perStudentProfit)}`}</strong></summary><div class="class-formula"><div><span>매출</span><b>${won(x.revenue)}</b><small>${x.people}명 × ${won(x.fee)}</small></div><em>−</em><div><span>재료비</span><b>${x.material==null?'—':won(x.material)}</b><small>${x.recipe?`${esc(x.recipe.name)} · ${esc(x.costLabel)}${x.materialPerStudent==null?'':` · 인당 ${won(x.materialPerStudent)}`}`:'레시피 미연결'}</small></div><em>−</em><div><span>대관비</span><b>${won(x.rent)}</b><small>${esc(x.date)} ${B.dow?B.dow(x.date):''} · ${esc(x.location)} · ${esc(x.rentBasis)}</small></div><em>−</em><div><span>포장·기타</span><b>${won(x.packing+x.other)}</b><small>포장 ${won(x.packing)} · 기타 ${won(x.other)}</small></div><em>=</em><div class="result"><span>이익</span><b>${x.profit==null?'계산 보류':won(x.profit)}</b><small>${x.profit==null?'원가 연결 필요':`인당 ${won(x.perStudentProfit)} · 이익률 ${Math.round(x.margin||0)}%`}</small></div></div></details>`).join('')}</div>`;
+    return `<div class="class-detail-list">${recs.slice().sort((a,b)=>b.date.localeCompare(a.date)||b.time.localeCompare(a.time)).map(x=>`<details class="class-detail-item"><summary><div><time>${esc(x.date)} ${esc(x.time)}</time><b>${esc(x.menu)}</b><small>${x.people}명 · ${x.profit==null?'원가 미연결':`이익 ${won(x.profit)}`}</small></div></summary><div class="class-formula"><div><span>매출</span><b>${won(x.revenue)}</b><small>${x.people}명 × ${won(x.fee)}</small></div><em>−</em><div><span>재료비</span><b>${x.material==null?'—':won(x.material)}</b><small>${x.recipe?`${esc(x.recipe.name)} · ${esc(x.costLabel)}${x.materialPerStudent==null?'':` · 인당 ${won(x.materialPerStudent)}`}`:'레시피 미연결'}</small></div><em>−</em><div><span>대관비</span><b>${won(x.rent)}</b><small>${esc(x.date)} ${B.dow?B.dow(x.date):''} · ${esc(x.location)} · ${esc(x.rentBasis)}</small></div><em>−</em><div><span>포장·기타</span><b>${won(x.packing+x.other)}</b><small>포장 ${won(x.packing)} · 기타 ${won(x.other)}</small></div><em>=</em><div class="result"><span>이익</span><b>${x.profit==null?'계산 보류':won(x.profit)}</b><small>${x.profit==null?'원가 연결 필요':`인당 ${won(x.perStudentProfit)} · 이익률 ${Math.round(x.margin||0)}%`}</small></div></div></details>`).join('')}</div>`;
   }
 
   function ensureHost(){
@@ -117,17 +110,18 @@
     if($('financeKpis'))$('financeKpis').hidden=true;
     const next=$('nextMonthKpis')?.closest('.card');if(next)next.hidden=true;
     [...page.querySelectorAll(':scope > .card')].forEach(card=>{const h=card.querySelector(':scope > h3');if(h&&['메뉴별 집계','수업별 내역'].includes(h.textContent.trim()))card.hidden=true});
-    const ing=$('ingredientGrid')?.closest('details');if(ing)ing.hidden=true;const audit=$('dataAudit')?.closest('details');if(audit){audit.open=false;audit.classList.add('finance-secondary-details')}
+    const ing=$('ingredientGrid')?.closest('details');if(ing)ing.hidden=true;
+    const audit=$('dataAudit')?.closest('details');if(audit){audit.open=false;audit.classList.add('finance-secondary-details')}
     return host;
   }
 
   function labelSurface(){
-    const page=$('finance'),head=page?.querySelector('.section-head');if(head){head.querySelector('h2')?.replaceChildren(document.createTextNode('재정 · 수익'));head.querySelector('p')?.replaceChildren(document.createTextNode('얼마 벌고, 얼마 남고, 어떤 메뉴가 좋은지 먼저 봅니다.'))}
+    const page=$('finance'),head=page?.querySelector('.section-head');if(head){head.querySelector('h2')?.replaceChildren(document.createTextNode('재정 · 수익'));head.querySelector('p')?.replaceChildren(document.createTextNode('핵심 숫자는 한 번만 보여주고, 근거는 필요할 때 펼칩니다.'))}
   }
 
   function render(){
     const host=ensureHost();if(!host)return;labelSurface();const recs=rangeRecords(),s=summarize(recs),months=monthly(),menus=menuSummary(recs);
-    host.innerHTML=`${kpis(s)}${insight(s,menus)}<div class="finance-core-grid"><section class="ledger-card"><div class="ledger-head"><div><h3>이번 기간 손익</h3><p>매출에서 어떤 비용이 빠져 얼마가 남는지.</p></div></div>${profitBridge(s)}</section><section class="ledger-card"><div class="ledger-head"><div><h3>6개월 흐름</h3><p>막대는 방향, 아래 숫자는 정확한 금액입니다.</p></div></div>${monthlyPanel(months)}</section></div><section class="ledger-card"><div class="ledger-head"><div><h3>메뉴 수익성</h3><p>같은 목록에서 총이익·회당·인당 기준만 바꿔 비교합니다.</p></div></div>${menuRanking(menus)}</section><details class="ledger-detail-shell"><summary><span>수업별 손익 상세</span><small>매출 − 재료비 − 대관비 − 기타 = 이익</small></summary><div>${classBreakdown(recs)}</div></details><div class="ledger-note">원가가 없는 수업은 가짜 이익을 만들지 않습니다. 재료비는 레시피 원가 × 실제 배합수이며, 인당 재료비와 인당 이익은 그 수업의 실제 수강생 수로 나눠 표시합니다.</div>`;
+    host.innerHTML=`${kpis(s)}<div class="finance-core-grid"><section class="ledger-card"><div class="ledger-head"><div><h3>비용 구조</h3><p>재료·대관·기타가 각각 얼마를 차지하는지.</p></div></div>${expensePanel(s)}</section><section class="ledger-card"><div class="ledger-head"><div><h3>6개월 흐름</h3><p>월별 매출과 이익만 비교합니다.</p></div></div>${monthlyPanel(months)}</section></div><section class="ledger-card"><div class="ledger-head"><div><h3>메뉴 수익성</h3><p>총이익·회당·인당 중 하나만 선택해 순위를 봅니다.</p></div></div>${menuRanking(menus)}</section><details class="ledger-detail-shell"><summary><span>수업별 손익 상세</span><small>필요할 때만 날짜별 계산 근거 보기</small></summary><div>${classBreakdown(recs)}</div></details><div class="ledger-note">재료비는 레시피 원가 × 실제 배합수입니다. 원가가 없는 수업의 이익은 임의로 만들지 않습니다.</div>`;
   }
 
   document.addEventListener('click',e=>{
