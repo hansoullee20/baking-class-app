@@ -89,12 +89,13 @@ jobs:
           if '저장된 레시피 원가' in recipe_costs: raise SystemExit('Recipe total cost is repeated inside expanded ingredient details')
           if 'avgClassProfit' not in ledger or 'avgStudentProfit' not in ledger or 'costablePeople' not in ledger or 'data-menu-metric' not in ledger: raise SystemExit('Finance unit economics are incomplete')
           if 'dedupeDashboard' not in ledger or '#dashboard .lean-signal-grid' not in ledger: raise SystemExit('Dashboard repeated signal cards are not removed')
-          if 'expensePanel' not in ledger or 'function profitBridge' in ledger: raise SystemExit('Finance cost view must not repeat top revenue/profit KPIs')
-          if 'monthlyPanel' not in ledger or 'menuRanking' not in ledger or 'classBreakdown' not in ledger: raise SystemExit('Finance hierarchy or drill-down is incomplete')
-          if '.profit-bridge' not in ledger_css or '.month-compact-chart' not in ledger_css or '.menu-rank-list' not in ledger_css or '.ledger-detail-shell' not in ledger_css: raise SystemExit('Minimal finance visual hierarchy styles are incomplete')
+          if 'function moneyFlow' not in ledger or 'function kpis(' in ledger or 'ledger-kpis' in ledger: raise SystemExit('Finance must use one money flow instead of repeated four-box KPIs')
+          if 'monthlyFlowPanel' not in ledger or 'x.month!==selectedMonth' not in ledger: raise SystemExit('Selected month must not repeat in monthly comparisons')
+          if 'menuRanking' not in ledger or 'classBreakdown' not in ledger: raise SystemExit('Finance profitability ranking or drill-down is incomplete')
+          if '.money-flow-line' not in ledger_css or '.month-flow-row' not in ledger_css or '.menu-rank-list' not in ledger_css or '.ledger-detail-shell' not in ledger_css: raise SystemExit('Single-direction finance visual hierarchy styles are incomplete')
           if '<button data-page="schedule">' in html or '<button data-page="planner">' in html: raise SystemExit('Duplicate planner/schedule navigation reintroduced')
           if Path('docs/index.html').exists(): raise SystemExit('Obsolete duplicate docs/index.html must not be restored')
-          print('Strict no-repeat workspace and operating finance guard passed')
+          print('Single money-flow workspace guard passed')
           PY
 
       - name: Setup Pages
