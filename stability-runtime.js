@@ -17,6 +17,7 @@
   });
 
   function stableRenderAll(){
+    window.BleuInformationArchitecture?.refresh?.();
     componentRenderers.dashboard?.();
     componentRenderers.calendar?.();
     componentRenderers.schedule?.();
