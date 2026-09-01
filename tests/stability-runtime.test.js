@@ -15,12 +15,13 @@ function active(src){
   return !!tag&&!/type=["']text\/plain["']/i.test(tag);
 }
 
-['app.js','information-architecture.js','workspace-refinement.js','recipe-ingredient-costs.js','finance-ledger-detail.js','cost-review-queue.js','stability-runtime.js'].forEach(src=>{
+['app.js','information-architecture.js','workspace-refinement.js','recipe-ingredient-costs.js','finance-ledger-canonical.js','cost-review-queue.js','stability-runtime.js'].forEach(src=>{
   assert(active(src),`${src} must be an executable runtime script`);
 });
-['operations-ui.js','calendar-class-editor.js','finance-current-focus.js','finance-unified.js','recipe-three-menu.js'].forEach(src=>{
+['operations-ui.js','calendar-class-editor.js','finance-ledger-detail.js','finance-current-focus.js','finance-unified.js','recipe-three-menu.js'].forEach(src=>{
   assert(!active(src),`${src} must remain disabled in stable runtime mode`);
 });
+assert(html.indexOf('finance-ledger-canonical.js')<html.indexOf('cost-review-queue.js'),'canonical finance must load before UX copy/refinement');
 assert(html.indexOf('stability-runtime.js')>html.indexOf('cost-review-queue.js'),'stability runtime must load last and own the final renderAll binding');
 
 assert(queue.includes(`'"':'&quot;'`),'cost review HTML escaping must terminate &quot; correctly');
