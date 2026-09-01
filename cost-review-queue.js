@@ -1,6 +1,6 @@
 (() => {
   const B=window.BakingBusiness,D=window.BakingData;if(!B)return;
-  const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[m]));
+  const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
   const won=v=>Number.isFinite(Number(v))?'₩'+Math.round(Number(v)).toLocaleString('ko-KR'):'—';
   const recipesList=()=>{try{return typeof recipes!=='undefined'&&Array.isArray(recipes)?recipes:[]}catch(e){return[]}};
   const schedules=()=>{try{return typeof schedule!=='undefined'&&Array.isArray(schedule?.rows)?schedule.rows:[]}catch(e){return[]}};
@@ -77,10 +77,8 @@
   }
 
   function refresh(){setupChrome();navCopy();renderQueues();recipeCopy();classCopy();financeCopy();updateSaveState()}
-  let refreshTimer=null;
-  function scheduleRefresh(delay=0){clearTimeout(refreshTimer);refreshTimer=setTimeout(()=>{refreshTimer=null;refresh()},delay)}
-  ['renderDashboard','renderRecipes','renderFinance','renderAll'].forEach(k=>{try{const base=window[k];if(typeof base==='function')window[k]=function(...args){const out=base.apply(this,args);scheduleRefresh(70);return out}}catch(e){}});
+  let renderDepth=0;
+  ['renderDashboard','renderRecipes','renderFinance','renderAll'].forEach(k=>{try{const base=window[k];if(typeof base!=='function')return;window[k]=function(...args){renderDepth++;try{return base.apply(this,args)}finally{renderDepth--;if(renderDepth===0)refresh()}}}catch(e){}});
   document.addEventListener('click',e=>{const r=e.target.closest('[data-ux-cost-recipe]');if(r){e.preventDefault();openRecipe(r.dataset.uxCostRecipe);return}if(e.target.closest('[data-ux-open-costs],[data-ux-finance-costs]')){go('recipes');setTimeout(()=>document.getElementById('uxRecipeCostReview')?.scrollIntoView({behavior:'smooth',block:'start'}),120);return}},true);
-  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')scheduleRefresh(100)});
-  setTimeout(()=>scheduleRefresh(0),850);
+  setTimeout(refresh,500);
 })();
