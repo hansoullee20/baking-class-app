@@ -21,10 +21,13 @@ function active(src){
 ['operations-ui.js','calendar-class-editor.js','finance-current-focus.js','finance-unified.js','recipe-three-menu.js'].forEach(src=>{
   assert(!active(src),`${src} must remain disabled in stable runtime mode`);
 });
+assert(html.indexOf('stability-runtime.js')>html.indexOf('cost-review-queue.js'),'stability runtime must load last and own the final renderAll binding');
 
 assert(queue.includes(`'"':'&quot;'`),'cost review HTML escaping must terminate &quot; correctly');
 assert(!queue.includes("document.addEventListener('input'"),'cost review must not refresh the entire UX on every input');
 assert(!queue.includes("document.addEventListener('change'"),'cost review must not refresh the entire UX on every change');
+assert(stability.includes('function stableRenderAll'),'stability runtime must replace stacked whole-page render wrappers with one coordinator');
+assert(stability.includes('componentRenderers'),'stable render coordinator must call captured component renderers directly');
 assert(stability.includes('refreshRemoteIfChanged'),'stability runtime must check remote changes without unconditional reconnect rendering');
 assert(stability.includes('Object.keys(bundle.shas).some'),'remote refresh must compare SHAs before rendering');
 assert(stability.includes('stableSaveAll'),'stability runtime must own preflighted multi-resource saves');
