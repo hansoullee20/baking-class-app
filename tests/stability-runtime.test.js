@@ -22,7 +22,7 @@ function active(src){
   assert(!active(src),`${src} must remain disabled in stable runtime mode`);
 });
 
-assert(queue.includes("'\\"':'&quot;'"),'cost review HTML escaping must terminate &quot; correctly');
+assert(queue.includes(`'"':'&quot;'`),'cost review HTML escaping must terminate &quot; correctly');
 assert(!queue.includes("document.addEventListener('input'"),'cost review must not refresh the entire UX on every input');
 assert(!queue.includes("document.addEventListener('change'"),'cost review must not refresh the entire UX on every change');
 assert(stability.includes('refreshRemoteIfChanged'),'stability runtime must check remote changes without unconditional reconnect rendering');
