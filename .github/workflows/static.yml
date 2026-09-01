@@ -39,6 +39,8 @@ jobs:
           node --check recipe-ingredient-costs.js
           node --check finance-ledger-detail.js
           node --check finance-unified.js
+          node --check cost-review-queue.js
+          node --check stability-runtime.js
           node --check auth-persist.js
           node --check sunny-theme.js
           node --check class-ops-canonical.js
@@ -52,6 +54,9 @@ jobs:
 
       - name: Test runtime architecture
         run: node tests/runtime-architecture.test.js
+
+      - name: Test stability runtime
+        run: node tests/stability-runtime.test.js
 
       - name: Guard runtime and repository composition
         run: |
@@ -79,7 +84,7 @@ jobs:
           existing=[x for x in deprecated if Path(x).exists()]
           if loaded: raise SystemExit('Deprecated modules are loaded: '+', '.join(loaded))
           if existing: raise SystemExit('Deprecated files reintroduced: '+', '.join(existing))
-          required=['business-engine.js','data-normalization.js','business-engine-adapter.js','operations-ui.js','management-planner.js','calendar-class-editor.js','calendar-status.js','information-architecture.js','workspace-refinement.js','recipe-ingredient-costs.js','finance-ledger-detail.js','finance-unified.js','class-ops-canonical.js','decision-ui.css','operations-ui.css','management-polish.css','calendar-class-editor.css','calendar-status.css','information-architecture.css','workspace-refinement.css','recipe-ingredient-costs.css','finance-ledger-detail.css','finance-unified.css']
+          required=['business-engine.js','data-normalization.js','business-engine-adapter.js','operations-ui.js','management-planner.js','calendar-class-editor.js','calendar-status.js','information-architecture.js','workspace-refinement.js','recipe-ingredient-costs.js','finance-ledger-detail.js','finance-unified.js','cost-review-queue.js','stability-runtime.js','class-ops-canonical.js','decision-ui.css','operations-ui.css','management-polish.css','calendar-class-editor.css','calendar-status.css','information-architecture.css','workspace-refinement.css','recipe-ingredient-costs.css','finance-ledger-detail.css','finance-unified.css']
           missing=[x for x in required if x not in html or not Path(x).exists()]
           if missing: raise SystemExit('Required runtime asset missing from index: '+', '.join(missing))
           if 'information-architecture.js' in status: raise SystemExit('Calendar status must not dynamically load information architecture')
