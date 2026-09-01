@@ -4,6 +4,7 @@ const fs=require('fs');
 const html=fs.readFileSync('index.html','utf8');
 const queue=fs.readFileSync('cost-review-queue.js','utf8');
 const stability=fs.readFileSync('stability-runtime.js','utf8');
+const ia=fs.readFileSync('information-architecture.js','utf8');
 
 function tagFor(src){
   const escaped=src.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
@@ -27,7 +28,10 @@ assert(html.indexOf('stability-runtime.js')>html.indexOf('cost-review-queue.js')
 assert(queue.includes(`'"':'&quot;'`),'cost review HTML escaping must terminate &quot; correctly');
 assert(!queue.includes("document.addEventListener('input'"),'cost review must not refresh the entire UX on every input');
 assert(!queue.includes("document.addEventListener('change'"),'cost review must not refresh the entire UX on every change');
+assert(ia.includes('window.BleuInformationArchitecture={refresh:cleanRoleSurfaces,renderDashboard:renderLeanDashboard}'),'information architecture must expose a deterministic derived-home refresh hook');
 assert(stability.includes('function stableRenderAll'),'stability runtime must replace stacked whole-page render wrappers with one coordinator');
+assert(stability.includes('window.BleuInformationArchitecture?.refresh?.()'),'stable coordinator must refresh derived home state after data changes');
+assert(stability.indexOf('window.BleuInformationArchitecture?.refresh?.()')<stability.indexOf('componentRenderers.dashboard?.()'),'derived home state must refresh before UX queue refinement so the queue is not overwritten');
 assert(stability.includes('componentRenderers'),'stable render coordinator must call captured component renderers directly');
 assert(stability.includes('refreshRemoteIfChanged'),'stability runtime must check remote changes without unconditional reconnect rendering');
 assert(stability.includes('Object.keys(bundle.shas).some'),'remote refresh must compare SHAs before rendering');
