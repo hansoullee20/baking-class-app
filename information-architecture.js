@@ -104,5 +104,6 @@
   try{const base=renderCalendar;renderCalendar=function(...args){const out=base.apply(this,args);setTimeout(()=>{ensureCalendarTools();try{$('calendarMonthJump').value=String(cursor).slice(0,7)}catch(e){}},40);return out}}catch(e){}
   try{const base=renderAll;renderAll=function(...args){const out=base.apply(this,args);setTimeout(cleanRoleSurfaces,80);return out}}catch(e){}
   try{const base=connect;connect=async function(...args){const out=await base.apply(this,args);setTimeout(cleanRoleSurfaces,100);return out}}catch(e){}
+  window.BleuInformationArchitecture={refresh:cleanRoleSurfaces,renderDashboard:renderLeanDashboard};
   ensureDayModal();setTimeout(cleanRoleSurfaces,700);
 })();
