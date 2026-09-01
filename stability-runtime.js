@@ -2,10 +2,32 @@
   if(typeof connect!=='function'||typeof get!=='function'||typeof renderAll!=='function')return;
 
   const baseConnect=connect;
+  const componentRenderers={
+    dashboard:typeof renderDashboard==='function'?renderDashboard:null,
+    calendar:typeof renderCalendar==='function'?renderCalendar:null,
+    schedule:typeof renderSchedule==='function'?renderSchedule:null,
+    recipes:typeof renderRecipes==='function'?renderRecipes:null,
+    nextMonth:typeof renderNextMonth==='function'?renderNextMonth:null,
+    audit:typeof renderAudit==='function'?renderAudit:null,
+    finance:typeof renderFinance==='function'?renderFinance:null
+  };
   const resourceMap=()=>({
     schedule:[CFG.schedule,schedule],
     recipes:[CFG.recipes,recipes]
   });
+
+  function stableRenderAll(){
+    componentRenderers.dashboard?.();
+    componentRenderers.calendar?.();
+    componentRenderers.schedule?.();
+    componentRenderers.recipes?.();
+    componentRenderers.nextMonth?.();
+    componentRenderers.audit?.();
+    const start=$('periodStart');
+    if(start&&!start.value&&typeof preset==='function')preset('month');
+    else componentRenderers.finance?.();
+  }
+  renderAll=stableRenderAll;
 
   function currentView(){
     return{
@@ -48,7 +70,7 @@
       conflict=false;
       pill('dirty','모두 저장됨','ok');
       pill('sync','새 데이터 반영','ok');
-      renderAll();
+      stableRenderAll();
       restoreView(view);
     }catch(e){
       pill('sync','동기화 확인 필요','bad');
@@ -101,5 +123,5 @@
   const saveButton=$('saveBtn');
   if(saveButton)saveButton.onclick=stableSaveAll;
 
-  window.BleuStability={refreshRemoteIfChanged,saveAll:stableSaveAll};
+  window.BleuStability={refreshRemoteIfChanged,saveAll:stableSaveAll,renderAll:stableRenderAll};
 })();
